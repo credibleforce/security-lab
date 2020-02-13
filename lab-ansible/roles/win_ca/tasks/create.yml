@@ -26,6 +26,6 @@
     ValidityPeriod: 'Years'
     ValidityPeriodUnits: 99
     PsDscRunAsCredential_username: ' {{ ansible_user }}'
-    PsDscRunAsCredentual_password: '{{ ansible_password }}'
+    PsDscRunAsCredential_password: '{{ ansible_password }}'
     Credential_username: ' {{ ansible_user }}'
-    Credentual_password: '{{ ansible_password }}'
+    Credential_password: '{{ ansible_password }}'
