@@ -27,5 +27,5 @@
     ValidityPeriodUnits: 99
     PsDscRunAsCredential_username: '{{ ansible_ssh_user }}'
     PsDscRunAsCredential_password: '{{ ansible_ssh_pass }}'
-    Credential_username: ' {{ ansible_ssh_user }}'
+    Credential_username: '{{ ansible_ssh_user }}'
     Credential_password: '{{ ansible_ssh_pass }}'
