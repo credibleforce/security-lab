@@ -1,0 +1,31 @@
+---
+- name: Install ADCS with sub features and management tools
+  win_feature:
+    name: Adcs-Cert-Authority
+    state: present
+    include_management_tools: yes
+  register: win_feature
+
+- name: reboot if installing Adcs-Cert-Authority feature requires it
+  win_reboot:
+  when: win_feature.reboot_required
+
+- name: Add ActiveDirectoryCSDsc
+  win_psmodule:
+    name: ActiveDirectoryCSDsc
+    state: present
+
+- name: Configure AdcsCertificationAuthority Powershell DSC
+  win_dsc:
+    resource_name: AdcsCertificationAuthority
+    IsSingleInstance: 'Yes'
+    CAType: 'EnterpriseRootCA'
+    CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
+    KeyLength: 2048
+    HashAlgorithmName: 'SHA256'
+    ValidityPeriod: 'Years'
+    ValidityPeriodUnits: 99
+    PsDscRunAsCredential_username: ' {{ ansible_user }}'
+    PsDscRunAsCredentual_password: '{{ ansible_password }}'
+    Credential_username: ' {{ ansible_user }}'
+    Credentual_password: '{{ ansible_password }}'

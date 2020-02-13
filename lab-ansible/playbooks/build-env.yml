@@ -1,0 +1,12 @@
+- hosts: all
+  gather_facts: True
+#  tasks:
+#    - debug:
+#        msg: "{{ hostvars[inventory_hostname] }}"
+  roles:
+    - common
+    - win_ca
+    - win_dns
+    - win_dc
+  vars_files:
+    - ../vars/vars.yml 
