@@ -10,6 +10,12 @@
     adapter_names: "*"
     ipv4_addresses: "{{ windows_domain_info['dns_servers'] }}"
 
+# wait for dns change before attempting to join the domain
+- name: Wait for system to become reachable over WinRM
+  wait_for_connection:
+    timeout: 900
+    delay: 60
+
 - name: Join to the domain
   win_domain_membership:
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
