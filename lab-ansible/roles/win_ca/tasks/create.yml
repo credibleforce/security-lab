@@ -15,34 +15,34 @@
     name: ActiveDirectoryCSDsc
     state: present
 
-#- name: configure AD CS certification authority
-#  win_shell: Install-AdcsCertificationAuthority -CAType EnterpriseRootCa -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 99 -Force
-#  async: 1000
-#  poll: 5
-#  register: pri_adcs_enrollment_config
-#  changed_when: pri_adcs_enrollment_config.rc == 0
-#  failed_when:
-#  - pri_adcs_enrollment_config.rc != 0
-#  - '"The Certification Authority is already installed" not in (pri_adcs_enrollment_config.stderr|regex_replace("\r\n", ""))'
-#  become: yes
-#  become_user: SYSTEM
-#  become_method: runas
+- name: Configure AD CS Certification Authority
+  win_shell: Install-AdcsCertificationAuthority -CAType EnterpriseRootCa -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 99 -Force
+  async: 1000
+  poll: 5
+  register: pri_adcs_enrollment_config
+  changed_when: pri_adcs_enrollment_config.rc == 0
+  failed_when:
+  - pri_adcs_enrollment_config.rc != 0
+  - '"The Certification Authority is already installed" not in (pri_adcs_enrollment_config.stderr|regex_replace("\r\n", ""))'
+  become: yes
+  become_user: SYSTEM
+  become_method: runas
 
-- name: Configure AdcsCertificationAuthority Powershell DSC
-  win_dsc:
-    resource_name: AdcsCertificationAuthority
-    IsSingleInstance: 'Yes'
-    CAType: 'EnterpriseRootCA'
-    CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
+#- name: Configure AdcsCertificationAuthority Powershell DSC
+#  win_dsc:
+#    resource_name: AdcsCertificationAuthority
+#    IsSingleInstance: 'Yes'
+#    CAType: 'EnterpriseRootCA'
+#    CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
 #    CACommonName: 'PSL-CA'
 #    DatabaseDirectory: 'C:\ADFS\DB'
 #    LogDirectory: 'C:\ADFS\Log'
-    Ensure: 'Present'
-    KeyLength: 2048
-    HashAlgorithmName: 'SHA256'
-    ValidityPeriod: 'Years'
-    ValidityPeriodUnits: 99
-    PsDscRunAsCredential_username: '{{ ansible_ssh_user }}'
-    PsDscRunAsCredential_password: '{{ ansible_ssh_pass }}'
-    Credential_username: '{{ ansible_ssh_user }}'
-    Credential_password: '{{ ansible_ssh_pass }}'
+#    Ensure: 'Present'
+#    KeyLength: 2048
+#    HashAlgorithmName: 'SHA256'
+#    ValidityPeriod: 'Years'
+#    ValidityPeriodUnits: 99
+#    PsDscRunAsCredential_username: '{{ ansible_ssh_user }}'
+#    PsDscRunAsCredential_password: '{{ ansible_ssh_pass }}'
+#    Credential_username: '{{ ansible_ssh_user }}'
+#    Credential_password: '{{ ansible_ssh_pass }}'
