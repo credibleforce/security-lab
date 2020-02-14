@@ -5,3 +5,10 @@ windows_domain_controller_info:
   domain_admin_user: Administrator@splunkresearch.local
   safe_mode_password: myTempPassword123
   state: domain_controller
+
+windows_certificate_authority:
+  CACommonName: SPLUNK-CA
+  KeyLength: 2048
+  HashAlgorithmName: SHA256
+  ValidityPeriod: 'Years'
+  ValidityPeriodUnits: 99

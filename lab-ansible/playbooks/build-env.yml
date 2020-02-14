@@ -1,12 +1,57 @@
+#########################################
+# EXAMPLE DEPLOYMENT
+#########################################
+
+- hosts: local
+  tasks:
+
+#########################################
+# DOMAIN CONTROLLER
+#########################################
+
 - hosts: all
-  gather_facts: True
-#  tasks:
-#    - debug:
-#        msg: "{{ hostvars[inventory_hostname] }}"
-  roles:
-    - common
-    - win_ca
-    - win_dns
-    - win_dc
   vars_files:
     - ../vars/vars.yml 
+  gather_facts: True
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    # all
+    - name: Deploy common tasks to all
+      include_role:
+        name: ../roles/common
+
+    # domain_controller group only
+    - name: Windows Domain Controllers
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_dns'
+        - 'win_dc'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['domain_controller']
+
+    # certificate_authority group only
+    - name: Windows Enterprise PKI
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_ca'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['certificate_authority']
+
+    # domain_controller group only
+    - name: Windows Member Server
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_member'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['member_server']
+
+   
+  

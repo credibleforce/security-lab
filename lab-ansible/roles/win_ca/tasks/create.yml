@@ -24,14 +24,12 @@
     IsSingleInstance: 'Yes'
     CAType: 'EnterpriseRootCA'
     CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
-    CACommonName: 'PSL-CA'
-    DatabaseDirectory: 'C:\ADFS\DB'
-    LogDirectory: 'C:\ADFS\Log'
+    CACommonName: '{{ windows_certificate_authority_info['CACommonName'] }}'
     Ensure: 'Present'
-    KeyLength: 2048
-    HashAlgorithmName: 'SHA256'
-    ValidityPeriod: 'Years'
-    ValidityPeriodUnits: 99
+    KeyLength: '{{ windows_certificate_authority_info['KeyLength'] }}'
+    HashAlgorithmName: '{{ windows_certificate_authority_info['HashAlgorithmName'] }}'
+    ValidityPeriod: '{{ windows_certificate_authority_info['ValidityPeriod'] }}'
+    ValidityPeriodUnits: '{{ windows_certificate_authority_info['ValidityPeriodUnits'] }}'
     PsDscRunAsCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
     PsDscRunAsCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     Credential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"

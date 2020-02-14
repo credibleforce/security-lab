@@ -1,0 +1,34 @@
+
+
+all:
+  vars:
+  children:
+    local:
+      hosts:
+        localhost:
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ansible_playbook_python}}"
+    windows:
+      vars:
+        ansible_connection: winrm
+        ansible_ssh_port: 5986
+        ansible_ssh_user: Administrator
+        ansible_ssh_pass: myTempPassword123
+        ansible_winrm_transport: basic
+        ansible_winrm_server_cert_validation: ignore
+      children:
+    domain_controller:
+      vars:
+      hosts: 
+        psdc1.psl.local:
+    certificate_authority:
+      vars:
+      hosts: 
+        psdc1.psl.local:
+    member_server:
+      vars:
+      hosts: 
+        pssrv1.psl.local:
+
+    
