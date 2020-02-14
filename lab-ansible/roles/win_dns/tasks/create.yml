@@ -13,3 +13,15 @@
     reboot_timeout: 600
     post_reboot_delay: 300
   when: windows_dns_server.reboot_required
+
+- name: Check for xDnsServer Powershell module
+  win_psmodule:
+    name: xDnsServer
+    state: present
+
+- name: Configure DNS Forwarders
+  win_dsc:
+    resource_name: xDnsServerSetting
+    Name: DNSServerProperties
+    NoRecursion: false
+    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}""
