@@ -4,11 +4,14 @@
     name: Adcs-Cert-Authority
     state: present
     include_management_tools: yes
-  register: win_feature
+  register: windows_adcs
 
 - name: reboot if installing Adcs-Cert-Authority feature requires it
   win_reboot:
-  when: win_feature.reboot_required
+    shutdown_timeout: 600
+    reboot_timeout: 600
+    post_reboot_delay: 300
+  when: windows_adcs.reboot_required
 
 - name: Add ActiveDirectoryCSDsc
   win_psmodule:
