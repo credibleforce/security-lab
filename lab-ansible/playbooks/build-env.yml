@@ -47,7 +47,7 @@
     - name: Wait for system to become reachable over WinRM
       wait_for_connection:
         timeout: 900
-      delay: 300
+        delay: 300
 
     # domain_controller group only
     - name: Windows Member Server
