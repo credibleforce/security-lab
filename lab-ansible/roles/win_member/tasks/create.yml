@@ -1,7 +1,14 @@
+---
+- name: Set local admin password
+  win_user:
+    name: Administrator
+    password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    state: present
+
 - name: Setting DNS Servers
   win_dns_client:
     adapter_names: "*"
-    ipv4_addresses: "172.17.0.5"
+    ipv4_addresses: "{{ windows_domain_info['dns_servers'] }}"
 
 - name: Join to the domain
   win_domain_membership:
