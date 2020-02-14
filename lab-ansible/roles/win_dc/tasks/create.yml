@@ -21,6 +21,7 @@
   win_domain:
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
+  register: check_domain
 
 - name: Setting DNS Servers
   win_dns_client:
@@ -31,6 +32,7 @@
   win_reboot:
     reboot_timeout_sec: 300
     shutdown_timeout: 300
+  when: check_domain.changed
 
 - name: Managing Domain Controller Membership
   win_domain_controller:
@@ -39,4 +41,11 @@
     domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
     state: "{{ windows_domain_controller_info['state'] }}"
-  register: _windows_domain_controller
+  register: check_domain_controller
+
+  - name: Reboot to complete domain controller setup
+    win_reboot:
+      shutdown_timeout: 600
+      reboot_timeout: 600
+      post_reboot_delay: 300
+    when: check_domain_controller.changed
