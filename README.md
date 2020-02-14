@@ -10,13 +10,14 @@ Ansible build of splunk demo environment.
 
 **Usage**:
 
-1. Ensure pywinrm is installed `pip3 install pywinrm`
-2. Clone repo `git clone https://github.com/ps-sec-analytics/splunk-lab.git`
+1. Ensure Windows hosts have been prepared for ansible WinRM `Invoke-Expression ((New-Object System.Net.Webclient).DownloadString('https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1'))`
+2. Ensure pywinrm is installed `pip3 install pywinrm`
+3. Clone repo `git clone https://github.com/ps-sec-analytics/splunk-lab.git`
 4. Change directory to `cd splunk-lab`
-6. Change directory to ansible-deployment folder `cd lab-ansible`
-7. Update `hosts` and `vars/vars.yml` as required
-8. Update the `playbooks/build-env.yml` playbook as required
-9. Run `anisble-playbook -i hosts playbooks/build-env.yml`
+5. Change directory to ansible-deployment folder `cd lab-ansible`
+6. Update `hosts` and `vars/vars.yml` as required
+7. Update the `playbooks/build-env.yml` playbook as required
+8. Run `anisble-playbook -i hosts playbooks/build-env.yml`
 
 **Testing**:
 
