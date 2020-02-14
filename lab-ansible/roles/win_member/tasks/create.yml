@@ -11,9 +11,8 @@
     ipv4_addresses: "{{ windows_domain_info['dns_servers'] }}"
 
 # wait for dns change before attempting to join the domain
-- name: Wait for resolution of dns domain name
-  wait_for:
-    host: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+- name: Wait for connection after DNS update
+  wait_for_connection:
     timeout: 900
     delay: 30
 
