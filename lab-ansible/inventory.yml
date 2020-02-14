@@ -18,17 +18,17 @@ all:
         ansible_winrm_transport: basic
         ansible_winrm_server_cert_validation: ignore
       children:
-    domain_controller:
-      vars:
-      hosts: 
-        psdc1.psl.local:
-    certificate_authority:
-      vars:
-      hosts: 
-        psdc1.psl.local:
-    member_server:
-      vars:
-      hosts: 
-        pssrv1.psl.local:
+        domain_controller:
+          vars:
+          hosts: 
+            psdc1.psl.local:
+        certificate_authority:
+          vars:
+          hosts: 
+            psdc1.psl.local:
+        member_server:
+          vars:
+          hosts: 
+            pssrv1.psl.local:
 
     
