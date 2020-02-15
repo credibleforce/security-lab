@@ -24,11 +24,6 @@
 
     
     # domain_controller group only
-    - name: Windows Domain Controllers DNS
-      include_role:
-        name: 'win_dns'
-      when: inventory_hostname in groups['domain_controller']
-
     - name: Windows Domain Controllers Setup
       include_role:
         name: 'win_dc'
