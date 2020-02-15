@@ -19,6 +19,11 @@
     name: xDnsServer
     state: present
 
+- name: Setting local DNS Servers
+  win_dns_client:
+    adapter_names: "*"
+    ipv4_addresses: "127.0.0.1"
+
 - name: Configure DNS Forwarders
   win_dsc:
     resource_name: xDnsServerSetting

@@ -24,11 +24,6 @@
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
 
-- name: Setting DNS Servers
-  win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
-
 - name: Reboot to complete domain controller setup
   win_reboot:
     shutdown_timeout: 600
