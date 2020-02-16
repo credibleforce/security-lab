@@ -45,5 +45,19 @@
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 900
-    post_reboot_delay: 600
+    post_reboot_delay: 300
   when: check_domain_controller.changed
+
+- name: Wait for domain fqdn resolution
+  win_shell: |
+    while($true){
+      try {
+          [Net.DNS]::GetHostEntry("{{ windows_domain_controller_info['dns_domain_name'] }}")
+          write-output "DNS Resolution Success"
+          break;
+      }catch{
+          write-output "DNS Resolution Failure"
+      }
+      start-sleep -Seconds 5
+    }
+  register: dns_setup
