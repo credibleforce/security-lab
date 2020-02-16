@@ -45,5 +45,5 @@
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 900
-    post_reboot_delay: 400
+    post_reboot_delay: 600
   when: check_domain_controller.changed
