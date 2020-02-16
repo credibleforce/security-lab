@@ -3,12 +3,12 @@ windows_domain_controller_info:
   dns_domain_name: psl.local
   domain_netbios_name: psl
   domain_admin_password: myTempPassword123
-  domain_admin_user: "Administrator@{{ windows_domain_controller_info['dns_domain_name'] }}"
+  domain_admin_user: "Administrator@psl.local"
   safe_mode_password: myTempPassword123
   state: domain_controller
 
 windows_certificate_authority_info:
-  CACommonName: "{{ windows_domain_controller_info['domain_netbios_name']|upper }}-CA"
+  CACommonName: "PSL-CA"
   KeyLength: 2048
   HashAlgorithmName: SHA256
   ValidityPeriod: 'Years'
