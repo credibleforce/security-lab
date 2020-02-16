@@ -51,6 +51,7 @@
 
 - name: Wait for domain fqdn resolution
   win_shell: |
+    start-sleep -Seconds 5
     while($true){
       try {
           [Net.DNS]::GetHostEntry("{{ windows_domain_controller_info['dns_domain_name'] }}")
@@ -61,4 +62,13 @@
       }
       start-sleep -Seconds 5
     }
-  register: dns_setup
+  async: 900
+  poll: 1
+  register: async_out
+
+- name: 'DNS - check on async task'
+  async_status:
+    jid: "{{ async_out.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 30
