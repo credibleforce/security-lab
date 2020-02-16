@@ -24,7 +24,7 @@
       start-sleep -Seconds 5
     }
   async: 900
-  poll: 1
+  poll: 5
   register: async_out
 
 - name: 'DNS - check on async task'
@@ -41,6 +41,8 @@
     domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     state: domain
   register: domain_state
+  retries: 10
+  delay: 30
 
 - name: Reboot to complete domain membership setup
   win_reboot:
