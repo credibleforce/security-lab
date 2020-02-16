@@ -46,7 +46,7 @@
 
 - name: Reboot to complete domain membership setup
   win_reboot:
-    pre_reboot_delay: 120
+    pre_reboot_delay: 60
     reboot_timeout: 600
-    post_reboot_delay: 120
+    post_reboot_delay: 60
   when: domain_state.reboot_required
