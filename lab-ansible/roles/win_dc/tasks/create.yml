@@ -28,7 +28,8 @@
 - name: Reboot to complete domain controller setup
   win_reboot:
     pre_reboot_delay: 120
-    post_reboot_delay: 400
+    reboot_timeout: 600
+    post_reboot_delay: 300
   when: check_domain.changed
 
 - name: Managing Domain Controller Membership
@@ -44,5 +45,6 @@
 - name: Reboot to complete domain controller setup
   win_reboot:
     pre_reboot_delay: 120
-    post_reboot_delay: 400
+    reboot_timeout: 600
+    post_reboot_delay: 300
   when: check_domain_controller.changed
