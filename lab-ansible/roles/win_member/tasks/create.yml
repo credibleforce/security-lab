@@ -28,5 +28,5 @@
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
-    post_reboot_delay: 300
+    post_reboot_delay: 120
   when: domain_state.reboot_required
