@@ -1,0 +1,25 @@
+---
+- name: Issue a cert for the CSR
+  win_shell: |
+      $j = Start-Job {
+        certreq.exe `
+          -config "{{ cert_ca_config_name }}" `
+          -attrib "CertificateTemplate:{{ certificate_template_name }}" `
+          -submit `
+          "{{ working_dir.path }}\request.csr" `
+          "{{ working_dir.path }}\certificate.crt" `
+          "{{ working_dir.path }}\cert-chain.p7b" `
+          "{{ working_dir.path }}\full-response.rsp"
+      }
+      $done = Wait-Job -Job $j -Timeout 30
+      if (-not $done) {
+          echo "Killing proc"
+          Get-Process -Name certreq | ? StartTime -GE $j.PSBeginTime | Stop-Process -Force
+          Receive-Job -Job $j -Wait
+          Exit 1
+      }
+      Receive-Job -Job $j -Wait
+  register: cert_submit_out
+  failed_when: >
+    cert_submit_out.rc != 0 or
+    'Certificate retrieved(Issued) Issued' not in cert_submit_out.stdout
