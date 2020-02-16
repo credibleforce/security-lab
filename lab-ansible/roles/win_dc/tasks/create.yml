@@ -20,7 +20,6 @@
 - name: Creating a windows domain
   win_domain:
     install_dns: yes
-    create_dns_delegation: yes
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
