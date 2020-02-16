@@ -29,7 +29,7 @@
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
-    post_reboot_delay: 420
+    post_reboot_delay: 460 # your mileage may vary
   when: check_domain.reboot_required
 
 - name: Managing Domain Controller Membership
