@@ -25,12 +25,12 @@
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
 
-- name: Reboot to complete domain controller setup
+- name: Reboot to complete domain controller setup (if required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 300
-  when: check_domain.changed
+  when: check_domain.reboot_required
 
 - name: Managing Domain Controller Membership
   win_domain_controller:
@@ -42,12 +42,12 @@
     state: "{{ windows_domain_controller_info['state'] }}"
   register: check_domain_controller
 
-- name: Reboot to complete domain controller setup
+- name: Reboot to complete domain controller setup (if required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 900
     post_reboot_delay: 300
-  when: check_domain_controller.changed
+  when: check_domain_controller.reboot_required
 
 - name: Wait for domain fqdn resolution
   win_shell: |
