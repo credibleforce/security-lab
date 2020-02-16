@@ -21,6 +21,7 @@
   win_domain:
     install_dns: yes
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
 
