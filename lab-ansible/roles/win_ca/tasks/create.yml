@@ -1,7 +1,9 @@
 ---
 - name: Install ADCS with sub features and management tools
   win_feature:
-    name: Adcs-Cert-Authority
+    name: 
+      - Adcs-Cert-Authority
+      - Adcs-Enroll-Web-Pol
     state: present
     include_management_tools: yes
   register: windows_adcs
