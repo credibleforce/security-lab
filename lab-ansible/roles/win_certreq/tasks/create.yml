@@ -7,7 +7,7 @@
 - name: Issue a cert for the CSR
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-    $CertExportDirectoy="{{splunk_certs['export_dir'] }}"
+    $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
     $SAN = "dns=test.psl.local"
     $CN = "test.psl.local"
     $County = "{{ splunk_certs['country'] }}"
