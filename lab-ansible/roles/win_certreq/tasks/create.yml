@@ -1,4 +1,9 @@
 ---
+- name: Create certificate export directory
+  win_file:
+    path: C:\Temp
+    state: directory
+
 - name: Issue a cert for the CSR
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
