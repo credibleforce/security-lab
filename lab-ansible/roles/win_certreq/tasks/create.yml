@@ -144,17 +144,14 @@
 # Configuration for Splunk
 ###########################
 
-# extract key from pfx
-#openssl pkcs12 -in [yourfile.pfx] -nocerts -out [keyfile-encrypted.key]
-
-# remove pass (required for splunk)
-#openssl rsa -in [keyfile-encrypted.key] -out [keyfile.key]
+# extract unencrypted key from pfx
+#openssl pkcs12 -in [yourfile.pfx] -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out [keyfile.key]
 
 # extract cer from pfx
-#openssl pkcs12 -in [yourfile.pfx] -clcerts -nokeys -out [certificate.crt]
+#openssl pkcs12 -in [yourfile.pfx] -passin pass: -clcerts -nokeys -out [certificate.crt]
 
 # create serverCert pem
-# openssl rsa -in [keyfile-encrypted.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
+# openssl rsa -in [keyfile.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
 
 # bundle
 # cat [certificate.crt] [key-encrypted-pem.pem] [ca-certificate.pem]
