@@ -137,12 +137,12 @@
 
 - name: Retrieve webserver pfx
   fetch: 
-    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'test.psl.local.pfx') }}" 
-    dest: "{{ '/'.join('/tmp','test.psl.local.pfx') }}"
+    src: "{{ splunk_certs['export_dir'] }}\\test.psl.local.pfx" 
+    dest: "/tmp/test.psl.local.pfx"
     flat: yes
 
 - name: Retrieve ca cert pem
   fetch: 
-    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'cacert.pem') }}" 
-    dest: "{{ '/'.join('/tmp','cacert.pem') }}"
+    src: "{{ splunk_certs['export_dir'] }}\\cacert.pem" 
+    dest: "/tmp/cacert.pem"
     flat: yes
