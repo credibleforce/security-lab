@@ -1,115 +1,115 @@
 ---
- - name: Issue a cert for the CSR
-   win_shell: |
-      $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-      $SAN = "dns=test.psl.local"
-      $CN = "test.psl.local"
-      $County = "{{ splunk_certs['country'] }}"
-      $State = "{{ splunk_certs['state'] }}"
-      $City = "{{ splunk_certs['city'] }}"
-      $Organisation = "{{ splunk_certs['org'] }}"
-      $OU = ""{{ splunk_certs['ou'] }}""
-      $TemplateName = "WebServer"
+- name: Issue a cert for the CSR
+  win_shell: |
+    $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+    $SAN = "dns=test.psl.local"
+    $CN = "test.psl.local"
+    $County = "{{ splunk_certs['country'] }}"
+    $State = "{{ splunk_certs['state'] }}"
+    $City = "{{ splunk_certs['city'] }}"
+    $Organisation = "{{ splunk_certs['org'] }}"
+    $OU = ""{{ splunk_certs['ou'] }}""
+    $TemplateName = "WebServer"
 
-      function Remove-ReqTempfiles() {
-          param(
-              [String[]]$tempfiles
-          )
-          Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
-      }
+    function Remove-ReqTempfiles() {
+        param(
+            [String[]]$tempfiles
+        )
+        Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
+    }
 
-      function Remove-ReqFromStore {
-          param(
-              [String]$CN
-          )
-          #delete pending request (if a request exists for the CN)
-          $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
-          $certstore.Open('ReadWrite')
-          foreach ($certreq in $($certstore.Certificates)) {
-              if ($certreq.Subject -eq "CN=$CN") {
-                  $certstore.Remove($certreq)
-              }
-          }
-          $certstore.close()
-      }
+    function Remove-ReqFromStore {
+        param(
+            [String]$CN
+        )
+        #delete pending request (if a request exists for the CN)
+        $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
+        $certstore.Open('ReadWrite')
+        foreach ($certreq in $($certstore.Certificates)) {
+            if ($certreq.Subject -eq "CN=$CN") {
+                $certstore.Remove($certreq)
+            }
+        }
+        $certstore.close()
+    }
 
 
-      # create request
-      $file = @"
-      [NewRequest]
-      Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
-      MachineKeySet = TRUE
-      KeyLength = 2048
-      KeySpec=1
-      Exportable = TRUE
-      RequestType = PKCS10
-      ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
-      [RequestAttributes]
-      CertificateTemplate = "$TemplateName"
-      "@
+    # create request
+    $file = @"
+    [NewRequest]
+    Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+    MachineKeySet = TRUE
+    KeyLength = 2048
+    KeySpec=1
+    Exportable = TRUE
+    RequestType = PKCS10
+    ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+    [RequestAttributes]
+    CertificateTemplate = "$TemplateName"
+    "@
 
-      #check if SAN certificate is requested
-      if ($SAN -ne $null) {
-          if (($SAN).count -eq 1) {
-              $SAN = @($SAN -split ',')
-          }
-          $file += @'
+    #check if SAN certificate is requested
+    if ($SAN -ne $null) {
+        if (($SAN).count -eq 1) {
+            $SAN = @($SAN -split ',')
+        }
+        $file += @'
 
-      [Extensions]
-      ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
-      ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
+    [Extensions]
+    ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
+    ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
 
-      2.5.29.17 = "{text}"
+    2.5.29.17 = "{text}"
 
-      '@
+    '@
 
-          foreach ($an in $SAN) {
-              $file += "_continue_ = `"$($an)&`"`n"
-          }
-      }
+        foreach ($an in $SAN) {
+            $file += "_continue_ = `"$($an)&`"`n"
+        }
+    }
 
-      $inf = [System.IO.Path]::GetTempFileName()
-      $req = [System.IO.Path]::GetTempFileName()
-      $cer = Join-Path -Path 'C:\Temp' -ChildPath "$CN.cer"
-      $rsp = Join-Path -Path 'C:\Temp' -ChildPath "$CN.rsp"
+    $inf = [System.IO.Path]::GetTempFileName()
+    $req = [System.IO.Path]::GetTempFileName()
+    $cer = Join-Path -Path 'C:\Temp' -ChildPath "$CN.cer"
+    $rsp = Join-Path -Path 'C:\Temp' -ChildPath "$CN.rsp"
 
-      Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-      Set-Content -Path $inf -Value $file
-      Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
+    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+    Set-Content -Path $inf -Value $file
+    Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
 
-      $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
-      $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
-      $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
+    $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
+    $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
+    $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
 
-      if($CAs.Count -gt 0){
-          $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
-      }
-      else {
-          $CAName = ""
-      }
+    if($CAs.Count -gt 0){
+        $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
+    }
+    else {
+        $CAName = ""
+    }
 
-      if (!$CAName -eq "") {
-          $CAName = " -config `"$CAName`""
-      }
-      Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
-      Invoke-Expression -Command "certreq -accept `"$cer`""
+    if (!$CAName -eq "") {
+        $CAName = " -config `"$CAName`""
+    }
+    Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
+    Invoke-Expression -Command "certreq -accept `"$cer`""
 
-      $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
+    $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
 
-      #create a pfx export as a byte array
-      $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
-      $pfxPath = "C:\Temp\$CN.pfx"
+    #create a pfx export as a byte array
+    $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
+    $pfxPath = "C:\Temp\$CN.pfx"
 
-      $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
+    $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
 
-      # delete certificate from computer store
-      $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
-      $certstore.Open('ReadWrite')
-      $certstore.Remove($cert)
-      $certstore.close()
+    # delete certificate from computer store
+    $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
+    $certstore.Open('ReadWrite')
+    $certstore.Remove($cert)
+    $certstore.close()
 
-      Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-      Remove-ReqFromStore -CN $CN
+    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+    Remove-ReqFromStore -CN $CN
 
 - name: Export the CA Certificate
   win_shell: |
