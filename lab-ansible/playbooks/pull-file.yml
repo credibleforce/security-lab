@@ -17,7 +17,7 @@
   pre_tasks:
   post_tasks:
   tasks:
-    - name: Pull file
+    - name: Request and export required certificates from the CA
       include_role:
         name: '{{ rolevar }}'
       loop:
@@ -25,3 +25,12 @@
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['certificate_authority']
+
+    - name: Prep the certificates for use in splunk
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'cert_prep'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['local']

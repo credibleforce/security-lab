@@ -26,3 +26,4 @@ splunk_certs:
   city: "Vancouver"
   org: "PSL"
   ou: "PSL"
+  export_dir: "C:\\Temp"

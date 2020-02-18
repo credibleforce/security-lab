@@ -7,6 +7,7 @@
 - name: Issue a cert for the CSR
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+    $CertExportDirectoy="{{splunk_certs['export_dir'] }}"
     $SAN = "dns=test.psl.local"
     $CN = "test.psl.local"
     $County = "{{ splunk_certs['country'] }}"
@@ -75,8 +76,8 @@
 
     $inf = [System.IO.Path]::GetTempFileName()
     $req = [System.IO.Path]::GetTempFileName()
-    $cer = Join-Path -Path 'C:\Temp' -ChildPath "$CN.cer"
-    $rsp = Join-Path -Path 'C:\Temp' -ChildPath "$CN.rsp"
+    $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
+    $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
 
     Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
     Set-Content -Path $inf -Value $file
@@ -103,7 +104,7 @@
 
     #create a pfx export as a byte array
     $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
-    $pfxPath = "C:\Temp\$CN.pfx"
+    $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath $CN.pfx"
 
     $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
 
@@ -119,6 +120,7 @@
 - name: Export the CA Certificate
   win_shell: |
       $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+      $CertExportDirectoy="{{splunk_certs['export_dir'] }}"
 
       # export root cert pem file
       $a = Get-ChildItem -Path cert:\LocalMachine\My | where {$_.Subject -like "CN=$CACommonName*"} 
@@ -130,17 +132,17 @@
       $cert_content += "`r`n-----END CERTIFICATE-----"
       $file_encoding = [System.Text.Encoding]::ASCII
       $cert_bytes = $file_encoding.GetBytes($cert_content)
-
-      [io.file]::WriteAllBytes("C:\Temp\cacert.pem",$cert_bytes)
+      $cert_file = Join-Path -Path $CertExportDirectoy -ChildPath "cacert.pem"
+      [io.file]::WriteAllBytes($cert_file,$cert_bytes)
 
 - name: Retrieve webserver pfx
   fetch: 
-    src: "C:\\Temp\\test.psl.local.pfx" 
-    dest: "/tmp/cert.pfx"
+    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'test.psl.local.pfx')" 
+    dest: "{{ '/'.join('/tmp','test.psl.local.pfx')"
     flat: yes
 
-- name: Retrieve webserver pfx
+- name: Retrieve ca cert pem
   fetch: 
-    src: "C:\\Temp\\cacert.pem" 
-    dest: "/tmp/cacert.pem"
+    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'cacert.pem')" 
+    dest: "{{ '/'.join('/tmp','cacert.pem')"
     flat: yes
