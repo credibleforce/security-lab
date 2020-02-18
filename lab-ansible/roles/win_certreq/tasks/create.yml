@@ -1,7 +1,7 @@
 ---
 - name: Create certificate export directory
   win_file:
-    path: C:\Temp
+    path: "{{splunk_certs['export_dir'] }}"
     state: directory
 
 - name: Issue a cert for the CSR
@@ -137,12 +137,12 @@
 
 - name: Retrieve webserver pfx
   fetch: 
-    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'test.psl.local.pfx')" 
-    dest: "{{ '/'.join('/tmp','test.psl.local.pfx')"
+    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'test.psl.local.pfx') }}" 
+    dest: "{{ '/'.join('/tmp','test.psl.local.pfx') }}"
     flat: yes
 
 - name: Retrieve ca cert pem
   fetch: 
-    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'cacert.pem')" 
-    dest: "{{ '/'.join('/tmp','cacert.pem')"
+    src: "{{ '\\'.join(splunk_certs['export_dir'] }},'cacert.pem') }}" 
+    dest: "{{ '/'.join('/tmp','cacert.pem') }}"
     flat: yes
