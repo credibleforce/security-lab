@@ -1,0 +1,30 @@
+---
+###########################
+# Configuration for Splunk
+###########################
+
+# extract unencrypted key from pfx
+#openssl pkcs12 -in [yourfile.pfx] -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out [keyfile.key]
+
+# extract cer from pfx
+#openssl pkcs12 -in [yourfile.pfx] -passin pass: -clcerts -nokeys -out [certificate.crt]
+
+# create serverCert pem
+# openssl rsa -in [keyfile.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
+
+# bundle
+# cat [certificate.crt] [key-encrypted-pem.pem] [ca-certificate.pem]
+
+# etc/system/local/web.conf
+# -------------------------
+# [settings]
+# enableSplunkWebSSL = True
+# serverCert = etc/auth/splunkweb/splunk.pem
+# privKeyPath = etc/auth/splunkweb/splunk.key
+#
+# etc/system/local/server.conf
+# ----------------------------
+# [sslConfig]
+# sslPassword = $7$KicnrY+lE3mabYnGN69ZbUWPKlgHo/g4nBNx7KStomrRKWkdPamhCg==
+# serverCert = splunk.pem
+# sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
