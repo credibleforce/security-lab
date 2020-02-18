@@ -8,7 +8,7 @@
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
     $Organisation = "{{ splunk_certs['org'] }}"
-    $OU = ""{{ splunk_certs['ou'] }}""
+    $OU = "{{ splunk_certs['ou'] }}"
     $TemplateName = "WebServer"
 
     function Remove-ReqTempfiles() {
