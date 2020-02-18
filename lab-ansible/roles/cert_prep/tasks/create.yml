@@ -30,17 +30,13 @@
 # sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
 
 - name: Create key from pfx
-  command: 
-    - "openssl pkcs12 -in /tmp/test.psl.local.pfx -ncerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: /tmp/test.psl.local.key"
-
+  command: "openssl pkcs12 -in /tmp/test.psl.local.pfx -ncerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: /tmp/test.psl.local.key"
+  
 - name: Create cert from pfx
-  command: 
-    - "openssl pkcs12 -in /tmp/test.psl.local.pfx -passin pass: -clcerts -nokeys -out /tmp/test.psl.local.crt"
+  command: "openssl pkcs12 -in /tmp/test.psl.local.pfx -passin pass: -clcerts -nokeys -out /tmp/test.psl.local.crt"
 
 - name: Create encrypted key in pem format
-  command: 
-    - "openssl rsa -in /tmp/test.psl.local.key -aes256 -passout pass:password -out /tmp/test.psl.local.pem"
+  command: "openssl rsa -in /tmp/test.psl.local.key -aes256 -passout pass:password -out /tmp/test.psl.local.pem"
 
 - name: Bundle crt, key and pem
-  command: 
-    - "cat /tmp/test.psl.local.crt /tmp/test.psl.local.pem /tmp/cacert.pem > /tmp/test.psl.local-bundle.pem"
+  command: "cat /tmp/test.psl.local.crt /tmp/test.psl.local.pem /tmp/cacert.pem > /tmp/test.psl.local-bundle.pem"
