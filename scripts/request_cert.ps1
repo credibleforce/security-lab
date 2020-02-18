@@ -152,25 +152,10 @@ $certstore.Open('ReadWrite')
 $certstore.Remove($cert)
 $certstore.close()
 
-# extract key from pfx
-#openssl pkcs12 -in [yourfile.pfx] -nocerts -out [keyfile-encrypted.key]
-
-# remove pass
-#openssl rsa -in [keyfile-encrypted.key] -out [keyfile.key]
-
-# extract cer from pfx
-#openssl pkcs12 -in [yourfile.pfx] -clcerts -nokeys -out [certificate.crt]
-
-# create serverCert pem
-# openssl rsa -in [keyfile-encrypted.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
-
-# bundle
-# cat [certificate.crt] [key-encrypted-pem.pem] [ca-certificate.pem]
-
 Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
 Remove-ReqFromStore -CN $CN
 
-# export root crt
+# export root cert pem file
 $a = Get-ChildItem -Path cert:\LocalMachine\My | where {$_.Subject -like "CN=$CACommonName*"} 
 $cert_bytes = $a.Export( [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
 
@@ -183,7 +168,40 @@ if($pem -eq $true){
     $cert_bytes = $file_encoding.GetBytes($cert_content)
 }
 
-[io.file]::WriteAllBytes("C:\Temp\$CACommonName.crt",$cert_bytes)
+[io.file]::WriteAllBytes("C:\Temp\$CACommonName.pem",$cert_bytes)
+
+###########################
+# Configuration for Splunk
+###########################
+
+# extract key from pfx
+#openssl pkcs12 -in [yourfile.pfx] -nocerts -out [keyfile-encrypted.key]
+
+# remove pass (required for splunk)
+#openssl rsa -in [keyfile-encrypted.key] -out [keyfile.key]
+
+# extract cer from pfx
+#openssl pkcs12 -in [yourfile.pfx] -clcerts -nokeys -out [certificate.crt]
+
+# create serverCert pem
+# openssl rsa -in [keyfile-encrypted.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
+
+# bundle
+# cat [certificate.crt] [key-encrypted-pem.pem] [ca-certificate.pem]
+
+# etc/system/local/web.conf
+# -------------------------
+# [settings]
+# enableSplunkWebSSL = True
+# serverCert = etc/auth/splunkweb/splunk.pem
+# privKeyPath = etc/auth/splunkweb/splunk.key
+#
+# etc/system/local/server.conf
+# ----------------------------
+# [sslConfig]
+# sslPassword = $7$KicnrY+lE3mabYnGN69ZbUWPKlgHo/g4nBNx7KStomrRKWkdPamhCg==
+# serverCert = splunk.pem
+# sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
 
 
 
