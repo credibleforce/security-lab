@@ -1,31 +1,174 @@
 ---
-# - name: Issue a cert for the CSR
-#   win_shell: |
-#       $j = Start-Job {
-#         certreq.exe `
-#           -config "{{ cert_ca_config_name }}" `
-#           -attrib "CertificateTemplate:{{ certificate_template_name }}" `
-#           -submit `
-#           "{{ working_dir.path }}\request.csr" `
-#           "{{ working_dir.path }}\certificate.crt" `
-#           "{{ working_dir.path }}\cert-chain.p7b" `
-#           "{{ working_dir.path }}\full-response.rsp"
-#       }
-#       $done = Wait-Job -Job $j -Timeout 30
-#       if (-not $done) {
-#           echo "Killing proc"
-#           Get-Process -Name certreq | ? StartTime -GE $j.PSBeginTime | Stop-Process -Force
-#           Receive-Job -Job $j -Wait
-#           Exit 1
-#       }
-#       Receive-Job -Job $j -Wait
-#   register: cert_submit_out
-#   failed_when: >
-#     cert_submit_out.rc != 0 or
-#     'Certificate retrieved(Issued) Issued' not in cert_submit_out.stdout
+ - name: Issue a cert for the CSR
+   win_shell: |
+      $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+      $SAN = "dns=test.psl.local"
+      $CN = "test.psl.local"
+      $County = "{{ splunk_certs['country'] }}"
+      $State = "{{ splunk_certs['state'] }}"
+      $City = "{{ splunk_certs['city'] }}"
+      $Organisation = "{{ splunk_certs['org'] }}"
+      $OU = ""{{ splunk_certs['ou'] }}""
+      $TemplateName = "WebServer"
 
-- name: Retrieve generated PFX file
+      function Remove-ReqTempfiles() {
+          param(
+              [String[]]$tempfiles
+          )
+          Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
+      }
+
+      function Remove-ReqFromStore {
+          param(
+              [String]$CN
+          )
+          #delete pending request (if a request exists for the CN)
+          $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
+          $certstore.Open('ReadWrite')
+          foreach ($certreq in $($certstore.Certificates)) {
+              if ($certreq.Subject -eq "CN=$CN") {
+                  $certstore.Remove($certreq)
+              }
+          }
+          $certstore.close()
+      }
+
+
+      # create request
+      $file = @"
+      [NewRequest]
+      Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+      MachineKeySet = TRUE
+      KeyLength = 2048
+      KeySpec=1
+      Exportable = TRUE
+      RequestType = PKCS10
+      ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+      [RequestAttributes]
+      CertificateTemplate = "$TemplateName"
+      "@
+
+      #check if SAN certificate is requested
+      if ($SAN -ne $null) {
+          if (($SAN).count -eq 1) {
+              $SAN = @($SAN -split ',')
+          }
+          $file += @'
+
+      [Extensions]
+      ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
+      ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
+
+      2.5.29.17 = "{text}"
+
+      '@
+
+          foreach ($an in $SAN) {
+              $file += "_continue_ = `"$($an)&`"`n"
+          }
+      }
+
+      $inf = [System.IO.Path]::GetTempFileName()
+      $req = [System.IO.Path]::GetTempFileName()
+      $cer = Join-Path -Path 'C:\Temp' -ChildPath "$CN.cer"
+      $rsp = Join-Path -Path 'C:\Temp' -ChildPath "$CN.rsp"
+
+      Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+      Set-Content -Path $inf -Value $file
+      Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
+
+      $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
+      $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
+      $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
+
+      if($CAs.Count -gt 0){
+          $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
+      }
+      else {
+          $CAName = ""
+      }
+
+      if (!$CAName -eq "") {
+          $CAName = " -config `"$CAName`""
+      }
+      Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
+      Invoke-Expression -Command "certreq -accept `"$cer`""
+
+      $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
+
+      #create a pfx export as a byte array
+      $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
+      $pfxPath = "C:\Temp\$CN.pfx"
+
+      $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
+
+      # delete certificate from computer store
+      $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
+      $certstore.Open('ReadWrite')
+      $certstore.Remove($cert)
+      $certstore.close()
+
+      Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+      Remove-ReqFromStore -CN $CN
+
+- name: Export the CA Certificate
+  win_shell: |
+      $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+
+      # export root cert pem file
+      $a = Get-ChildItem -Path cert:\LocalMachine\My | where {$_.Subject -like "CN=$CACommonName*"} 
+      $cert_bytes = $a.Export( [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+
+      $cert_content = "-----BEGIN CERTIFICATE-----`r`n"
+      $base64_string = [System.Convert]::ToBase64String($cert_bytes, [System.Base64FormattingOptions]::InsertLineBreaks)
+      $cert_content += $base64_string
+      $cert_content += "`r`n-----END CERTIFICATE-----"
+      $file_encoding = [System.Text.Encoding]::ASCII
+      $cert_bytes = $file_encoding.GetBytes($cert_content)
+
+      [io.file]::WriteAllBytes("C:\Temp\cacert.pem",$cert_bytes)
+
+- name: Retrieve webserver pfx
   fetch: 
-    src: "C:\\Temp\\cert.pfx" 
+    src: "C:\\Temp\\test.psl.local.pfx" 
     dest: "/tmp/cert.pfx"
     flat: yes
+
+- name: Retrieve webserver pfx
+  fetch: 
+    src: "C:\\Temp\\cacert.pem" 
+    dest: "/tmp/cacert.pem"
+    flat: yes
+
+###########################
+# Configuration for Splunk
+###########################
+
+# extract key from pfx
+#openssl pkcs12 -in [yourfile.pfx] -nocerts -out [keyfile-encrypted.key]
+
+# remove pass (required for splunk)
+#openssl rsa -in [keyfile-encrypted.key] -out [keyfile.key]
+
+# extract cer from pfx
+#openssl pkcs12 -in [yourfile.pfx] -clcerts -nokeys -out [certificate.crt]
+
+# create serverCert pem
+# openssl rsa -in [keyfile-encrypted.key] -aes256 -passout pass:password  -out [key-encrypted-pem.pem]
+
+# bundle
+# cat [certificate.crt] [key-encrypted-pem.pem] [ca-certificate.pem]
+
+# etc/system/local/web.conf
+# -------------------------
+# [settings]
+# enableSplunkWebSSL = True
+# serverCert = etc/auth/splunkweb/splunk.pem
+# privKeyPath = etc/auth/splunkweb/splunk.key
+#
+# etc/system/local/server.conf
+# ----------------------------
+# [sslConfig]
+# sslPassword = $7$KicnrY+lE3mabYnGN69ZbUWPKlgHo/g4nBNx7KStomrRKWkdPamhCg==
+# serverCert = splunk.pem
+# sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem

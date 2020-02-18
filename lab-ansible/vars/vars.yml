@@ -19,3 +19,10 @@ windows_domain_info:
     - "172.17.0.5"
   dns_forward_lookup:
     - "172.17.0.254"
+
+splunk_certs:
+  country: "Canada"
+  state: "BC"
+  city: "Vancouver"
+  org: "PSL"
+  ou: "PSL"
