@@ -104,7 +104,7 @@
 
     #create a pfx export as a byte array
     $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
-    $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath $CN.pfx
+    $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.pfx"
 
     $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
 
