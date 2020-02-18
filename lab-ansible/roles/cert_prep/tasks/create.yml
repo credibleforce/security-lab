@@ -30,8 +30,8 @@
 # sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
 
 - name: Create key from pfx
-  command: "openssl pkcs12 -in /tmp/test.psl.local.pfx -ncerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: /tmp/test.psl.local.key"
-  
+  command: "openssl pkcs12 -in /tmp/test.psl.local.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: /tmp/test.psl.local.key"
+
 - name: Create cert from pfx
   command: "openssl pkcs12 -in /tmp/test.psl.local.pfx -passin pass: -clcerts -nokeys -out /tmp/test.psl.local.crt"
 
