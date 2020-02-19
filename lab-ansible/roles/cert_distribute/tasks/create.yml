@@ -1,0 +1,23 @@
+---
+- name: Creates directory
+  file:
+    path: "{{ splunk_certs.splunk_certs_dir }}"
+    state: directory
+
+- name: Copy private key to server
+  copy: 
+    src: "/tmp/{{ inventory_hostname }}.key" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
+    flat: yes
+
+- name: Copy pem bundle to server
+  copy: 
+    src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
+    flat: yes
+
+- name: Copy ca cert pem to server
+  copy: 
+    src: "/tmp/cacert.pem" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+    flat: yes

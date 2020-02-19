@@ -27,3 +27,7 @@ splunk_certs:
   org: "PSL"
   ou: "PSL"
   export_dir: "C:\\Temp"
+  splunk_certs_dir: "{{ splunk.home }}/etc/auth/mycerts"
+
+splunk:
+  home: /opt/splunk
