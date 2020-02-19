@@ -7,6 +7,7 @@ windows_domain_controller_info:
   safe_mode_password: myTempPassword123
   state: domain_controller
 
+# Windows CA
 windows_certificate_authority_info:
   CACommonName: "PSL-CA"
   KeyLength: 2048
