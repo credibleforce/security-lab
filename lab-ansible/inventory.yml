@@ -28,25 +28,25 @@ all:
           vars:
           hosts: 
             pssrv1.psl.local:
-      linux:
-        children:
-          splunk:
-            hosts:
-              splksh1.psl.local:
-                vars:
-                  cert_dns: splksh1.psl.local
-                  cert_ip: 172.17.0.11
-              splksh2.psl.local:
-                vars:
-                  cert_dns: splksh2.psl.local
-                  cert_ip: 172.17.0.12
-              splksh3.psl.local:
-                vars:
-                  cert_dns: splksh3.psl.local
-                  cert_ip: 172.17.0.13
-              splksh4.psl.local:
-                vars:
-                  cert_dns: splksh4.psl.local
-                  cert_ip: 172.17.0.14
+    linux:
+      children:
+        splunk:
+          hosts:
+            splksh1.psl.local:
+              vars:
+                cert_dns: splksh1.psl.local
+                cert_ip: 172.17.0.11
+            splksh2.psl.local:
+              vars:
+                cert_dns: splksh2.psl.local
+                cert_ip: 172.17.0.12
+            splksh3.psl.local:
+              vars:
+                cert_dns: splksh3.psl.local
+                cert_ip: 172.17.0.13
+            splksh4.psl.local:
+              vars:
+                cert_dns: splksh4.psl.local
+                cert_ip: 172.17.0.14
 
     
