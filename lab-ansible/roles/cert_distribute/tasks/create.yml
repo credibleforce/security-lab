@@ -23,3 +23,12 @@
     src: "/tmp/cacert.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
   become: yes
+
+- name: Restrict access to cert material
+  file:
+    path: 
+     - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
+     - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
+     - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+    mode: '0600'
+  become: yes
