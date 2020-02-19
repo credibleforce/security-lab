@@ -9,13 +9,13 @@
 - name: Copy private key to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}.key" 
-    dest: "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
+    dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
   become: yes
 
 - name: Copy pem bundle to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
-    dest: "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
+    dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
   become: yes
 
 - name: Copy ca cert pem to server
@@ -29,7 +29,7 @@
     path: "{{ item }}"
     mode: '0600'
   with_items:
-    - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
-    - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
+    - "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
     - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
   become: yes
