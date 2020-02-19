@@ -31,3 +31,5 @@ splunk_certs:
 
 splunk:
   home: /opt/splunk
+  user: splunk
+  group: splunk
