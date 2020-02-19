@@ -6,4 +6,3 @@
     group: "{{ splunk.group }}"
     recurse: yes
   become: yes
-  become_user: "{{ privileged_user }}"
