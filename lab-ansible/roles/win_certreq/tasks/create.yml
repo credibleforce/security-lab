@@ -1,15 +1,15 @@
 ---
 - name: Create certificate export directory
   win_file:
-    path: "{{splunk_certs['export_dir'] }}"
+    path: "{{ splunk_certs['export_dir'] }}"
     state: directory
 
 - name: Issue a cert for the CSR
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
     $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
-    $SAN = "dns=test.psl.local"
-    $CN = "test.psl.local"
+    $SAN = "dns={{ item.cert_dns }},ip={{ item.cert_ip }}"
+    $CN = "{{ item.cert_dns }}"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
@@ -116,6 +116,7 @@
 
     Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
     Remove-ReqFromStore -CN $CN
+  loop: "{{ groups['splunk'] }}"
 
 - name: Export the CA Certificate
   win_shell: |
@@ -137,9 +138,10 @@
 
 - name: Retrieve webserver pfx
   fetch: 
-    src: "{{ splunk_certs['export_dir'] }}\\test.psl.local.pfx" 
-    dest: "/tmp/test.psl.local.pfx"
+    src: "{{ splunk_certs['export_dir'] }}\\{{ item.cert_dns }}.pfx" 
+    dest: "/tmp/{{ item.cert_dns }}.pfx"
     flat: yes
+  loop: "{{ groups['splunk'] }}"
 
 - name: Retrieve ca cert pem
   fetch: 
