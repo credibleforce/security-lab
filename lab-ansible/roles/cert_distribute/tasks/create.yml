@@ -26,9 +26,10 @@
 
 - name: Restrict access to cert material
   file:
-    path: 
-     - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
-     - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
-     - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+    path: "{{ item }}"
     mode: '0600'
+  with_items:
+    - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.key"
+    - "{{ splunk_certs.splunk_certs_dir }}/{{ inventory_hostname }}.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
   become: yes
