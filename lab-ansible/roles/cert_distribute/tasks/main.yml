@@ -1,2 +1,4 @@
 ---
+- include: add_splunk_user_accounts.yml
 - include: create.yml
+- include: change_splunk_directory_owner.yml

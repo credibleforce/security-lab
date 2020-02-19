@@ -3,6 +3,7 @@
   file:
     path: "{{ splunk_certs.splunk_certs_dir }}"
     state: directory
+    recurse: true
 
 - name: Copy private key to server
   copy: 
