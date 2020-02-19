@@ -6,7 +6,7 @@
 
 - name: Show target groups
   debug:
-    var: groups
+    var: groups['all']
 
 - name: Issue a cert for the CSR
   win_shell: |
