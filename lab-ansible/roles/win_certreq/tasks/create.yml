@@ -4,11 +4,15 @@
     path: "{{ splunk_certs['export_dir'] }}"
     state: directory
 
+- debug:
+    var: groups["splunk"]
+    verbosity: 2
+
 - name: Issue a cert for the CSR
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
     $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
-    $SAN = "dns={{ item}}"
+    $SAN = "dns={{ item }}"
     $CN = "{{ item }}"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
