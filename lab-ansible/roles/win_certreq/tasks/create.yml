@@ -4,8 +4,9 @@
     path: "{{ splunk_certs['export_dir'] }}"
     state: directory
 
-- debug:
-    var: groups["splunk"]
+- name: Show target groups
+  debug:
+    var: groups
     verbosity: 2
 
 - name: Issue a cert for the CSR
