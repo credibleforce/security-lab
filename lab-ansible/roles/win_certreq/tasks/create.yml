@@ -8,8 +8,8 @@
   win_shell: |
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
     $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
-    $SAN = "dns={{ item.cert_dns }},ip={{ item.cert_ip }}"
-    $CN = "{{ item.cert_dns }}"
+    $SAN = "dns={{ item}}"
+    $CN = "{{ item }}"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
@@ -116,7 +116,8 @@
 
     Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
     Remove-ReqFromStore -CN $CN
-  loop: "{{ groups['splunk'] }}"
+  with_items: 
+    - "{{ groups['splunk'] }}"
 
 - name: Export the CA Certificate
   win_shell: |
@@ -138,10 +139,11 @@
 
 - name: Retrieve webserver pfx
   fetch: 
-    src: "{{ splunk_certs['export_dir'] }}\\{{ item.cert_dns }}.pfx" 
-    dest: "/tmp/{{ item.cert_dns }}.pfx"
+    src: "{{ splunk_certs['export_dir'] }}\\{{ item }}.pfx" 
+    dest: "/tmp/{{ item }}.pfx"
     flat: yes
-  loop: "{{ groups['splunk'] }}"
+  with_items: 
+    - "{{ groups['splunk'] }}"
 
 - name: Retrieve ca cert pem
   fetch: 
