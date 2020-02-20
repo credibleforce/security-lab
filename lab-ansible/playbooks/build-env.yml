@@ -28,6 +28,8 @@
       loop:
         - 'win_dc'
         - 'win_dns'
+      loop_control:
+        loop_var: rolevar
       when: inventory_hostname in groups['domain_controller']
 
     # certificate_authority group only
