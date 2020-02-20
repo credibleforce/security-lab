@@ -1,19 +1,4 @@
 ---
-- name: features | Installing Windows DNS Server
-  win_feature:
-    name: DNS
-    state: present
-    include_management_tools: yes
-    include_sub_features: yes
-  register: windows_dns_server
-
-- name: Reboot if installing DNS feature requires it
-  win_reboot:
-    shutdown_timeout: 600
-    reboot_timeout: 600
-    post_reboot_delay: 300
-  when: windows_dns_server.reboot_required
-
 - name: Check for xDnsServer Powershell module
   win_psmodule:
     name: xDnsServer

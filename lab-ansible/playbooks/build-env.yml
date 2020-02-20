@@ -24,7 +24,10 @@
 
     - name: Windows Domain Controllers Setup
       include_role:
-        name: 'win_dc'
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_dc'
+        - 'win_dns'
       when: inventory_hostname in groups['domain_controller']
 
     # certificate_authority group only
