@@ -70,5 +70,15 @@
         loop_var: rolevar
       when: inventory_hostname in groups['local']
 
+    # stage certificates on servers
+    - name: Stage the certificates for use in splunk
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'cert_distribute'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['splunk']
+
    
   
