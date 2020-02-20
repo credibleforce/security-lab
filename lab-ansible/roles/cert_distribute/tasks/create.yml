@@ -24,10 +24,22 @@
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
   become: yes
 
+- name: Copy pem bundle to server
+  copy: 
+    src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
+  become: yes
+
 - name: Copy ca cert pem to server
   copy: 
     src: "/tmp/cacert.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+  become: yes
+
+- name: Copy ca cert pem to server
+  copy: 
+    src: "/tmp/cacert.pem" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
   become: yes
 
 - name: Restrict access to cert material
@@ -39,4 +51,6 @@
     - "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
     - "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
     - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
   become: yes
