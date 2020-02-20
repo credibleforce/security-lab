@@ -21,6 +21,28 @@ windows_domain_info:
   dns_forward_lookup:
     - "172.17.0.254"
 
+windows_dns_records:
+  - dns_name: "splksh1"
+    ip_address: "172.17.0.11"
+  - dns_name: "splksh2"
+    ip_address: "172.17.0.12"
+  - dns_name: "splksh3"
+    ip_address: "172.17.0.13"
+  - dns_name: "splksh4"
+    ip_address: "172.17.0.14"
+  - dns_name: "splkidx1"
+    ip_address: "172.17.0.21"
+  - dns_name: "splkidx2"
+    ip_address: "172.17.0.22"
+  - dns_name: "splkidx3"
+    ip_address: "172.17.0.23"
+  - dns_name: "splkidx4"
+    ip_address: "172.17.0.24"
+  - dns_name: "splkcm1"
+    ip_address: "172.17.0.102"
+  - dns_name: "splkdp1"
+    ip_address: "172.17.0.103"
+
 splunk_certs:
   country: "Canada"
   state: "BC"
