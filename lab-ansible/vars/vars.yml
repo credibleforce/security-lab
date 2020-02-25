@@ -4,6 +4,7 @@ windows_domain_controller_info:
   domain_netbios_name: psl
   domain_admin_password: myTempPassword123
   domain_admin_user: "Administrator@psl.local"
+  safe_mode_username: Administrator
   safe_mode_password: myTempPassword123
   state: domain_controller
 
