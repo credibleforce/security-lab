@@ -1,31 +1,31 @@
 ---
-- name: set local admin password
-  win_user:
-    name: Administrator
-    password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-    state: present
-
-- name: features | Installing RSAT AD Admin Center
-  win_feature:
-    name: RSAT-AD-AdminCenter
-    state: present
-
 - name: features | Installing AD Domain Services
   win_feature: 
-    name: AD-Domain-Services
+    name: '{{ item }}'
     include_management_tools: yes
     include_sub_features: yes
     state: present
+  with_items:
+    - RSAT-AD-AdminCenter
+    - AD-Domain-Services
+    - DNS
+  register: feature_check
+
+- name: Reboot to complete feature setup (as required)
+  win_reboot:
+    pre_reboot_delay: 60
+    reboot_timeout: 600
+    post_reboot_delay: 60 
+  when: feature_check.reboot_required
 
 - name: Creating a windows domain
   win_domain:
-    install_dns: yes
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
 
-- name: Reboot to complete domain controller setup (if required)
+- name: Reboot to complete domain controller setup (as required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
@@ -36,23 +36,6 @@
   win_dns_client:
     adapter_names: "*"
     ipv4_addresses: "127.0.0.1"
-
-- name: Managing Domain Controller Membership
-  win_domain_controller:
-    dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
-    domain_admin_user: "{{ windows_domain_controller_info['domain_admin_user'] }}"
-    domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-    safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
-    state: "{{ windows_domain_controller_info['state'] }}"
-  register: check_domain_controller
-
-- name: Reboot to complete domain controller setup (if required)
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 900
-    post_reboot_delay: 120
-  when: check_domain_controller.reboot_required
 
 - name: Wait for domain fqdn resolution
   win_shell: |
@@ -77,3 +60,44 @@
   register: job_result
   until: job_result.finished
   retries: 30
+
+# - name: Managing Domain Controller Membership
+#   win_domain_controller:
+#     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+#     domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
+#     domain_admin_user: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+#     domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+#     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
+#     state: "{{ windows_domain_controller_info['state'] }}"
+#   register: check_domain_controller
+
+# - name: Reboot to complete domain controller setup (if required)
+#   win_reboot:
+#     pre_reboot_delay: 120
+#     reboot_timeout: 900
+#     post_reboot_delay: 120
+#   when: check_domain_controller.reboot_required
+
+# - name: Wait for domain fqdn resolution
+#   win_shell: |
+#     start-sleep -Seconds 5
+#     while($true){
+#       try {
+#           [Net.DNS]::GetHostEntry("{{ windows_domain_controller_info['dns_domain_name'] }}")
+#           write-output "DNS Resolution Success"
+#           break;
+#       }catch{
+#           write-output "DNS Resolution Failure"
+#       }
+#       start-sleep -Seconds 5
+#     }
+#   async: 900
+#   poll: 5
+#   register: async_out
+
+# - name: 'DNS - check on async task'
+#   async_status:
+#     jid: "{{ async_out.ansible_job_id }}"
+#   register: job_result
+#   until: job_result.finished
+#   retries: 30
