@@ -25,17 +25,17 @@
     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
   register: check_domain
 
-- name: Set DNS server
-  win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
-
 - name: Reboot to complete domain controller setup (if required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 460 # your mileage may vary
   when: check_domain.reboot_required
+
+- name: Set DNS server
+  win_dns_client:
+    adapter_names: "*"
+    ipv4_addresses: "127.0.0.1"
 
 - name: Managing Domain Controller Membership
   win_domain_controller:
