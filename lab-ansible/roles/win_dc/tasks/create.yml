@@ -35,7 +35,8 @@
     jid: "{{ static_ip.ansible_job_id }}"
   register: job_result
   until: job_result.finished
-  retries: 30
+  retries: 5
+  ignore_errors: yes
 
 - name: Wait for the interface change to complete
   wait_for_connection:
