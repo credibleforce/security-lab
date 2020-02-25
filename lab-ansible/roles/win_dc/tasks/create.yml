@@ -1,14 +1,13 @@
 ---
 - name: features | Installing AD Domain Services
   win_feature: 
-    name: '{{ item }}'
+    name: 
+      - RSAT-AD-AdminCenter
+      - AD-Domain-Services
+      - DNS
     include_management_tools: yes
     include_sub_features: yes
     state: present
-  with_items:
-    - RSAT-AD-AdminCenter
-    - AD-Domain-Services
-    - DNS
   register: feature_check
 
 - name: Reboot to complete feature setup (as required)
