@@ -17,11 +17,6 @@
     post_reboot_delay: 120
   when: feature_check.reboot_required
 
-- name: Set DNS server
-  win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
-
 - name: Check for xDnsServer Powershell module
   win_psmodule:
     name: xDnsServer
@@ -33,6 +28,11 @@
     Name: DNSServerProperties
     NoRecursion: false
     Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
+
+- name: Set DNS server
+  win_dns_client:
+    adapter_names: "*"
+    ipv4_addresses: "127.0.0.1"
 
 - name: Creating a windows domain
   win_domain:
