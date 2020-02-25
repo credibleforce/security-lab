@@ -17,6 +17,23 @@
     post_reboot_delay: 60 
   when: feature_check.reboot_required
 
+- name: Set DNS server
+  win_dns_client:
+    adapter_names: "*"
+    ipv4_addresses: "127.0.0.1"
+
+- name: Check for xDnsServer Powershell module
+  win_psmodule:
+    name: xDnsServer
+    state: present
+
+- name: Configure DNS Forwarders
+  win_dsc:
+    resource_name: xDnsServerSetting
+    Name: DNSServerProperties
+    NoRecursion: false
+    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
+
 - name: Creating a windows domain
   win_domain:
     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
@@ -28,13 +45,8 @@
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
-    post_reboot_delay: 460 # your mileage may vary
+    post_reboot_delay: 120 # your mileage may vary
   when: check_domain.reboot_required
-
-- name: Set DNS server
-  win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
 
 - name: Wait for domain fqdn resolution
   win_shell: |
@@ -59,44 +71,3 @@
   register: job_result
   until: job_result.finished
   retries: 30
-
-# - name: Managing Domain Controller Membership
-#   win_domain_controller:
-#     dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-#     domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
-#     domain_admin_user: "{{ windows_domain_controller_info['domain_admin_user'] }}"
-#     domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-#     safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
-#     state: "{{ windows_domain_controller_info['state'] }}"
-#   register: check_domain_controller
-
-# - name: Reboot to complete domain controller setup (if required)
-#   win_reboot:
-#     pre_reboot_delay: 120
-#     reboot_timeout: 900
-#     post_reboot_delay: 120
-#   when: check_domain_controller.reboot_required
-
-# - name: Wait for domain fqdn resolution
-#   win_shell: |
-#     start-sleep -Seconds 5
-#     while($true){
-#       try {
-#           [Net.DNS]::GetHostEntry("{{ windows_domain_controller_info['dns_domain_name'] }}")
-#           write-output "DNS Resolution Success"
-#           break;
-#       }catch{
-#           write-output "DNS Resolution Failure"
-#       }
-#       start-sleep -Seconds 5
-#     }
-#   async: 900
-#   poll: 5
-#   register: async_out
-
-# - name: 'DNS - check on async task'
-#   async_status:
-#     jid: "{{ async_out.ansible_job_id }}"
-#   register: job_result
-#   until: job_result.finished
-#   retries: 30
