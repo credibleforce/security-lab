@@ -10,12 +10,11 @@
     state: present
   register: feature_check
 
-- name: Reboot to complete feature setup (as required)
+- name: Reboot to complete feature setup and computer name change
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 120
-  when: feature_check.reboot_required
 
 - name: Check for xDnsServer Powershell module
   win_psmodule:
