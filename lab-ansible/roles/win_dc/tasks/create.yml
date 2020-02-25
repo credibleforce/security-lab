@@ -12,7 +12,7 @@
 
 - name: Configure static IP address
   win_shell: |
-    New-NetIPAddress –IPAddress {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} -DefaultGateway {{ hostvars[inventory_hostname]['ansible_default_ipv4']['gateway'] }} -PrefixLength {{ hostvars[inventory_hostname]['ansible_default_ipv4']['netmask'] }} -InterfaceIndex (Get-NetAdapter).InterfaceIndex
+    New-NetIPAddress –IPAddress {{ ansible_default_ipv4.address }} -DefaultGateway {{ ansible_default_ipv4.gateway }} -PrefixLength {{ ansible_default_ipv4.netmask }} -InterfaceIndex (Get-NetAdapter).InterfaceIndex
 
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
