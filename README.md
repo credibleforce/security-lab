@@ -6,6 +6,7 @@ Ansible build of splunk demo environment.
 * Domain Controller
 * Enterprise PKI
 * Windows Event Collector
+* Certificate Creation
 
 
 **Usage**:
