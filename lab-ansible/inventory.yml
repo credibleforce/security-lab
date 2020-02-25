@@ -15,7 +15,7 @@ all:
         ansible_ssh_pass: myTempPassword123
         ansible_winrm_transport: basic
         ansible_winrm_server_cert_validation: ignore
-        ansible_winrm_read_timeout_sec: 120
+        ansible_winrm_read_timeout_sec: 600
       children:
         domain_controller:
           vars:
