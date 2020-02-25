@@ -28,21 +28,12 @@
     $NetInterface.SetGateways($gateway) 
   async: 30
   poll: 0
-  register: static_ip
-
-- name: 'Wait for async task'
-  async_status:
-    jid: "{{ static_ip.ansible_job_id }}"
-  register: job_result
-  until: job_result.finished
-  retries: 5
-  ignore_errors: yes
 
 - name: Wait for the interface change to complete
   wait_for_connection:
     connect_timeout: 20
     sleep: 5
-    delay: 30
+    delay: 120
     timeout: 300
 
 - name: Reboot to complete feature setup and computer name change
