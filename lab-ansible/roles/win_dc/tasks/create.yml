@@ -26,7 +26,7 @@
     $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
     $NetInterface.EnableStatic($interface.IPAddress, $mask)
     $NetInterface.SetGateways($gateway) 
-  async: 1
+  async: 30
   poll: 0
 
 - name: Wait for the interface change to complete
@@ -73,15 +73,6 @@
     DomainAdministratorCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     SafemodeAdministratorPassword_username: "{{ windows_domain_controller_info['safe_mode_username'] }}"
     SafemodeAdministratorPassword_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
-
-- name: Wait for forest xWaitForADDomain
-  win_dsc:
-    resource_name: xWaitForADDomain
-    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    DomainUserCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
-    DomainUserCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-    RetryCount: 100
-    RetryIntervalSec: 5
 
 - name: Reboot to complete domain controller setup (as required)
   win_reboot:
