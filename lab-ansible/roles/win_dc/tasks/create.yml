@@ -12,9 +12,9 @@
 
 - name: Reboot to complete feature setup (as required)
   win_reboot:
-    pre_reboot_delay: 120
+    pre_reboot_delay: 121
     reboot_timeout: 600
-    post_reboot_delay: 120
+    post_reboot_delay: 121
   when: feature_check.reboot_required
 
 - name: Set DNS server
