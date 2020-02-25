@@ -1,4 +1,5 @@
 ---
+# Add windows features
 - name: features | Installing AD Domain Services
   win_feature: 
     name: 
@@ -10,6 +11,19 @@
     state: present
   register: feature_check
 
+# Add powershell modules
+- name: Check for xDnsServer Powershell module
+  win_psmodule:
+    name: xDnsServer
+    state: present
+
+# Add powershell modules
+- name: Add xActiveDirectory
+  win_psmodule:
+    name: xActiveDirectory
+    state: present
+
+# Set static IP
 - name: Configure static IP address
   win_shell: |
     function INT64-toIP() {   
@@ -42,11 +56,6 @@
     reboot_timeout: 600
     post_reboot_delay: 120
 
-- name: Check for xDnsServer Powershell module
-  win_psmodule:
-    name: xDnsServer
-    state: present
-
 - name: Configure DNS Forwarders
   win_dsc:
     resource_name: xDnsServerSetting
@@ -58,12 +67,6 @@
   win_dns_client:
     adapter_names: "*"
     ipv4_addresses: "127.0.0.1"
-
-# Provision forest using DSC
-- name: Add xActiveDirectory
-  win_psmodule:
-    name: xActiveDirectory
-    state: present
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
