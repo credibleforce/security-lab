@@ -26,8 +26,16 @@
     $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
     $NetInterface.EnableStatic($interface.IPAddress, $mask)
     $NetInterface.SetGateways($gateway) 
-  async: 30
+  async: 1000
   poll: 0
+  register: static_ip
+
+- name: 'Wait for async task'
+  async_status:
+    jid: "{{ static_ip.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 30
 
 - name: Wait for the interface change to complete
   wait_for_connection:
