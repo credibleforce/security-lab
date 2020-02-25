@@ -26,7 +26,7 @@
     $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
     $NetInterface.EnableStatic($interface.IPAddress, $mask)
     $NetInterface.SetGateways($gateway) 
-  async: 1000
+  async: 30
   poll: 0
   register: static_ip
 
