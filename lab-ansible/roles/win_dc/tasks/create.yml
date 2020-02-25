@@ -31,7 +31,10 @@
 
 - name: Wait for the interface change to complete
   wait_for_connection:
-    timeout: 900
+    connect_timeout: 20
+    sleep: 5
+    delay: 30
+    timeout: 300
 
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
