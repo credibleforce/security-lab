@@ -12,7 +12,21 @@
 
 - name: Configure static IP address
   win_shell: |
-    New-NetIPAddress –IPAddress {{ ansible_default_ipv4.address }} -DefaultGateway {{ ansible_default_ipv4.gateway }} -PrefixLength {{ ansible_default_ipv4.netmask }} -InterfaceIndex (Get-NetAdapter).InterfaceIndex
+    function INT64-toIP() {   
+      param ([int64]$int)   
+      return (([math]::truncate($int/16777216)).tostring()+"."+([math]::truncate(($int%16777216)/65536)).tostring()+"."+([math]::truncate(($int%65536)/256)).tostring()+"."+([math]::truncate($int%256)).tostring() )  
+    }
+
+    $adapter = get-netadapter
+    $interface = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $adapter.InterfaceIndex
+    $gateway = get-netroute -DestinationPrefix '0.0.0.0/0' | select -ExpandProperty NextHop
+    $mask = [Net.IPAddress]::Parse((INT64-toIP -int ([convert]::ToInt64(("1"*$interface.PrefixLength+"0"*(32-$interface.PrefixLength)),2))))
+
+    $index = $adapter.InterfaceIndex
+    $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
+    $NetInterface.EnableStatic($interface.IPAddress, $mask)
+    $NetInterface.SetGateways($gateway) 
+
 
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
