@@ -27,7 +27,6 @@
     $NetInterface.EnableStatic($interface.IPAddress, $mask)
     $NetInterface.SetGateways($gateway) 
 
-
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
     pre_reboot_delay: 120
