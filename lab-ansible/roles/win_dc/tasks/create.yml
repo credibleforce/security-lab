@@ -26,7 +26,12 @@
     $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
     $NetInterface.EnableStatic($interface.IPAddress, $mask)
     $NetInterface.SetGateways($gateway) 
-  ignore_errors: yes
+  async: 1
+  poll: 0
+
+- name: Wait for the interface change to complete
+  wait_for_connection:
+    timeout: 900
 
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
