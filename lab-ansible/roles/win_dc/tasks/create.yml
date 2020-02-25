@@ -34,19 +34,34 @@
     adapter_names: "*"
     ipv4_addresses: "127.0.0.1"
 
-- name: Creating a windows domain
-  win_domain:
-    dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    domain_netbios_name: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
-    safe_mode_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
-  register: check_domain
+# Provision forest using DSC
+- name: Add xActiveDirectory
+  win_psmodule:
+    name: xActiveDirectory
+    state: present
+
+- name: Configure xADDomain Powershell DSC
+  win_dsc:
+    resource_name: xADDomain
+    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    DomainAdministratorCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+    DomainAdministratorCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    SafemodeAdministratorPassword_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
+
+- name: Wait for forest xWaitForADDomain
+  win_dsc:
+    resource_name: xWaitForADDomain
+    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    DomainUserCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+    DomainUserCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    RetryCount: 100
+    RetryIntervalSec: 5
 
 - name: Reboot to complete domain controller setup (as required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 120 # your mileage may vary
-  when: check_domain.reboot_required
 
 - name: Wait for domain fqdn resolution
   win_shell: |
