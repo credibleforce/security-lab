@@ -21,8 +21,8 @@
     #modify target domain name in AccountLogons.xml
     $Path="$env:USERPROFILE\Downloads\Event-Forwarding-Guidance-master\Subscriptions\NT6\AccountLogons.xml"
     $AccountLogonsXML=Get-Content -Path $Path
-    $AccountLogonsXML[45]=$AccountLogonsXML[45].replace("TEST","{{ windows_domain_controller_info['netbios_domain_name'] }}")
-    $AccountLogonsXML[59]=$AccountLogonsXML[59].replace("TEST","{{ windows_domain_controller_info['netbios_domain_name'] }}")
+    $AccountLogonsXML[45]=$AccountLogonsXML[45].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
+    $AccountLogonsXML[59]=$AccountLogonsXML[59].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
     $AccountLogonsXML | Out-File -FilePath $Path
 
     #process Templates, add AD group to each template and create subscription
