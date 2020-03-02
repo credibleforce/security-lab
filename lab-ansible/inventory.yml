@@ -20,19 +20,19 @@ all:
         domain_controller:
           vars:
           hosts: 
-            psdc1.psl.local:
+            splkdc1.psl.local:
         certificate_authority:
           vars:
           hosts: 
-            psdc1.psl.local:
+            splkdc1.psl.local:
         member_server:
           vars:
           hosts: 
-            pssrv1.psl.local:
+            splksrv1.psl.local:
         wef_server:
           vars:
           hosts: 
-            pswec1.psl.local:
+            splkwec1.psl.local:
     linux:
       children:
         splunk:
