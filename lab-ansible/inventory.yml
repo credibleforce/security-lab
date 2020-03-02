@@ -29,6 +29,10 @@ all:
           vars:
           hosts: 
             pssrv1.psl.local:
+        wef_server:
+          vars:
+          hosts: 
+            pswec1.psl.local:
     linux:
       children:
         splunk:
