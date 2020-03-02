@@ -72,7 +72,7 @@
   win_dsc:
     resource_name: xADDomain
     DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    DomainNetbiosName: "{{ windows_domain_controller_info['netbios_domain_name'] }}"
+    DomainNetbiosName: "{{ windows_domain_controller_info['domain_netbios_name'] }}"
     DomainAdministratorCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
     DomainAdministratorCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     SafemodeAdministratorPassword_username: "{{ windows_domain_controller_info['safe_mode_username'] }}"
