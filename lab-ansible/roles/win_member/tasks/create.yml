@@ -61,7 +61,7 @@
 - name: Join to the domain using xComputer
   win_dsc:
     resource_name: xComputer
-    name: "{{ inventory_hostname }}"
+    Name: "{{ inventory_hostname.split('.')[0] | lower }}"
     DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     Credential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
     Credential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
