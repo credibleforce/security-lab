@@ -67,9 +67,6 @@
     Credential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     #JoinOu: "{{ join_domain_default_dn_base }}"
   register: join_domain
-  retries: 3
-  delay: 3
-  until: join_domain | success
 
 - name: Domain join object
   debug: 
