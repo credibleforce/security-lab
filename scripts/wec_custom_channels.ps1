@@ -137,9 +137,6 @@ $CollectorServerName="Collector"
 $CustomEventChannelsFileName="CustomEventChannels"
 $CustomEventsFilesLocation="$env:UserProfile\Downloads\ECMan"
  
-#create session for managed computer (ComputerName is Collector in this case)
-$CollectorSession=New-PSSession -ComputerName $CollectorServerName
- 
 #configure Event Forwarding on collector server
 WECUtil qc /q
  
@@ -152,7 +149,7 @@ Stop-Service Wecsvc
 $files="$CustomEventChannelsFileName.dll","$CustomEventChannelsFileName.man"
 $Path="$CustomEventsFilesLocation"
 foreach ($file in $files){
-    Copy-Item -Path "$path\$file" -Destination C:\Windows\system32 -ToSession $CollectorSession
+    Copy-Item -Path "$path\$file" -Destination C:\Windows\system32
 }
 #load new event channel file and start Wecsvc service
 wevtutil im "C:\windows\system32\$CustomEventChannelsFileName.man"
