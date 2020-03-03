@@ -1,4 +1,5 @@
 ---
+
 - name: Download NSA Subscription Templates
   win_shell: |
     #download zip with all NSA samples
@@ -9,7 +10,7 @@
 
     #unzip
     Expand-Archive -Path $env:USERPROFILE\Downloads\NSASamples.zip -DestinationPath $env:USERPROFILE\Downloads
-
+  
 - name: Configure Windows Event Collector
   win_shell: |
     # Enable WEF quick config
@@ -27,14 +28,14 @@
 
     #process Templates, add AD group to each template and create subscription
     foreach ($XMLFile in $XMLFiles){
-        # Subscribe all domain controllers and computers
-        $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
-        [xml]$XML=get-content $XMLFile.FullName
-        invoke-command -Session $CollectorSession -ScriptBlock {
-            $xml=$using:xml
-            $xml.subscription.AllowedSourceDomainComputers=$using:AllowedSourceDomainComputers
-            $xml.Save("$env:TEMP\temp.xml")
-            wecutil cs "$env:TEMP\temp.xml"
-        }
+      # Subscribe all domain controllers and computers
+      $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+      [xml]$XML=get-content $XMLFile.FullName
+      invoke-command -Session $CollectorSession -ScriptBlock {
+          $xml=$using:xml
+          $xml.subscription.AllowedSourceDomainComputers=$using:AllowedSourceDomainComputers
+          $xml.Save("$env:TEMP\temp.xml")
+          wecutil cs "$env:TEMP\temp.xml"
+      }
     }
 
