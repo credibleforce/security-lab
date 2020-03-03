@@ -1,52 +1,75 @@
 ---
-- name: Set local admin password
-  win_user:
-    name: Administrator
-    password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-    state: present
+# Set static IP
+- name: Configure static IP address
+  win_shell: |
+    function INT64-toIP() {   
+      param ([int64]$int)   
+      return (([math]::truncate($int/16777216)).tostring()+"."+([math]::truncate(($int%16777216)/65536)).tostring()+"."+([math]::truncate(($int%65536)/256)).tostring()+"."+([math]::truncate($int%256)).tostring() )  
+    }
+
+    $adapter = get-netadapter
+    $interface = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $adapter.InterfaceIndex
+    $gateway = get-netroute -DestinationPrefix '0.0.0.0/0' | select -ExpandProperty NextHop
+    $mask = [Net.IPAddress]::Parse((INT64-toIP -int ([convert]::ToInt64(("1"*$interface.PrefixLength+"0"*(32-$interface.PrefixLength)),2))))
+
+    $index = $adapter.InterfaceIndex
+    $NetInterface = Get-WmiObject Win32_NetworkAdapterConfiguration | where {$_.InterfaceIndex -eq $index}
+    $NetInterface.EnableStatic($interface.IPAddress, $mask)
+    $NetInterface.SetGateways($gateway) 
+  async: 30
+  poll: 0
+
+- name: Wait for the interface change to complete
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 120
+    timeout: 300
 
 - name: Setting DNS Servers
   win_dns_client:
     adapter_names: "*"
     ipv4_addresses: "{{ windows_domain_info['dns_servers'] }}"
 
-- name: Wait for domain fqdn resolution
-  win_shell: |
-    start-sleep -Seconds 5
-    while($true){
-      try {
-          [Net.DNS]::GetHostEntry("{{ windows_domain_controller_info['dns_domain_name'] }}")
-          write-output "DNS Resolution Success"
-          break;
-      }catch{
-          write-output "DNS Resolution Failure"
-      }
-      start-sleep -Seconds 5
-    }
-  async: 900
-  poll: 5
-  register: async_out
-
-- name: 'DNS - check on async task'
-  async_status:
-    jid: "{{ async_out.ansible_job_id }}"
-  register: job_result
-  until: job_result.finished
-  retries: 30
-
-- name: Join to the domain
-  win_domain_membership:
-    dns_domain_name: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    domain_admin_user: "{{ windows_domain_controller_info['domain_admin_user'] }}"
-    domain_admin_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
-    state: domain
-  register: domain_state
-  retries: 10
-  delay: 30
-
-- name: Reboot to complete domain membership setup
+- name: Reboot to complete computer name change
   win_reboot:
-    pre_reboot_delay: 30
+    pre_reboot_delay: 120
     reboot_timeout: 600
-    post_reboot_delay: 30
-  when: domain_state.reboot_required
+    post_reboot_delay: 120
+
+# Add powershell modules
+- name: Add xActiveDirectory and xComputerManagement
+  win_psmodule:
+    name: 
+      - xActiveDirectory
+      - xComputerManagement
+    state: present
+
+# wait for domain to be available
+- name: Wait for forest xWaitForADDomain
+  win_dsc:
+    resource_name: xWaitForADDomain
+    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    DomainUserCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+    DomainUserCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    RetryCount: 100
+    RetryIntervalSec: 5
+
+- name: Join to the domain using xComputer
+  win_dsc:
+    resource_name: xComputer
+    name: "{{ inventory_hostname }}"
+    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Credential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+    Credential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    #JoinOu: "{{ join_domain_default_dn_base }}"
+  register: join_domain
+  retries: 3
+  delay: 3
+  until: join_domain | success
+
+- name: Reboot to complete domain membership
+  win_reboot:
+    pre_reboot_delay: 120
+    reboot_timeout: 600
+    post_reboot_delay: 120
