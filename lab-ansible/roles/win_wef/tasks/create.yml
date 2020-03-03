@@ -31,7 +31,7 @@
       # Subscribe all domain controllers and computers
       $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
       [xml]$XML=get-content $XMLFile.FullName
-      $xml=$using:xml
+      $xml=$XML
       $xml.subscription.AllowedSourceDomainComputers=$using:AllowedSourceDomainComputers
       $xml.Save("$env:TEMP\temp.xml")
       wecutil cs "$env:TEMP\temp.xml"
