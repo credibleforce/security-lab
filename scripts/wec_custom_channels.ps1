@@ -141,16 +141,12 @@ $CustomEventsFilesLocation="$env:UserProfile\Downloads\ECMan"
 $CollectorSession=New-PSSession -ComputerName $CollectorServerName
  
 #configure Event Forwarding on collector server
-Invoke-Command -Session $CollectorSession -ScriptBlock {
-    WECUtil qc /q
-}
+WECUtil qc /q
  
 #Create custom event forwarding logs
-Invoke-Command -Session $CollectorSession -ScriptBlock {
-    Stop-Service Wecsvc
-    #unload current event channnel (commented as there is no custom manifest)
-    #wevtutil um C:\windows\system32\CustomEventChannels.man
-}
+Stop-Service Wecsvc
+#unload current event channnel (commented as there is no custom manifest)
+#wevtutil um C:\windows\system32\CustomEventChannels.man
  
 #copy new man and dll
 $files="$CustomEventChannelsFileName.dll","$CustomEventChannelsFileName.man"
@@ -159,8 +155,6 @@ foreach ($file in $files){
     Copy-Item -Path "$path\$file" -Destination C:\Windows\system32 -ToSession $CollectorSession
 }
 #load new event channel file and start Wecsvc service
-Invoke-Command -Session $CollectorSession -ScriptBlock {
-    wevtutil im "C:\windows\system32\$using:CustomEventChannelsFileName.man"
-    Start-Service Wecsvc
-}
+wevtutil im "C:\windows\system32\$CustomEventChannelsFileName.man"
+Start-Service Wecsvc
   
