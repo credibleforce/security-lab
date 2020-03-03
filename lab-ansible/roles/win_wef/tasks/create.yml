@@ -41,5 +41,5 @@
   register: script_result
 
 - name: Script result
-  debug: var=script_result.stdout_lines
+  debug: var=script_result
 
