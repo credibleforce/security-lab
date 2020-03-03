@@ -31,12 +31,11 @@
       # Subscribe all domain controllers and computers
       $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
       [xml]$XML=get-content $XMLFile.FullName
-      invoke-command -Session $CollectorSession -ScriptBlock {
-          $xml=$using:xml
-          $xml.subscription.AllowedSourceDomainComputers=$using:AllowedSourceDomainComputers
-          $xml.Save("$env:TEMP\temp.xml")
-          wecutil cs "$env:TEMP\temp.xml"
-      }
+      $xml=$using:xml
+      $xml.subscription.AllowedSourceDomainComputers=$using:AllowedSourceDomainComputers
+      $xml.Save("$env:TEMP\temp.xml")
+      wecutil cs "$env:TEMP\temp.xml"
+      
     }
   register: script_result
 
