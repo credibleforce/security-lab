@@ -5,7 +5,6 @@
     name: 
       - RSAT-AD-AdminCenter
       - AD-Domain-Services
-      - DNS
     include_management_tools: yes
     include_sub_features: yes
     state: present
