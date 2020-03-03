@@ -87,6 +87,7 @@
       include_role:
         name: '{{ rolevar }}'
       loop:
+        - 'win_member'
         - 'win_wef'
       loop_control:
         loop_var: rolevar
