@@ -56,12 +56,10 @@
     reboot_timeout: 600
     post_reboot_delay: 120
 
-- name: Configure DNS Forwarders
-  win_dsc:
-    resource_name: xDnsServerSetting
-    Name: DNSServerProperties
-    NoRecursion: false
-    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
+- name: Set DNS server
+  win_dns_client:
+    adapter_names: "*"
+    ipv4_addresses: "127.0.0.1"
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
@@ -75,10 +73,12 @@
     DnsDelegationCredential_username: "{{ ansible_ssh_user}}"
     DnsDelegationCredential_password: "{{ ansible_ssh_user}}"
 
-- name: Set DNS server
-  win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
+- name: Configure DNS Forwarders
+  win_dsc:
+    resource_name: xDnsServerSetting
+    Name: DNSServerProperties
+    NoRecursion: false
+    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
 
 - name: Reboot to complete domain controller setup (as required)
   win_reboot:
