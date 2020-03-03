@@ -38,11 +38,14 @@
     post_reboot_delay: 120
 
 # Add powershell modules
-- name: Add xActiveDirectory and xComputerManagement
+- name: Add xActiveDirectory
   win_psmodule:
-    name: 
-      - xActiveDirectory
-      - xComputerManagement
+    name: xActiveDirectory
+    state: present
+
+- name: Add xComputerManagement
+  win_psmodule:
+    name: xComputerManagement
     state: present
 
 # wait for domain to be available
