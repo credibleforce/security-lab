@@ -3,4 +3,23 @@
   win_copy:
       src: ../files/GPO
       dest: c:\
-  when: inventory_hostname in groups['domain_controller']
+
+
+- name: Configure Windows Event Collector
+  win_shell: |
+    $GPOName = 'Windows Event Forwarding Server'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded
+
+    $GPOName = 'Domain Controllers Enhanced Auditing Policy'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Domain_Controllers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
+
+    $GPOName = 'Servers Enhanced Auditing Policy'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Servers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
+
+    $GPOName = 'Workstations Enhanced Auditing Policy'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
+      
+  register: script_result
+
+- name: Script result
+  debug: var=script_result
