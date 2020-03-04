@@ -1,0 +1,6 @@
+---
+- name: Copy GPO policy to domain controller
+  win_copy:
+      src: ../files/GPO
+      dest: c:\
+  when: inventory_hostname in groups['domain_controller']

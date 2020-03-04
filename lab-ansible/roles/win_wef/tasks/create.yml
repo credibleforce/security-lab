@@ -40,4 +40,3 @@
 
 - name: Script result
   debug: var=script_result
-
