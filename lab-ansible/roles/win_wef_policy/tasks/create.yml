@@ -7,7 +7,7 @@
 - name: Update wef policy with wef server name
   win_shell: |
     Install-Module -Name GPRegistryPolicyParser
-    $script:policyPath = 'C:\GPO\wef_configuration\{F523FD69-7E4C-4315-93D0-557089F1B8A1}\DomainSysvol\GPO\Machine\'
+    $script:policyPath = 'C:\GPO\wef_configuration\{F523FD69-7E4C-4315-93D0-557089F1B8A1}\DomainSysvol\GPO\Machine'
     $script:REGFILE_SIGNATURE = 0x67655250 # PRef
     $script:REGISTRY_FILE_VERSION = 0x00000001 #Initially defined as 1, then incremented each time the file format is changed.
 
