@@ -20,7 +20,7 @@ Function Create-GPRegistryPolicyFile
 
 Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
 $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
-$PolicySettings[1].ValueData="http://splkwec1.psl.local:5985/wsman/SubscriptionManager/WEC,Refresh=60"
+$PolicySettings[1].ValueData="Server=http://splkwec1.psl.local:5985/wsman/SubscriptionManager/WEC,Refresh=60"
 Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
 
 Rename-Item  "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
