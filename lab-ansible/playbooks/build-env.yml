@@ -96,21 +96,10 @@
       include_role:
         name: '{{ rolevar }}'
       loop:
-        - 'win_member'
-        - 'win_wef'
+        - 'win_wef_policy'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname == groups['domain_controller'][0]
-
-    # setup windows event forwarding group policy
-    #- name: Windows Event Forwarder Group Policy
-    #  include_role:
-    #    name: '{{ rolevar }}'
-    #  loop:
-    #    - 'win_wef'
-    #  loop_control:
-    #    loop_var: rolevar
-    #  when: inventory_hostname in groups['domain_controller']
 
    
   
