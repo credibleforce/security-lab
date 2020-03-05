@@ -1,0 +1,16 @@
+---
+- name: Configure DNS Forwarders
+  win_dsc:
+    resource_name: xDnsServerSetting
+    Name: DNSServerProperties
+    NoRecursion: false
+    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
+
+- name: Configure Splunk DNS
+  win_dsc:
+    resource_name: xDnsRecord
+    Name: "{{ item.split('.')[0] | lower }}"
+    Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Target: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    Type: ARecord
+  with_items: "{{ groups['splunk'] }}"

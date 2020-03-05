@@ -22,6 +22,7 @@
       include_role:
         name: ../roles/common
 
+    # setup domain controller
     - name: Windows Domain Controllers Setup
       include_role:
         name: '{{ rolevar }}'
@@ -30,6 +31,16 @@
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['domain_controller']
+
+    # configure dns forwarding and records
+    - name: Setup Windows DNS server forwarding and hostnames
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_dns'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname == groups['domain_controller'][0]
 
     # certificate_authority group only
     - name: Windows Enterprise PKI
@@ -91,7 +102,8 @@
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['wef_server']
-      
+    
+    # setup policy for windows event forwarding
     - name: Windows Event Forwarder Policy Setup
       include_role:
         name: '{{ rolevar }}'
