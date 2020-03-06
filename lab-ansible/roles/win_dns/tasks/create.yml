@@ -1,7 +1,7 @@
 ---
 - name: Debug variables
   debug:
-    msg: "{{ hostvars[item]['ansible_default_ipv4'].address }}"
+    msg: "{{ hostvars[item]['ansible_default_ipv4'].address | default(omit) }}"
   with_items: "{{ groups['splunk'] }}"
 
 # Add powershell modules
