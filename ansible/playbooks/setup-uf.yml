@@ -1,0 +1,22 @@
+#########################################
+# EXAMPLE DEPLOYMENT
+#########################################
+
+- hosts: local
+  tasks:
+
+#########################################
+# DOMAIN CONTROLLER
+#########################################
+
+- hosts: all
+  vars_files:
+    - ../vars/vars.yml 
+  gather_facts: True
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run windows domain setup
+      debug:
+        msg: "{{ hostvars[groups['splunk'][0]].splunk_deployment_server }}"
