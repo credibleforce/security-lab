@@ -1,4 +1,5 @@
 ---
+# list host with gathered ip address facts
 - name: Debug variables
   debug:
     msg: "{{ hostvars[item].ansible_default_ipv4.address }}"
@@ -6,23 +7,26 @@
   with_items: "{{ groups['splunk'] }}"
 
 # Add powershell modules
-# - name: Check for xDnsServer Powershell module
-#   win_psmodule:
-#     name: xDnsServer
-#     state: present
+- name: Check for xDnsServer Powershell module
+  win_psmodule:
+    name: xDnsServer
+    state: present
 
-# - name: Configure DNS Forwarders
-#   win_dsc:
-#     resource_name: xDnsServerSetting
-#     Name: DNSServerProperties
-#     NoRecursion: false
-#     Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
-
-# - name: Configure Splunk DNS
-#   win_dsc:
-#     resource_name: xDnsRecord
-#     Name: "{{ item.split('.')[0] | lower }}"
-#     Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-#     Target: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-#     Type: ARecord
-#   with_items: "{{ groups['splunk'] }}"
+# setup forwarding
+- name: Configure DNS Forwarders
+  win_dsc:
+    resource_name: xDnsServerSetting
+    Name: DNSServerProperties
+    NoRecursion: false
+    Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
+    
+# add a records
+- name: Configure Splunk DNS
+  win_dsc:
+    resource_name: xDnsRecord
+    Name: "{{ item.split('.')[0] | lower }}"
+    Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Target: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    Type: ARecord
+  when: hostvars[item].ansible_default_ipv4 is defined
+  with_items: "{{ groups['splunk'] }}"
