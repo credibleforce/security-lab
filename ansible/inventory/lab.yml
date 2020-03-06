@@ -33,19 +33,6 @@ all:
           vars:
           hosts: 
             splkwec1.psl.local:
-    linux:
-      children:
-        splunk:
-          hosts:
-            splksh1.psl.local:
-            splksh2.psl.local:
-            splksh3.psl.local:
-            splksh4.psl.local:
-            splkdp1.psl.local:
-            splkcm1.psl.local:
-            splkidx1.psl.local:
-            splkidx2.psl.local:
-            splkidx3.psl.local:
-            splkidx4.psl.local:
+    
 
     
