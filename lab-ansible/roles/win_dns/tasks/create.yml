@@ -1,9 +1,4 @@
 ---
-# load hostvars
-- name: get hostvars information
-  tasks: []
-  when: inventory_hostname in groups['splunk']
-
 - name: Debug variables
   debug:
     msg: "{{ hostvars[item] }}"
