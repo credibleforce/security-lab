@@ -26,20 +26,24 @@
         [System.BitConverter]::GetBytes($script:REGISTRY_FILE_VERSION) | Add-Content -Path $Path -Encoding Byte
     }
 
-    Remove-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" 
+    try{
+      Remove-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" 
 
-    Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
-    $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
-    $PolicySettings[1].ValueData="Server=http://{{ groups['wef_server'][0] }}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
-    Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
+      Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
+      $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
+      $PolicySettings[1].ValueData="Server=http://{{ groups['wef_server'][0] }}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
+      Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
 
-    Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
-    Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" "$script:policyPath\registry.pol"
+      Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
+      Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" "$script:policyPath\registry.pol"
 
-    $GPOName = 'Windows Event Forwarding Server'
-    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded 
-    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
-    
+      $GPOName = 'Windows Event Forwarding Server'
+      Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded 
+      New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    }catch{
+      Write-Output "Error: $_.Exception.Message"
+      continue
+    }
 
 
 - name: Configure Windows Event Collector Policies
