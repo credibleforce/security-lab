@@ -39,11 +39,11 @@
     New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
 
 
-- name: Configure Windows Event Collector
+- name: Configure Windows Event Collector Policies
   win_shell: |
     $GPOName = 'Windows Event Forwarding Server'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',DC=') }}"
+    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
 
     $GPOName = 'Domain Controllers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Domain_Controllers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
