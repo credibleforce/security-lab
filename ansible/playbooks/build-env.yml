@@ -113,5 +113,15 @@
         loop_var: rolevar
       when: inventory_hostname == groups['domain_controller'][0]
 
+    # install splunk universal forwarder
+    - name: Splunk Universal Forwarder on WEC
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'splunk_uf'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname == groups['wef_server'][0]
+
    
   
