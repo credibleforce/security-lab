@@ -50,11 +50,11 @@
 
     $GPOName = 'Servers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Servers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    # New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
 
     $GPOName = 'Workstations Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    #New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
     Write-output "Policy linked successfully"
 
   register: script_result
