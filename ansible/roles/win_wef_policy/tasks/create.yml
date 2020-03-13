@@ -43,19 +43,19 @@
   win_shell: |
     $GPOName = 'Windows Event Forwarding Server'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC='') }}"
+    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC=') }}"
 
     $GPOName = 'Domain Controllers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Domain_Controllers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -Target " "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC='') }}"
+    New-GPLink -Name $GPOName -Target " "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC=') }}"
 
     $GPOName = 'Servers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Servers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    # New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC='') }}"
+    # New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC=') }}"
 
     $GPOName = 'Workstations Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC='') }}"
+    New-GPLink -Name $GPOName -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.','DC=') }}"
 
   register: script_result
 
