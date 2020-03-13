@@ -39,6 +39,7 @@
     $GPOName = 'Windows Event Forwarding Server'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded 
     New-GPLink -Name $GPOName -ErrorAction SilentlyContinue -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    exit(0)
 
 
 - name: Configure Windows Event Collector Policies
