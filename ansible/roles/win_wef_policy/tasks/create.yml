@@ -32,9 +32,10 @@
     $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
     $PolicySettings[1].ValueData="Server=http://{{ groups['wef_server'][0] }}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
     Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
-    
+
     Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
     Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" "$script:policyPath\registry.pol"
+    Write-output "Policy updated successfully"
 
 
 - name: Configure Windows Event Collector Policies
@@ -54,6 +55,7 @@
     $GPOName = 'Workstations Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    Write-output "Policy linked successfully"
 
   register: script_result
 
