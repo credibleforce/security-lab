@@ -121,7 +121,7 @@
         - 'splunk_uf'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname == groups['wef_server'][0]
+      when: inventory_hostname == groups['wef_server'][0] or inventory_hostname == groups['domain_controller'][0]
 
    
   
