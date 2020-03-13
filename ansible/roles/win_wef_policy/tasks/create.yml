@@ -42,8 +42,10 @@
       New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
     }catch{
       Write-Output "Error: $_.Exception.Message"
-      continue
+      exit(1)
     }
+
+    exit(0)
 
 
 - name: Configure Windows Event Collector Policies
