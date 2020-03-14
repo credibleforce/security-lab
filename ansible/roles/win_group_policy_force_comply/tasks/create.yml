@@ -1,0 +1,10 @@
+---
+- name: Update Group Policy
+  win_command: gpupdate /force
+
+- name: Reboot to complete group policy compliance (NETWORK SERVICE => Event Log Readers)
+  win_reboot:
+    pre_reboot_delay: 10
+    reboot_timeout: 120
+    post_reboot_delay: 10
+

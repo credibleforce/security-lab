@@ -1,0 +1,27 @@
+#########################################
+# EXAMPLE DEPLOYMENT
+#########################################
+
+- hosts: local
+  tasks:
+
+#########################################
+# DOMAIN CONTROLLER
+#########################################
+
+- hosts: all
+  vars_files:
+    - ../vars/vars.yml 
+  gather_facts: True
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run windows event forwarder policy setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_group_policy_force_comply'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['windows']
