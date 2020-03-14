@@ -133,7 +133,7 @@
   pre_tasks:
   post_tasks:
   tasks:
-    - name: Run windows event forwarder policy setup
+    - name: Run group policy comply and reboot
       include_role:
         name: '{{ rolevar }}'
       loop:
