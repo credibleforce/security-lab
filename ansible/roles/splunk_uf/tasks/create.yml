@@ -1,7 +1,7 @@
 ---
 
     # Purpose: Installs a Splunk Universal Forwader on the host
-- name: Configure Windows Event Collector
+- name: Configure Windows Universal Forwarder
   win_shell: |
     If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
         Write-Host "Downloading Splunk Universal Forwarder"
