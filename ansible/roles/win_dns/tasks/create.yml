@@ -30,3 +30,30 @@
     Type: ARecord
   when: hostvars[item].ansible_default_ipv4 is defined
   with_items: "{{ groups['splunk'] }}"
+
+
+# enable dns debug eos_logging
+- name: Enable DNS debug logging
+  win_shell: |
+    New-Item -ErrorAction SilentlyContinue -Type Directory C:\DNS
+    Set-DnsServerDiagnostics `
+      -LogFilePath C:\DNS\dns.log `
+      -UdpPackets $true `
+      -TcpPackets $true `
+      -Queries $true `
+      -SendPackets $true `
+      -ReceivePackets $true `
+      -Answers $true `
+      -UnmatchedResponse $true `
+      -Updates $true `
+      -Notifications $true `
+      -QuestionTransactions $true `
+      -EnableLoggingForLocalLookupEvent $true `
+      -EnableLoggingForPluginDLLEvent $true `
+      -EnableLoggingForRecursiveLookupEvent $true `
+      -EnableLoggingForRemoteServerEvent $true `
+      -EnableLoggingForServerStartStopEvent $true `
+      -EnableLoggingForTombstoneEvent $true `
+      -EnableLoggingForZoneDataWriteEvent $true `
+      -EnableLoggingForZoneLoadingEvent $true 
+  
