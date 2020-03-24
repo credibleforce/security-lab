@@ -1,0 +1,42 @@
+---
+- name: Install suricata
+  shell: |
+    # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts from Windows
+    echo "[$(date +%H:%M:%S)]: Installing Suricata..."
+
+    # Install suricata
+    yum install -y epel-release suricata crudini
+    test_suricata_prerequisites
+    # Install suricata-update
+    cd /opt || exit 1
+    git clone https://github.com/OISF/suricata-update.git
+    cd /opt/suricata-update || exit 1
+    python setup.py install
+
+- name: Copy suricata config
+  copy: 
+    src: ../files/suricata.yaml
+    dest: /etc/suricata/suricata.yaml
+
+- name: Setup suricata
+  shell: |
+    crudini --set --format=sh /etc/default/suricata '' iface eth1
+    # update suricata signature sources
+    suricata-update update-sources
+    # disable protocol decode as it is duplicative of Zeek
+    #echo re:protocol-command-decode >>/etc/suricata/disable.conf
+    # enable et-open and attackdetection sources
+    suricata-update enable-source et/open
+    suricata-update enable-source ptresearch/attackdetection
+
+    # Update suricata and restart
+    suricata-update
+    service suricata stop
+    service suricata start
+    sleep 3
+
+    # Verify that Suricata is running
+    if ! pgrep -f suricata >/dev/null; then
+        echo "Suricata attempted to start but is not running. Exiting"
+        exit 1
+    fi

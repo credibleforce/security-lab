@@ -123,8 +123,26 @@
         loop_var: rolevar
       when: inventory_hostname == groups['wef_server'][0] or inventory_hostname == groups['domain_controller'][0]
 
+- hosts: suricata
+  vars_files:
+    - ../vars/vars.yml
+    # setup suricata
+    - name: Setup suricata
+  gather_facts: True
+  strategy: free
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run suricata setup
+      include_role: '{{ rolevar }}'
+      loop:
+        - 'lin_suricata'
+      loop_control:
+        loop_var: rolevar
+
 # force all node to comply with group policy and reboot
-- hosts: all
+- hosts: windows
   vars_files:
     - ../vars/vars.yml 
   gather_facts: True
@@ -140,7 +158,6 @@
         - 'win_group_policy_force_comply'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['windows']
 
    
   

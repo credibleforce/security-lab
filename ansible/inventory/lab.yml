@@ -7,6 +7,12 @@ all:
       vars:
         ansible_connection: local
         ansible_python_interpreter: "{{ansible_playbook_python}}"
+    linux:
+      children:
+        suricata:
+          vars:
+          hosts:
+            splksuricata1.psl.local:
     windows:
       vars:
         ansible_connection: winrm
