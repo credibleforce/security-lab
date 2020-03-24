@@ -40,22 +40,31 @@
 
 - name: Configure Windows Event Collector Policies
   win_shell: |
+    $Domain_OU = "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    $DC_OU = "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    
     $GPOName = 'Windows Event Forwarding Server'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
 
     $GPOName = 'Domain Controllers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Domain_Controllers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
 
     $GPOName = 'Servers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Servers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
-    New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+
+    $OU = "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    $GPOName = 'Powershell Logging'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\powershell_logging" -TargetName $GPOName -CreateIfNeeded
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
 
     $GPOName = 'Workstations Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
     #New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
-    Write-output "Policy linked successfully"
+    #Write-output "Policy linked successfully"
 
   register: script_result
 

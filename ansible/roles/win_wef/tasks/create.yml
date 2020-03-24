@@ -1,41 +1,101 @@
 ---
-- name: Download NSA Subscription Templates
+# - name: Download NSA Subscription Templates
+#   win_shell: |
+#     #download zip with all NSA samples
+#     if (-not ([Net.ServicePointManager]::SecurityProtocol).tostring().contains("Tls12")){ #there is no need to set Tls12 in 1809 releases, therefore for insider it does not apply
+#         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#     }
+#     Invoke-WebRequest -UseBasicParsing -Uri https://github.com/nsacyber/Event-Forwarding-Guidance/archive/master.zip -OutFile $env:USERPROFILE\Downloads\NSASamples.zip
+
+#     #unzip
+#     Expand-Archive -Path $env:USERPROFILE\Downloads\NSASamples.zip -DestinationPath $env:USERPROFILE\Downloads
+
+# - name: Configure Windows Event Collector
+#   win_shell: |
+#     # Enable WEF quick config
+#     WECUtil qc /q
+
+#     #Import XML files for rules, that will be configured on collector
+#     $XMLFiles=Get-ChildItem "$env:USERPROFILE\downloads\Event-Forwarding-Guidance-master\Subscriptions\NT6"
+
+#     #modify target domain name in AccountLogons.xml
+#     $Path="$env:USERPROFILE\Downloads\Event-Forwarding-Guidance-master\Subscriptions\NT6\AccountLogons.xml"
+#     $AccountLogonsXML=Get-Content -Path $Path
+#     $AccountLogonsXML[45]=$AccountLogonsXML[45].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
+#     $AccountLogonsXML[59]=$AccountLogonsXML[59].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
+#     $AccountLogonsXML | Out-File -FilePath $Path
+
+#     #process Templates, add AD group to each template and create subscription
+#     foreach ($XMLFile in $XMLFiles){
+#       # Subscribe all domain controllers and computers
+#       $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+#       [xml]$XML=get-content $XMLFile.FullName
+#       $xml=$XML
+#       $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
+#       $xml.Save("$env:TEMP\temp.xml")
+#       wecutil cs "$env:TEMP\temp.xml"
+      
+#     }
+#   register: script_result
+
+- name: Download Palantir Subscription Templates
   win_shell: |
-    #download zip with all NSA samples
+    #download zip with all Palantir samples
     if (-not ([Net.ServicePointManager]::SecurityProtocol).tostring().contains("Tls12")){ #there is no need to set Tls12 in 1809 releases, therefore for insider it does not apply
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     }
-    Invoke-WebRequest -UseBasicParsing -Uri https://github.com/nsacyber/Event-Forwarding-Guidance/archive/master.zip -OutFile $env:USERPROFILE\Downloads\NSASamples.zip
+    Invoke-WebRequest -UseBasicParsing -Uri https://github.com/palantir/windows-event-forwarding/archive/master.zip -OutFile $env:USERPROFILE\Downloads\PalantirSamples.zip
 
     #unzip
-    Expand-Archive -Path $env:USERPROFILE\Downloads\NSASamples.zip -DestinationPath $env:USERPROFILE\Downloads
+    Expand-Archive -Path $env:USERPROFILE\Downloads\PalantirSamples.zip -DestinationPath $env:USERPROFILE\Downloads
+
+# microsoft based policies
+- name: Copy GPO policy to domain controller
+  win_copy:
+      src: ../files/Subscriptions
+      dest: c:\
 
 - name: Configure Windows Event Collector
   win_shell: |
     # Enable WEF quick config
     WECUtil qc /q
 
-    #Import XML files for rules, that will be configured on collector
-    $XMLFiles=Get-ChildItem "$env:USERPROFILE\downloads\Event-Forwarding-Guidance-master\Subscriptions\NT6"
+    # Import microsoft base (default to disabled)
+    $XMLFiles=Get-ChildItem "c:\Subscriptions"
 
-    #modify target domain name in AccountLogons.xml
-    $Path="$env:USERPROFILE\Downloads\Event-Forwarding-Guidance-master\Subscriptions\NT6\AccountLogons.xml"
-    $AccountLogonsXML=Get-Content -Path $Path
-    $AccountLogonsXML[45]=$AccountLogonsXML[45].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
-    $AccountLogonsXML[59]=$AccountLogonsXML[59].replace("TEST","{{ windows_domain_controller_info['domain_netbios_name'] }}")
-    $AccountLogonsXML | Out-File -FilePath $Path
-
-    #process Templates, add AD group to each template and create subscription
+    # Process Templates, add AD group to each template and create subscription
     foreach ($XMLFile in $XMLFiles){
       # Subscribe all domain controllers and computers
       $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+      $Enabled="false"
+      $LogFile="ForwardedEvents"
       [xml]$XML=get-content $XMLFile.FullName
       $xml=$XML
+      $xml.subscription.Enabled=$Enabled
       $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
+      $xml.subscription.LogFile=$LogFile
       $xml.Save("$env:TEMP\temp.xml")
       wecutil cs "$env:TEMP\temp.xml"
-      
     }
+
+    # Import panatir examples and default to enabled (disable custom log channels logging as well)
+    $XMLFiles=Get-ChildItem "$env:USERPROFILE\Downloads\windows-event-forwarding-master\wef-subscriptions"
+
+    # Process Templates, add AD group to each template and create subscription
+    foreach ($XMLFile in $XMLFiles){
+      # Subscribe all domain controllers and computers
+      $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+      $Enabled="true"
+      $LogFile="ForwardedEvents"
+      [xml]$XML=get-content $XMLFile.FullName
+      $xml=$XML
+      $xml.subscription.Enabled=$Enabled
+      $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
+      $xml.subscription.LogFile=$LogFile
+      $xml.Save("$env:TEMP\temp.xml")
+      wecutil cs "$env:TEMP\temp.xml"
+    }
+
   register: script_result
 
 - name: Script result
