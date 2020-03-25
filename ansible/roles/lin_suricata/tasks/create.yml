@@ -5,13 +5,18 @@
     echo "[$(date +%H:%M:%S)]: Installing Suricata..."
 
     # Install suricata
-    yum install -y epel-release suricata crudini
-    test_suricata_prerequisites
+    yum install -y epel-release 
+    yum install -y suricata crudini git
+    #test_suricata_prerequisites
     # Install suricata-update
     cd /opt || exit 1
     git clone https://github.com/OISF/suricata-update.git
     cd /opt/suricata-update || exit 1
     python setup.py install
+
+- name: Set primary interface name
+  shell: |
+    echo OPTIONS="-i $(ifconfig | grep ens | awk -F: '{ print $1 }') --user suricata " > /etc/sysconfig/suricata
 
 - name: Copy suricata config
   copy: 
@@ -33,10 +38,3 @@
     suricata-update
     service suricata stop
     service suricata start
-    sleep 3
-
-    # Verify that Suricata is running
-    if ! pgrep -f suricata >/dev/null; then
-        echo "Suricata attempted to start but is not running. Exiting"
-        exit 1
-    fi
