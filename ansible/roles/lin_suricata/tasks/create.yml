@@ -67,6 +67,7 @@
 - name: Set primary interface name
   shell: |
     echo OPTIONS="-i $(ifconfig | grep ens | awk -F: '{ print $1 }') --user suricata " > /etc/sysconfig/suricata
+  become: yes
 
 - name: Copy suricata config
   copy: 
