@@ -12,7 +12,7 @@ all:
         suricata:
           vars:
           hosts:
-            splksuricata1.psl.local:
+            splkids1.psl.local:
     windows:
       vars:
         ansible_connection: winrm
