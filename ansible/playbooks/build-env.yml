@@ -133,7 +133,8 @@
   post_tasks:
   tasks:
     - name: Run suricata setup
-      include_role: '{{ rolevar }}'
+      include_role: 
+        name: '{{ rolevar }}'
       loop:
         - 'lin_suricata'
       loop_control:
