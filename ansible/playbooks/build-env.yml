@@ -126,8 +126,6 @@
 - hosts: suricata
   vars_files:
     - ../vars/vars.yml
-    # setup suricata
-    - name: Setup suricata
   gather_facts: True
   strategy: free
   environment:
