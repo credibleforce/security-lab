@@ -1,3 +1,5 @@
 ---
 splunk:
+    user: splunk
+    group: splunk
     home: /opt/splunkforwarder
