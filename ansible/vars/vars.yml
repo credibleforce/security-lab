@@ -18,7 +18,7 @@ windows_certificate_authority_info:
 
 windows_domain_info:
   dns_servers:
-    - "{{ hostvars[groups['domain_controller'][0]].ansible_default_ipv4.address }}"
+    - "{{ hostvars[groups['domain_controller'][0]].ansible_ip_addresses[0] }}"
   dns_forward_lookup:
     - "8.8.8.8"
     - "8.8.4.4"

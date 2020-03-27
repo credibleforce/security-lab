@@ -19,4 +19,4 @@
   tasks:
     - name: Run windows domain setup
       debug:
-        msg: "{{ hostvars[groups['splunk'][0]].splunk_deployment_server }}"
+        msg: "{{ hostvars[groups['splunk'][0]] }}"
