@@ -1,0 +1,3 @@
+---
+splunk:
+    home: /opt/splunkforwarder
