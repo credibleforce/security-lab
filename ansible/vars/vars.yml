@@ -18,7 +18,7 @@ windows_certificate_authority_info:
 
 windows_domain_info:
   dns_servers:
-    - "172.17.0.5"
+    - "{{ group['domain_controller'][0] }}"
   dns_forward_lookup:
     - "8.8.8.8"
     - "8.8.4.4"
