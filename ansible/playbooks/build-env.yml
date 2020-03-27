@@ -15,6 +15,7 @@
   gather_facts: True
   environment:
   pre_tasks:
+    # splunk universal forwarder variables
     - name: Universal Forwarder Variable
       include_vars: ../vars/splunk_universal_forwarder.yml
       when:
