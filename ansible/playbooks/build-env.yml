@@ -26,7 +26,12 @@
     - name: Deploy common tasks to all
       include_role:
         name: ../roles/common
-
+    
+    #  build importable inventory for splunk serverclasses.conf (copied over during splunk build)
+    - name: Build serverclasses inventor
+      include_role:
+        name: create_serverclasses_csv
+    
     # setup domain controller
     - name: Windows Domain Controllers Setup
       include_role:
