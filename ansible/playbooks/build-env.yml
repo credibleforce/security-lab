@@ -28,7 +28,7 @@
         name: ../roles/common
     
     #  build importable inventory for splunk serverclasses.conf (copied over during splunk build)
-    - name: Build serverclasses inventor
+    - name: Build serverclasses inventory
       include_role:
         name: create_serverclasses_csv
     
