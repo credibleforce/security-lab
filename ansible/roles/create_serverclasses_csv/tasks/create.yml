@@ -9,7 +9,7 @@
         {{host.split(".")[0] | lower }},{{group}}
         {% endfor %}
         {% endfor %}
-      dest: /tmp/splunk_inventory.csv
+      dest: /tmp/lab_inventory.csv
       backup: yes
     run_once: yes
     delegate_to: localhost
