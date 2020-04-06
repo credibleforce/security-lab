@@ -1,4 +1,6 @@
 ---
+- include: powershell-strong-crypto.yml
+  when: ansible_distribution is search ('Microsoft')
 #- include: chocolately-components.yml
 #  when: ansible_distribution is search ('Microsoft')
 #- include: disable-windows-defender.yml
