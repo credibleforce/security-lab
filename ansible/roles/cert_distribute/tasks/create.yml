@@ -42,6 +42,36 @@
     dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
   become: yes
 
+- name: Install ca package on rhel systems
+  yum:
+    name: ca-certificates
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: install ca package on debian systems
+  apt:
+    name: ca-certificates
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Enable dynamic ca configuration on rhel6
+  shell: /bin/update-ca-trust enable
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+
+- name: Copy certificate authority to trusted ca path of the os
+  copy:
+    src: '{{ item }}'
+    dest: '{{ ca_path[ansible_os_family][ansible_distribution_major_version|int] }}/'
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - /tmp/cacert.pem
+  notify:
+    - update trusted ca debian
+    - update trusted ca redhat
+
 - name: Restrict access to cert material
   file:
     path: "{{ item }}"
