@@ -46,6 +46,7 @@
   yum:
     name: ca-certificates
     state: present
+  become: yes
   when: ansible_os_family == "RedHat"
 
 - name: install ca package on debian systems
@@ -53,10 +54,12 @@
     name: ca-certificates
     state: present
     update_cache: yes
+  become: yes
   when: ansible_os_family == "Debian"
 
 - name: Enable dynamic ca configuration on rhel6
   shell: /bin/update-ca-trust enable
+  become: yes
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
 
 - name: Copy certificate authority to trusted ca path of the os
@@ -71,7 +74,8 @@
   notify:
     - update trusted ca debian
     - update trusted ca redhat
-
+  become: yes
+  
 - name: Restrict access to cert material
   file:
     path: "{{ item }}"
