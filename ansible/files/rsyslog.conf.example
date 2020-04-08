@@ -1,0 +1,71 @@
+#
+# File: "splunk.conf"
+# Location: "/etc/rsyslog.d/"
+# Ver: 0.3
+#
+#
+# Prerequisites:
+# Splunk is running as Linux user: adduser splunker
+# Add "splunker" user to syslog groups: usermod -G sys,adm,syslog splunker
+# Create logging directory for Splunk: mkdir /var/log/splunk
+# Set permissions for log directory: chown -R splunker:splunker /var/log/splunk
+#
+# Set up log file rotation and compression for the new RSyslog files.
+#
+# vi /etc/logrotate.d/splunk
+#/var/log/splunk/*.log {
+# daily
+# missingok
+# rotate 14
+# compress
+# notifempty
+# nocreate
+#}
+# ***************** DEFAULT MODULE CONFIGURATION ********************
+# Load the RSyslog modules needed for inbound connections
+#
+module (load="imudp")
+module (load="imtcp")
+# ****************** TEMPLATES CONFIGURATION ************************
+# Define the RSysLog logging format for writing events to syslog.
+# template (name="rsyslog-fmt" type="string" string="%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n" )
+# template (name="splunk" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+# ****************** TEMPLATES FILE FORMAT CONFIGURATION ************************
+template (name="msgFileFormat" type="string" string="%msg%\n" )
+template (name="rawmsgFileFormat" type="string" string="%rawmsg%\n" )
+template (name="rawmsgafterpriFileFormat" type="string" string="%rawmsg-after-pri%\n" )
+# ****************** TEMPLATES DESTINATON CONFIGURATION ************************
+template (name="bluecoat" type="string" string="/var/log/splunk/bluecoat/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="f5" type="string" string="/var/log/splunk/f5/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="meraki" type="string" string="/var/log/splunk/meraki/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="infoblox" type="string" string="/var/log/splunk/infoblox/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="pulsesecure" type="string" string="/var/log/splunk/pulsesecure/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="rsa" type="string" string="/var/log/splunk/rsa/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%.log")
+template (name="catchall" type="string" string="/var/log/splunk/catchall/%FROMHOST%/%$YEAR%-%$MONTH%-%$DAY%-%$HOUR%00.log")
+# ****************** FILTERS CONFIGURATION ************************
+# Review all incoming message streams and deliver message to appropriate log file, as per RegEx. Save in new logging directory at: /var/log/splunk
+ruleset (name="splunk") {
+# Bluecoat Ruleset
+if $FROMHOST == "10.207.96.4" then { action (type="omfile" dynaFile="bluecoat" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# F5 Ruleset
+else if $FROMHOST == "10.96.6.252" OR $FROMHOST == "10.96.6.253" OR $FROMHOST == "10.96.6.254" then { action (type="omfile" dynaFile="f5" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# Meraki Ruleset
+else if $msg contains "airmarshal_events" OR ($msg contains "_AP" AND $msg contains "events type=") then { action (type="omfile" dynaFile="meraki" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# Infoblox Ruleset
+else if $FROMHOST == "10.207.0.221" OR $FROMHOST == "10.207.0.222" then { action (type="omfile" dynaFile="infoblox" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# Pulse Secure Ruleset
+else if $FROMHOST == "10.207.96.9" then { action (type="omfile" dynaFile="pulsesecure" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# RSA Ruleset
+else if $FROMHOST == "ab10-auths001.celero.prv" then { action (type="omfile" dynaFile="rsa" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+# Catch All Ruleset
+else { action (type="omfile" dynaFile="catchall" dirCreateMode="0755" FileCreateMode="0600" dirGroup="splunker" fileGroup="splunker" dirOwner="splunker" fileOwner="splunker" template="rawmsgafterpriFileFormat") }
+}
+# ********************* INPUT CONFIGURATION *************************
+# Bind the UDP module for inbound connections on port 514,
+# and apply "remote" ruleset to all incoming messages.
+#
+input ( type="imudp" port="514" ruleset="splunk")
+# Bind the TCP module for inbound connections on port 10514,
+# and apply "remote" ruleset to all incoming messages.
+#
+input (type="imtcp" port="514" ruleset="splunk")
