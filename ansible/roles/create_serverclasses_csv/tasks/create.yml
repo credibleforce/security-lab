@@ -1,15 +1,15 @@
 ---
-- name: Build serverclasses inventory
-  copy:
-  content: |
-    Client,ServerType
-    {% for group in groups %}
-    {% for host in groups[group] %}
-    {{host}},{{group}}
-    {{host.split(".")[0] | lower }},{{group}}
-    {% endfor %}
-    {% endfor %}
-  dest: /tmp/lab_inventory.csv
-  backup: yes
-  run_once: yes
-  delegate_to: localhost
+  - name: Build serverclasses inventory
+    copy:
+      content: |
+        Client,ServerType
+        {% for group in groups %}
+        {% for host in groups[group] %}
+        {{host}},{{group}}
+        {{host.split(".")[0] | lower }},{{group}}
+        {% endfor %}
+        {% endfor %}
+      dest: /tmp/lab_inventory.csv
+      backup: yes
+    run_once: yes
+    delegate_to: localhost
