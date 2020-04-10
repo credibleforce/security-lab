@@ -13,7 +13,7 @@ If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe"))
     Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing & Starting Splunk"
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     (New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=8.0.2/windows/splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=8.0.2&product=universalforwarder&typed=release', $msiFile)
-    Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", 'DEPLOYMENT_SERVER="${SplunkDeploymentServer}:8089"  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD="${SplunkPassword}" /quiet' -Wait
+    Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", $('DEPLOYMENT_SERVER="{0}:8089"  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD="{1}" /quiet' -f ${SplunkDeploymentServer},${SplunkPassword}) -Wait
 } Else {
     Write-Host "Splunk is already installed. Moving on."
 }
