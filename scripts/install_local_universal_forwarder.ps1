@@ -21,4 +21,4 @@ If ((Get-Service -name splunkforwarder).Status -ne "Running")
 {
     throw "Splunk forwarder service not running"
 }
-Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Splunk installation complete!
+Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Splunk installation complete!"
