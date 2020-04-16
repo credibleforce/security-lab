@@ -68,13 +68,13 @@ tcp(port(514));
 };
 
 #Destinations
-destination d_cisco_asa { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
-destination d_palo_alto { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
-destination d_all { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
+destination d_cisco_asa { file("/var/log/splunk-syslog/cisco/$HOST.log" create_dirs(yes)); };
+destination d_palo_alto { file("/var/log/splunk-syslog/paloalto/$HOST.log" create_dirs(yes)); };
+destination d_all { file("/var/log/splunk-syslog/default/$HOST.log" create_dirs(yes)); };
 
 # Filters
-filter f_cisco_asa { match(“%ASA” value(“PROGRAM”)) or match(“%ASA” value(“MESSAGE”)); };
-filter f_palo_alto { match(“009401000570” value(“PROGRAM”)) or match(“009401000570” value(“MESSAGE”)); };
+filter f_cisco_asa { match("%ASA" value("PROGRAM")) or match("%ASA" value("MESSAGE")); };
+filter f_palo_alto { match("009401000570" value("PROGRAM")) or match("009401000570" value("MESSAGE")); };
 filter f_all { not (
 filter(f_cisco_asa) or
 filter(f_palo_alto)

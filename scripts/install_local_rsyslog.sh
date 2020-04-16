@@ -20,7 +20,7 @@ template (name="rawmsgafterpriFileFormat" type="string" string="%rawmsg-after-pr
 
 # ****************** TEMPLATES DESTINATON CONFIGURATION ************************
 template(name="TmplMsg" type="string"
-    string="/var/log/splunk-syslog/%HOSTNAME%.log"
+    string="/var/log/splunk-syslog/default/%HOSTNAME%.log"
 )
 
 # ****************** FILTERS CONFIGURATION ************************
