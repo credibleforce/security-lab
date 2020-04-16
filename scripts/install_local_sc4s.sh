@@ -44,9 +44,16 @@ then
     display_help
 fi
 
+if [[ -z $(echo "$SPLUNK_HEC_SERVER" | awk -F: '{print $2}') ]]; then 
+SPLUNK_HEC_SERVER_PORT="443"
+else 
+SPLUNK_HEC_SERVER_PORT=$(echo "$SPLUNK_HEC_SERVER" | awk -F: '{print $2}')
+fi
+
 # export splunk password and deployment server for ansible usage
 export SPLUNK_HEC_SERVER=$SPLUNK_HEC_SERVER
 export SPLUNK_HEC_TOKEN=$SPLUNK_HEC_TOKEN
+export SPLUNK_HEC_SERVER_PORT=$SPLUNK_HEC_SERVER_PORT
 
 echo "Starting Script..."
 
@@ -68,7 +75,12 @@ fi
 # adduser syslog && addgroup
 
 echo "Creating sc4s directory: ${SC4S_OPT}/bin"
+
 mkdir -p ${SC4S_OPT}/bin
+
+# to manage selinux by default port 8088 outbound not allowed
+yum install -y policycoreutils-python 
+semanage port -a -t http_port_t -p tcp $SPLUNK_HEC_SERVER_PORT
 
 # centos
 if [ ${CENTOS} -eq 0 ]; then
