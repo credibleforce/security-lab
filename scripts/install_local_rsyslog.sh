@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat <<EOF > /etc/rsyslog.d/splunk.conf
+cat <<'EOF' > /etc/rsyslog.d/splunk.conf
 #
 # Include all config files for splunk /etc/rsyslog.d/
 #
@@ -40,7 +40,7 @@ chmod -R 0755 /var/log/splunk-syslog
 
 systemctl restart rsyslog
 
-cat <<EOF > /etc/logrotate.d/splunk-syslog
+cat <<'EOF' > /etc/logrotate.d/splunk-syslog
 /var/log/splunk-syslog/*.log
 {
     daily
