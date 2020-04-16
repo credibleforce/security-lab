@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 echo "Starting Script..."
 
 DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
