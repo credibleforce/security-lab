@@ -5,7 +5,6 @@ echo "Starting Script..."
 DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CENTOS=$(rpm --query centos-release > /dev/null 2>&1; echo $?)
 REDHAT=$(rpm --query redhat-release > /dev/null 2>&1; echo $?)
-SC4S_OPT="/opt/sc4s"
 
 if [ ${CENTOS} -eq 0 ]; then
     echo "OS: CentOS"
@@ -18,9 +17,6 @@ fi
 
 # echo "Creating non-root syslog user..."
 # adduser syslog && addgroup
-
-echo "Creating sc4s directory: ${SC4S_OPT}/bin"
-mkdir -p ${SC4S_OPT}/bin
 
 # centos
 if [ ${CENTOS} -eq 0 ]; then
@@ -94,7 +90,9 @@ mkdir -p /var/log/splunk-syslog
 chown -R splunk:splunk /var/log/splunk-syslog
 chmod -R 0755 /var/log/splunk-syslog
 
-systemctl restart rsyslog
+systemctl daemon-reload
+systemctl enable syslog-ng
+systemctl start syslog-ng
 
 cat <<'EOF' > /etc/logrotate.d/splunk-syslog
 /var/log/splunk-syslog/*.log
@@ -114,7 +112,7 @@ cat <<'EOF' > /etc/logrotate.d/splunk-syslog
 }
 EOF
 
-# alternative log rotation method is via cronjob
+# alternative log rotation method is via cronjob (not provided)
 
 firewall-cmd --permanent --zone=public --add-port=514/tcp 
 firewall-cmd --permanent --zone=public --add-port=514/udp
