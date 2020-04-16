@@ -128,7 +128,7 @@ echo "Create sc4s env file..."
 cat <<'EOF' > /opt/sc4s/env_file
 SYSLOGNG_OPTS=-f /etc/syslog-ng/syslog-ng.conf 
 SPLUNK_HEC_URL=https://splksh1.psl.local:8088
-SPLUNK_HEC_TOKEN=a778f63a-5dff-4e3c-a72c-a03183659e94
+SPLUNK_HEC_TOKEN=f7a5b222-7b57-41cf-9714-fb5fc333bef6
 SC4S_DEST_SPLUNK_HEC_WORKERS=6
 #Uncomment the following line if using untrusted SSL certificates
 #SC4S_DEST_SPLUNK_HEC_TLS_VERIFY=no
