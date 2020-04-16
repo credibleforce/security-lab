@@ -1,5 +1,53 @@
 #!/bin/bash
 
+display_help() {
+        echo "Usage: $(basename "$0") [option...]" >&2
+        echo
+        echo "  $(basename "$0") -s <SPLUNK HEC SERVER:PORT>     Splunk HEC Server"
+        echo "  $(basename "$0") -t <SPLUNK HEC TOKEN>     Splunk HEC Token"
+        echo "  $(basename "$0") -h                       Display this help message"
+        echo
+        exit 1
+}
+
+while getopts s:t:h opt
+do
+    case "${opt}" in
+        s)
+            SPLUNK_HEC_SERVER=${OPTARG}
+            ;;
+        t)
+            SPLUNK_HEC_TOKEN=${OPTARG}
+            ;;
+        h)
+            display_help
+            ;;
+        \?)
+            echo "Invalid Option: -$OPTARG" 1>&2
+            echo
+            display_help
+            ;;
+    esac
+done
+
+if [[ -z "$SPLUNK_HEC_SERVER" ]]
+then
+        echo "Required Option: -s not set" 1>&2
+    echo
+    display_help
+fi
+
+if [[ -z "$SPLUNK_HEC_TOKEN" ]]
+then
+        echo "Required Option: -t not set" 1>&2
+    echo
+    display_help
+fi
+
+# export splunk password and deployment server for ansible usage
+export SPLUNK_HEC_SERVER=$SPLUNK_HEC_SERVER
+export SPLUNK_HEC_TOKEN=$SPLUNK_HEC_TOKEN
+
 echo "Starting Script..."
 
 DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -125,10 +173,10 @@ echo "Execute first-time run preconfig..."
 #ln -sf /opt/sc4s/bin/preconfig.sh /usr/local/bin/
 
 echo "Create sc4s env file..."
-cat <<'EOF' > /opt/sc4s/env_file
+cat <<EOF > /opt/sc4s/env_file
 SYSLOGNG_OPTS=-f /etc/syslog-ng/syslog-ng.conf 
-SPLUNK_HEC_URL=https://splksh1.psl.local:8088
-SPLUNK_HEC_TOKEN=a778f63a-5dff-4e3c-a72c-a03183659e94
+SPLUNK_HEC_URL=https://${SPLUNK_HEC_SERVER}
+SPLUNK_HEC_TOKEN=${SPLUNK_HEC_TOKEN}
 SC4S_DEST_SPLUNK_HEC_WORKERS=6
 #Uncomment the following line if using untrusted SSL certificates
 #SC4S_DEST_SPLUNK_HEC_TLS_VERIFY=no
@@ -143,5 +191,8 @@ echo "Enabling sc4s"
 systemctl enable sc4s
 echo "Starting sc4s"
 systemctl start sc4s
+
+logger -P 514 -T -n localhost "test TCP"
+logger -P 514 -d -n localhost "test UDP"
 
 echo "Script complete."
