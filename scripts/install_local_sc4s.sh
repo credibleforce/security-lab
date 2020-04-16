@@ -192,4 +192,7 @@ systemctl enable sc4s
 echo "Starting sc4s"
 systemctl start sc4s
 
+logger -P 514 -T -n localhost "test TCP"
+logger -P 514 -d -n localhost "test UDP"
+
 echo "Script complete."
