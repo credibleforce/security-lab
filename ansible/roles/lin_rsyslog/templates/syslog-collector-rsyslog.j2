@@ -1,0 +1,31 @@
+#
+# Include all config files for splunk /etc/rsyslog.d/
+#
+
+module(load="imudp")
+module(load="imtcp")
+
+# ****************** TEMPLATES CONFIGURATION ************************
+# Define the RSysLog logging format for writing events to syslog.
+# template (name="rsyslog-fmt" type="string" string="%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n" )
+# template (name="splunk" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+
+# ****************** TEMPLATES FILE FORMAT CONFIGURATION ************************
+template (name="msgFileFormat" type="string" string="%msg%\n" )
+template (name="rawmsgFileFormat" type="string" string="%rawmsg%\n" )
+template (name="rawmsgafterpriFileFormat" type="string" string="%rawmsg-after-pri%\n" )
+
+# ****************** TEMPLATES DESTINATON CONFIGURATION ************************
+template(name="TmplMsg" type="string"
+    string="{{ syslog.log.path }}/default/%HOSTNAME%.log"
+)
+
+# ****************** FILTERS CONFIGURATION ************************
+ruleset(name="default_file"){
+     action(type="omfile" dynafile="TmplMsg" dirCreateMode="0755" FileCreateMode="0600" dirGroup="{{ syslog.group }}" fileGroup="{{ syslog.group }}" dirOwner="{{ syslog.user }}" fileOwner="{{ syslog.user }}" template="rawmsgafterpriFileFormat")
+}
+
+
+# inputs
+input(type="imtcp" port="514" ruleset="default_file")
+input(type="imudp" port="514" ruleset="default_file")

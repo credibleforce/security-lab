@@ -1,0 +1,47 @@
+---
+    - name: Install rsyslog
+      yum: 
+        name: rsyslog 
+        state: installed
+      become: yes
+
+    - name: Configure rsyslog
+      template: 
+        src: syslog-collector-rsyslog.j2
+        dest: syslog.config.path
+      become: yes
+
+    - name: Create logging directory
+      file: 
+        path: syslog.log.path
+        state: "directory"
+        owner: syslog.user
+        group: syslog.group
+        mode: 0755
+      become: yes
+    
+    - name: Reload systemd daemons
+      systemd:
+        daemon_reload: yes
+      become: yes
+    
+    - name: Enable rsyslog service and restart
+      systemd:
+        name: syslog.service.name
+        enabled: yes
+        state: "restarted"
+      become: yes
+      
+    - name: Configure logrotation for rsyslog
+      template: 
+        src: syslog-collector-logrotate.j2
+        dest: syslog.logrotate.config.path
+      become: yes
+
+    - name: Send test message using logger
+      shell: |
+        logger -P {{ item.port }} {{ item.protocol == 'tcp' ? '-T' : '-d' }} -n {{ item.destination }} "{{ item.message }}"
+      with_items:
+        - syslog.test
+
+

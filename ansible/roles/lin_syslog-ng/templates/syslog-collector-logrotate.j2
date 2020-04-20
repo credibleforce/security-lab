@@ -1,0 +1,15 @@
+{{ syslog.log.path }}/*.log
+{
+    daily
+    compress
+    delaycompress
+    rotate 4
+    ifempty
+    maxage 7
+    nocreate
+    missingok
+    sharedscripts
+    postrotate
+    /bin/kill -HUP `cat {{ syslog.pid.path }} 2> /dev/null` 2> /dev/null || true
+    endscript
+}

@@ -1,0 +1,31 @@
+sc4s:
+    opt: "/opt/sc4s"
+    splunk:
+        hec:
+            server: splksh1.psl.local
+            port: 8088
+            token: f7a5b222-7b57-41cf-9714-fb5fc333bef6
+    user: splunk
+    group: splunk
+    config:
+        path: "/etc/syslog-ng/"
+    pid:
+        path: "/var/run/syslog-ng.pid"
+    service:
+        syslog-ng-name: "syslog-ng"
+        name: sc4s
+        path: "/etc/systemd/system/sc4s.service"
+        preconfig:
+            path: "/opt/sc4s/bin/preconfig.sh"
+        env:
+            path: "/opt/sc4s/env_file"
+    test:
+        - message: "This is a test TCP message"
+          port: "514"
+          protocol: "tcp"
+          destination: "0.0.0.0"
+        - message: "This is a test UDP message"
+          port: "514"
+          protocol: "udp"
+          destination: "0.0.0.0"
+    

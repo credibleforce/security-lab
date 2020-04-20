@@ -138,7 +138,7 @@ After=network.target network-online.target
 [Service]
 Type=notify
 ExecStartPre=/opt/sc4s/bin/preconfig.sh
-ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p /var/run/syslogd.pid
+ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p /var/run/syslog-ng.pid
 ExecReload=/bin/kill -HUP $MAINPID
 EnvironmentFile=-/etc/default/syslog-ng
 EnvironmentFile=-/etc/sysconfig/syslog-ng

@@ -1,0 +1,73 @@
+---
+    - name: Install epel-release
+      yum: 
+        name: epel-release 
+        state: installed
+      become: yes
+      
+    - name: Install scl manager - Centos
+      yum: 
+        name: item 
+        state: installed
+      with_items:
+        - "centos-release-scl"
+      become: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Add syslog-ng repo
+      yum_repository:
+        name: czanik-syslog-ng-stable-epel-7
+        description: Syslog-ng stable repo
+        baseurl: https://copr.fedorainfracloud.org/coprs/czanik/syslog-ng-stable/repo/epel-7/czanik-syslog-ng-stable-epel-7.repo
+      become: yes
+
+    - name: Install syslog-ng
+      yum:
+        name: item
+        state: "installed"
+      with_items:
+        - "syslog-ng"
+        - "syslog-ng-http"
+        - "syslog-ng-python" 
+        - "rh-python36"
+      become: yes
+
+    - name: Configure syslog-ng
+      template: 
+        src: syslog-collector-syslog-ng.j2
+        dest: syslog.config.path
+
+    - name: Create logging directory
+      file: 
+        path: syslog.log.path
+        state: "directory"
+        owner: syslog.user
+        group: syslog.group
+        mode: 0755
+      become: yes
+    
+    - name: Reload systemd daemons
+      systemd:
+        daemon_reload: yes
+      become: yes
+    
+    - name: Enable syslog-ng service and restart
+      systemd:
+        name: syslog.service.name
+        enabled: yes
+        state: "restarted"
+      become: yes
+      
+    - name: Configure logrotation for syslog-ng
+      template: 
+        src: syslog-collector-logrotate.j2
+        dest: syslog.logrotate.config.path
+      become: yes
+
+    - name: Send test message using logger
+      shell: |
+        logger -P {{ item.port }} {{ item.protocol == 'tcp' ? '-T' : '-d' }} -n {{ item.destination }} "{{ item.message }}"
+      with_items:
+        - syslog.test
+
+
