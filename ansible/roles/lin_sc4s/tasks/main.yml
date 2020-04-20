@@ -35,12 +35,20 @@
         - "syslog-ng-http"
         - "syslog-ng-python" 
         - "rh-python36" 
+      become: yes
 
     - name: Disable any syslog-ng services
       systemd:
         name: "{{ sc4s.service.syslog-ng-name }}"
         enabled: no
         state: "stopped" 
+      become: yes
+
+    # optionally remove this service altogether and replace with syslog-ng (out of scope)
+    - name: Reload rsyslog to ensure syslogd.pid file is correct
+      systemd:
+        name: rsyslog
+        state: "restarted"
       become: yes
     
     - name: Download latest sc4s
