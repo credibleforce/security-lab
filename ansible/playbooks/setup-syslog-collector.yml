@@ -25,7 +25,8 @@
       include_role:
         name: '{{ rolevar }}'
       loop:
-        - 'lin_rsyslog'
+        #- 'lin_rsyslog'
+        - 'lin_syslog-ng'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['syslog-collector']
