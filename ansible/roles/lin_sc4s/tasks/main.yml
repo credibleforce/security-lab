@@ -57,8 +57,9 @@
         dest: /tmp/baremetal.tar
 
     - name: Untar latest sc4s
-      src: /tmp/baremetal.tar
-      dest: "{{ sc4s.config.path }}"
+      unarchive:
+        src: /tmp/baremetal.tar
+        dest: "{{ sc4s.config.path }}"
       become: yes
 
     - name: Setup service for sc4s 
