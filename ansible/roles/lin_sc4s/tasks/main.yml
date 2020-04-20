@@ -81,7 +81,7 @@
     - name: Send test message using logger
       shell: |
         logger -P {{ item.port }} {{ '-T' if (item.protocol == 'tcp') else '-d' }} -n {{ item.destination }} "{{ item.message }}"
-      with_items:
+      with_dict:
         - syslog.test
 
 
