@@ -39,7 +39,7 @@
 
     - name: Disable any syslog-ng services
       systemd:
-        name: "{{ sc4s.service.syslog-ng-name }}"
+        name: "syslog-ng"
         enabled: no
         state: "stopped" 
       become: yes
