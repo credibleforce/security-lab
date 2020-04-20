@@ -80,8 +80,8 @@
 
     - name: Send test message using logger
       shell: |
-        logger -P {{ item.port }} {{ item.protocol == 'tcp' ? '-T' : '-d' }} -n {{ item.destination }} "{{ item.message }}"
+        logger -P {{ item.port }} {% '-T' if (item.protocol == 'tcp') else '-d' %} -n {{ item.destination }} "{{ item.message }}"
       with_items:
-        - sc4s.test
+        - syslog.test
 
 
