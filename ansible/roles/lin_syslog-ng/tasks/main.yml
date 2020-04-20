@@ -13,15 +13,16 @@
         - "centos-release-scl"
       become: yes
       when: ansible_distribution == "CentOS"
-        
+
     - name: Add syslog-ng repo
       yum_repository:
-        name: Copr repo for syslog-ng326 owned by czanik
-        description: Syslog-ng stable repo
+        name: czanik-syslog-ng-stable-epel-7
+        description: Copr repo for syslog-ng-stable owned by czanik
         baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng-stable/epel-7-$basearch/
         gpgkey: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng-stable/pubkey.gpg
         gpgcheck: yes
         enabled: yes
+        skip_if_unavailable: yes
       become: yes
 
     - name: Install syslog-ng

@@ -17,7 +17,7 @@
 
     - name: Add syslog-ng repo
       yum_repository:
-        name: Copr repo for syslog-ng326 owned by czanik
+        name: czanik-syslog-ng326-epel-7
         description: Syslog-ng 3.26 repo
         #baseurl: https://copr.fedorainfracloud.org/coprs/czanik/syslog-ng326/repo/epel-7/czanik-syslog-ng326-epel-7.repo
         baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-7-$basearch/
