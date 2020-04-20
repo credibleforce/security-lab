@@ -1,0 +1,98 @@
+---
+    - name: Install epel-release
+      yum: 
+        name: epel-release 
+        state: installed
+      become: yes
+      
+    - name: Install scl manager - Centos
+      yum: 
+        name: "{{ item  }}"
+        state: installed
+      with_items:
+        - "centos-release-scl"
+      become: yes
+      when: ansible_distribution == "CentOS"
+
+
+    - name: Add syslog-ng repo
+      yum_repository:
+        name: czanik-syslog-ng326-epel-7
+        description: Syslog-ng 3.26 repo
+        #baseurl: https://copr.fedorainfracloud.org/coprs/czanik/syslog-ng326/repo/epel-7/czanik-syslog-ng326-epel-7.repo
+        baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-7-$basearch/
+        gpgkey: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/pubkey.gpg
+        gpgcheck: yes
+        enabled: yes
+      become: yes
+
+    - name: Install syslog-ng
+      yum:
+        name: "{{ item }}"
+        state: "installed"
+      with_items:
+        - "syslog-ng"
+        - "syslog-ng-http"
+        - "syslog-ng-python" 
+        - "rh-python36" 
+      become: yes
+
+    - name: Disable any syslog-ng services
+      systemd:
+        name: "{{ sc4s.service.syslog-ng-name }}"
+        enabled: no
+        state: "stopped" 
+      become: yes
+
+    # optionally remove this service altogether and replace with syslog-ng (out of scope)
+    - name: Reload rsyslog to ensure syslogd.pid file is correct
+      systemd:
+        name: rsyslog
+        state: "restarted"
+      become: yes
+    
+    - name: Download latest sc4s
+      get_url:
+        url: https://github.com/splunk/splunk-connect-for-syslog/releases/latest/download/baremetal.tar
+        dest: /tmp/baremetal.tar
+
+    - name: Untar latest sc4s
+      src: /tmp/baremetal.tar
+      dest: "{{ sc4s.config.path }}"
+      become: yes
+
+    - name: Setup service for sc4s 
+      template: 
+        src: sc4s.service.j2
+        dest: "{{ sc4s.service.path }}"
+      become: yes
+        
+    - name: Setup preconfig for sc4s  
+      template: 
+        src: preconfig.sh.j2
+        dest: "{{ sc4s.service.preconfig.path }}"
+        mode: 0755
+      become: yes
+
+    - name: Setup env for sc4s  
+      template: 
+        src: env_file.j2
+        dest: "{{ sc4s.service.env.path }}"
+      become: yes
+    
+    - name: Reload systemd daemons
+      systemd:
+        daemon_reload: yes
+    
+    - name: Enable sc4s service and restart
+      systemd:
+        name: "{{ sc4s.service.name }}"
+        enabled: yes
+        state: "restarted"
+
+    - name: Send test message using logger
+      shell: |
+        logger -P {{ item.value.port }} {{ '-T' if (item.value.protocol == 'tcp') else '-d' }} -n {{ item.value.destination }} "{{ item.value.message }}"
+      with_dict: "{{ syslog.test }}"
+
+

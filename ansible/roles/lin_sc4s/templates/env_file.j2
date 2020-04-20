@@ -1,0 +1,9 @@
+SYSLOGNG_OPTS=-f {{ sc4s.config.path }}/syslog-ng.conf 
+SPLUNK_HEC_URL=https://{{ sc4s.splunk.hec.server }}:{{ sc4s.splunk.hec.server }}
+SPLUNK_HEC_TOKEN={{ sc4s.splunk.hec.token }}
+SC4S_DEST_SPLUNK_HEC_WORKERS=6
+#Uncomment the following line if using untrusted SSL certificates
+SC4S_DEST_SPLUNK_HEC_TLS_VERIFY=no
+SC4S_LISTEN_DEFAULT_TCP_PORT=514
+SC4S_LISTEN_DEFAULT_UDP_PORT=514
+#SC4S_LISTEN_DEFAULT_TLS_PORT=6514

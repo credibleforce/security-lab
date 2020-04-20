@@ -1,0 +1,20 @@
+[Unit]
+Description=SC4S Syslog Daemon
+Documentation=man:syslog-ng(8)
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=notify
+ExecStartPre={{ sc4s.preconfig.path }}
+ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p {{ sc4s.pid.path }}
+ExecReload=/bin/kill -HUP $MAINPID
+EnvironmentFile=-/etc/default/syslog-ng
+EnvironmentFile=-/etc/sysconfig/syslog-ng
+EnvironmentFile=/opt/sc4s/env_file
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

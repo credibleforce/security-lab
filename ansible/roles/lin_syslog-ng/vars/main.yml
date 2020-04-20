@@ -1,0 +1,18 @@
+syslog:
+    user: splunk
+    group: splunk
+    config:
+        path: "/etc/syslog-ng/syslog-ng.conf"
+    log:
+        path: "/var/log/syslog-collector"
+    pid:
+        path: "/var/run/syslog-ng.pid"
+    service:
+        name: "syslog-ng"
+    logrotate:
+        config:
+            path: "/etc/logrotate.d/syslog-collector"
+    test:
+        tcp_log: { message: "This is a test TCP message", port: "514", protocol: "tcp", destination: "0.0.0.0" }
+        udp_log: { message: "This is a test UDP message", port: "514", protocol: "udp", destination: "0.0.0.0" }
+    

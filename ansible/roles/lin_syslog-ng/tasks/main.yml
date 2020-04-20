@@ -1,0 +1,90 @@
+---
+    - name: Install epel-release
+      yum: 
+        name: epel-release 
+        state: installed
+      become: yes
+      
+    - name: Install scl manager - Centos
+      yum: 
+        name: "{{ item }}"
+        state: installed
+      with_items:
+        - "centos-release-scl"
+      become: yes
+      when: ansible_distribution == "CentOS"
+
+    - name: Add syslog-ng repo
+      yum_repository:
+        name: czanik-syslog-ng-stable-epel-7
+        description: Copr repo for syslog-ng-stable owned by czanik
+        baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng-stable/epel-7-$basearch/
+        gpgkey: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng-stable/pubkey.gpg
+        gpgcheck: yes
+        enabled: yes
+        skip_if_unavailable: yes
+      become: yes
+
+    - name: Install syslog-ng
+      yum:
+        name: " {{ item }}"
+        state: "installed"
+      with_items:
+        - "syslog-ng"
+        - "syslog-ng-http"
+        - "syslog-ng-python" 
+        - "rh-python36"
+      become: yes
+
+    - name: Configure syslog-ng
+      template: 
+        src: syslog-collector-syslog-ng.j2
+        dest: "{{ syslog.config.path }}"
+
+    - name: Create logging directory
+      file: 
+        path: "{{ syslog.log.path }}"
+        state: "directory"
+        owner: "{{ syslog.user }}"
+        group: "{{ syslog.group }}"
+        mode: 0755
+      become: yes
+    
+    - name: Update syslog-ng pid to avoid conflicts with rsyslog
+      lineinfile:
+        path: /usr/lib/systemd/system/syslog-ng.service
+        state: present
+        regexp: '^ExecStart=\/usr\/sbin\/syslog\-ng -F \$SYSLOGNG_OPTS -p \/var\/run\/syslogd.pid'
+        line: 'ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p /var/run/syslog-ng.pid'
+    
+    - name: Reload systemd daemons
+      systemd:
+        daemon_reload: yes
+      become: yes
+
+    # optionally remove this service altogether and replace with syslog-ng (out of scope)
+    - name: Reload rsyslog to ensure syslogd.pid file is correct
+      systemd:
+        name: rsyslog
+        state: "restarted"
+      become: yes
+    
+    - name: Enable syslog-ng service and restart
+      systemd:
+        name: "{{ syslog.service.name }}"
+        enabled: yes
+        state: "restarted"
+      become: yes
+      
+    - name: Configure logrotation for syslog-ng
+      template: 
+        src: syslog-collector-logrotate.j2
+        dest: "{{ syslog.logrotate.config.path }}"
+      become: yes
+
+    - name: Send test message using logger
+      shell: |
+        logger -P {{ item.value.port }} {{ '-T' if (item.value.protocol == 'tcp') else '-d' }} -n {{ item.value.destination }} "{{ item.value.message }}"
+      with_dict: "{{ syslog.test }}"
+
+

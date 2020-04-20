@@ -5,7 +5,6 @@ echo "Starting Script..."
 DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CENTOS=$(rpm --query centos-release > /dev/null 2>&1; echo $?)
 REDHAT=$(rpm --query redhat-release > /dev/null 2>&1; echo $?)
-SC4S_OPT="/opt/sc4s"
 
 if [ ${CENTOS} -eq 0 ]; then
     echo "OS: CentOS"
@@ -18,9 +17,6 @@ fi
 
 # echo "Creating non-root syslog user..."
 # adduser syslog && addgroup
-
-echo "Creating sc4s directory: ${SC4S_OPT}/bin"
-mkdir -p ${SC4S_OPT}/bin
 
 # centos
 if [ ${CENTOS} -eq 0 ]; then
@@ -72,13 +68,13 @@ tcp(port(514));
 };
 
 #Destinations
-destination d_cisco_asa { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
-destination d_palo_alto { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
-destination d_all { file("/var/log/splunk-syslog/$HOST.log” create_dirs(yes)); };
+destination d_cisco_asa { file("/var/log/splunk-syslog/cisco/$HOST.log" create_dirs(yes)); };
+destination d_palo_alto { file("/var/log/splunk-syslog/paloalto/$HOST.log" create_dirs(yes)); };
+destination d_all { file("/var/log/splunk-syslog/default/$HOST.log" create_dirs(yes)); };
 
 # Filters
-filter f_cisco_asa { match(“%ASA” value(“PROGRAM”)) or match(“%ASA” value(“MESSAGE”)); };
-filter f_palo_alto { match(“009401000570” value(“PROGRAM”)) or match(“009401000570” value(“MESSAGE”)); };
+filter f_cisco_asa { match("%ASA" value("PROGRAM")) or match("%ASA" value("MESSAGE")); };
+filter f_palo_alto { match("009401000570" value("PROGRAM")) or match("009401000570" value("MESSAGE")); };
 filter f_all { not (
 filter(f_cisco_asa) or
 filter(f_palo_alto)
@@ -94,7 +90,9 @@ mkdir -p /var/log/splunk-syslog
 chown -R splunk:splunk /var/log/splunk-syslog
 chmod -R 0755 /var/log/splunk-syslog
 
-systemctl restart rsyslog
+systemctl daemon-reload
+systemctl enable syslog-ng
+systemctl start syslog-ng
 
 cat <<'EOF' > /etc/logrotate.d/splunk-syslog
 /var/log/splunk-syslog/*.log
@@ -109,12 +107,12 @@ cat <<'EOF' > /etc/logrotate.d/splunk-syslog
     missingok
     sharedscripts
     postrotate
-    /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    /bin/kill -HUP `cat /var/run/syslog-ng.pid 2> /dev/null` 2> /dev/null || true
     endscript
 }
 EOF
 
-# alternative log rotation method is via cronjob
+# alternative log rotation method is via cronjob (not provided)
 
 firewall-cmd --permanent --zone=public --add-port=514/tcp 
 firewall-cmd --permanent --zone=public --add-port=514/udp

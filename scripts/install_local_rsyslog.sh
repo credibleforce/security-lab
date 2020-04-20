@@ -20,7 +20,7 @@ template (name="rawmsgafterpriFileFormat" type="string" string="%rawmsg-after-pr
 
 # ****************** TEMPLATES DESTINATON CONFIGURATION ************************
 template(name="TmplMsg" type="string"
-    string="/var/log/splunk-syslog/%HOSTNAME%.log"
+    string="/var/log/splunk-syslog/default/%HOSTNAME%.log"
 )
 
 # ****************** FILTERS CONFIGURATION ************************
@@ -38,7 +38,9 @@ mkdir -p /var/log/splunk-syslog
 chown -R splunk:splunk /var/log/splunk-syslog
 chmod -R 0755 /var/log/splunk-syslog
 
-systemctl restart rsyslog
+systemctl daemon-reload
+systemctl enable rsyslog
+systemctl start rsyslog
 
 cat <<'EOF' > /etc/logrotate.d/splunk-syslog
 /var/log/splunk-syslog/*.log

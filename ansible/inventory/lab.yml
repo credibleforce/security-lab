@@ -13,6 +13,10 @@ all:
           vars:
           hosts:
             splkids1.psl.local:
+        syslog-collector:
+          vars:
+          hosts:
+            splkuf1.psl.local:
     windows:
       vars:
         ansible_connection: winrm
