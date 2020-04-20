@@ -52,7 +52,7 @@
       become: yes
     
     - name: Download latest sc4s
-      uri:
+      get_url:
         url: https://github.com/splunk/splunk-connect-for-syslog/releases/latest/download/baremetal.tar
         dest: /tmp/
       register: sc4s_tar_ball
