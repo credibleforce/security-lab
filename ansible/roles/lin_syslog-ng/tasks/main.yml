@@ -35,14 +35,14 @@
     - name: Configure syslog-ng
       template: 
         src: syslog-collector-syslog-ng.j2
-        dest: syslog.config.path
+        dest: "{{ syslog.config.path }}"
 
     - name: Create logging directory
       file: 
-        path: syslog.log.path
+        path: "{{ syslog.log.path }}"
         state: "directory"
-        owner: syslog.user
-        group: syslog.group
+        owner: "{{ syslog.user }}"
+        group: "{{ syslog.group }}"
         mode: 0755
       become: yes
     

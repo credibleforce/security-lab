@@ -34,7 +34,7 @@
 
     - name: Disable any syslog-ng services
       systemd:
-        name: sc4s.service.syslog-ng-name
+        name: "{{ sc4s.service.syslog-ng-name }}"
         enabled: no
         state: "stopped" 
       become: yes
@@ -46,26 +46,26 @@
 
     - name: Untar latest sc4s
       src: /tmp/baremetal.tar
-      dest: sc4s.config.path
+      dest: "{{ sc4s.config.path }}"
       become: yes
 
     - name: Setup service for sc4s 
       template: 
         src: sc4s.service.j2
-        dest: sc4s.service.path
+        dest: "{{ sc4s.service.path }}"
       become: yes
         
     - name: Setup preconfig for sc4s  
       template: 
         src: preconfig.sh.j2
-        dest: sc4s.service.preconfig.path
+        dest: "{{ sc4s.service.preconfig.path }}"
         mode: 0755
       become: yes
 
     - name: Setup env for sc4s  
       template: 
         src: env_file.j2
-        dest: sc4s.service.env.path
+        dest: "{{ sc4s.service.env.path }}"
       become: yes
     
     - name: Reload systemd daemons
@@ -74,7 +74,7 @@
     
     - name: Enable sc4s service and restart
       systemd:
-        name: sc4s.service.name
+        name: "{{ sc4s.service.name }}"
         enabled: yes
         state: "restarted"
 
