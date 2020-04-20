@@ -7,7 +7,7 @@
       
     - name: Install scl manager - Centos
       yum: 
-        name: item 
+        name: "{{ item }}"
         state: installed
       with_items:
         - "centos-release-scl"
@@ -23,7 +23,7 @@
 
     - name: Install syslog-ng
       yum:
-        name: item
+        name: " {{ item }}"
         state: "installed"
       with_items:
         - "syslog-ng"
@@ -53,7 +53,7 @@
     
     - name: Enable syslog-ng service and restart
       systemd:
-        name: syslog.service.name
+        name: "{{ syslog.service.name }}"
         enabled: yes
         state: "restarted"
       become: yes
@@ -61,7 +61,7 @@
     - name: Configure logrotation for syslog-ng
       template: 
         src: syslog-collector-logrotate.j2
-        dest: syslog.logrotate.config.path
+        dest: "{{ syslog.logrotate.config.path }}"
       become: yes
 
     - name: Send test message using logger

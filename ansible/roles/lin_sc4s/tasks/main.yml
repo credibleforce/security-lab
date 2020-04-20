@@ -7,7 +7,7 @@
       
     - name: Install scl manager - Centos
       yum: 
-        name: item 
+        name: "{{ item  }}"
         state: installed
       with_items:
         - "centos-release-scl"
@@ -24,7 +24,7 @@
 
     - name: Install syslog-ng
       yum:
-        name: item
+        name: "{{ item }}"
         state: "installed"
       with_items:
         - "syslog-ng"
