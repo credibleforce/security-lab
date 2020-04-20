@@ -1,0 +1,31 @@
+#########################################
+# EXAMPLE DEPLOYMENT
+#########################################
+
+- hosts: local
+  tasks:
+
+#########################################
+# SYSLOG COLLECTOR
+#########################################
+
+- hosts: all
+  vars_files:
+    - ../vars/vars.yml
+  gather_facts: True
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: DEBUG - syslog-collector targets
+      debug:
+        msg: "{{ hostvars[groups['syslog-collector'][0]] }}"
+
+    - name: Run syslog-collector setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'lin_rsyslog'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['syslog-collector']
