@@ -55,6 +55,20 @@
         daemon_reload: yes
       become: yes
     
+    - name: Update syslog-ng pid to avoid conflicts with rsyslog
+      lineinfile:
+        path: /usr/lib/systemd/system/syslog-ng.service
+        state: present
+        regexp: '^ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p /var/run/syslogd.pid'
+        line: 'ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p /var/run/syslog-ng.pid'
+    
+    # optionally remove this service altogether and replace with syslog-ng (out of scope)
+    - name: Reload rsyslog to ensure syslogd.pid file is correct
+      systemd:
+        name: rsyslog
+        state: "restarted"
+      become: yes
+    
     - name: Enable syslog-ng service and restart
       systemd:
         name: "{{ syslog.service.name }}"
