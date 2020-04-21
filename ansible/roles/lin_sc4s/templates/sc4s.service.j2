@@ -6,7 +6,7 @@ After=network.target network-online.target
 
 [Service]
 Type=notify
-ExecStartPre={{ sc4s.preconfig.path }}
+ExecStartPre={{ sc4s.service.preconfig.path }}
 ExecStart=/usr/sbin/syslog-ng -F $SYSLOGNG_OPTS -p {{ sc4s.pid.path }}
 ExecReload=/bin/kill -HUP $MAINPID
 EnvironmentFile=-/etc/default/syslog-ng
