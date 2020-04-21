@@ -35,11 +35,13 @@
         - "syslog-ng-http"
         - "syslog-ng-python" 
         - "rh-python36" 
+        - "libselinux-python"
+        - "policycoreutils-python"
       become: yes
 
     - name: Disable any syslog-ng services
       systemd:
-        name: "{{ sc4s.service.syslog-ng-name }}"
+        name: "syslog-ng"
         enabled: no
         state: "stopped" 
       become: yes
@@ -50,33 +52,71 @@
         name: rsyslog
         state: "restarted"
       become: yes
-    
+      
+    - name: Create sc4s directories
+      file: 
+        path: "{{ item }}"
+        state: "directory"
+        mode: 0755
+      with_items:
+        - "{{sc4s.opt}}/bin"
+        - "{{sc4s.opt}}/local/context"
+      become: yes
+
     - name: Download latest sc4s
       get_url:
         url: https://github.com/splunk/splunk-connect-for-syslog/releases/latest/download/baremetal.tar
         dest: /tmp/baremetal.tar
-
-    - name: Untar latest sc4s
-      src: /tmp/baremetal.tar
-      dest: "{{ sc4s.config.path }}"
       become: yes
 
-    - name: Setup service for sc4s 
-      template: 
-        src: sc4s.service.j2
-        dest: "{{ sc4s.service.path }}"
+    - name: Download latest sc4s
+      get_url:
+        url: https://github.com/hairyhenderson/gomplate/releases/download/v3.5.0/gomplate_linux-amd64
+        dest: "/usr/local/bin/gomplate"
       become: yes
-        
-    - name: Setup preconfig for sc4s  
-      template: 
-        src: preconfig.sh.j2
-        dest: "{{ sc4s.service.preconfig.path }}"
+
+    - name: Update gomplate binary permissions
+      file:
+        path: "/usr/local/bin/gomplate"
         mode: 0755
       become: yes
 
+    - name: Untar latest sc4s
+      unarchive:
+        src: /tmp/baremetal.tar
+        dest: "{{ sc4s.config.path }}"
+        remote_src: yes
+      become: yes
+    
+    - name: Setup service for sc4s indexes
+      template: 
+        src: 'splunk_index.csv.j2'
+        dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
+      become: yes
+     
+    - name: Allow service to communicate over non-standard HTTP port
+      seport:
+        ports: 8088
+        proto: tcp
+        setype: http_port_t
+        state: present  
+    
+    - name: Setup service for sc4s 
+      template: 
+        src: 'sc4s.service.j2'
+        dest: "{{ sc4s.service.path }}"
+      become: yes
+    
+    - name: Setup preconfig for sc4s  
+      template: 
+        src: 'preconfig.sh.j2'
+        dest: "{{ sc4s.service.preconfig.path }}"
+        mode: 0755
+      become: yes
+      
     - name: Setup env for sc4s  
       template: 
-        src: env_file.j2
+        src: 'env_file.j2'
         dest: "{{ sc4s.service.env.path }}"
       become: yes
     
@@ -93,6 +133,6 @@
     - name: Send test message using logger
       shell: |
         logger -P {{ item.value.port }} {{ '-T' if (item.value.protocol == 'tcp') else '-d' }} -n {{ item.value.destination }} "{{ item.value.message }}"
-      with_dict: "{{ syslog.test }}"
+      with_dict: "{{ sc4s.test }}"
 
 
