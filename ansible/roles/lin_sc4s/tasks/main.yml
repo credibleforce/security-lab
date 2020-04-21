@@ -61,6 +61,7 @@
       unarchive:
         src: /tmp/baremetal.tar
         dest: "{{ sc4s.config.path }}"
+        remote_src: yes
       become: yes
 
     - name: Setup service for sc4s 
