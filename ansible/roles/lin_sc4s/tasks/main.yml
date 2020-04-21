@@ -51,11 +51,14 @@
         state: "restarted"
       become: yes
       
-    - name: Create sc4s directory
+    - name: Create sc4s directories
       file: 
-        path: "{{sc4s.opt}}/bin"
+        path: "{{ item }}"
         state: "directory"
         mode: 0755
+      with_items:
+        - "{{sc4s.opt}}/bin"
+        - "{{sc4s.opt}}/local/context"
       become: yes
 
     - name: Download latest sc4s
@@ -81,6 +84,12 @@
         src: /tmp/baremetal.tar
         dest: "{{ sc4s.config.path }}"
         remote_src: yes
+      become: yes
+    
+    - name: Setup service for sc4s indexes
+      template: 
+        src: 'splunk_index.csv.j2'
+        dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
       become: yes
       
     - name: Setup service for sc4s 
