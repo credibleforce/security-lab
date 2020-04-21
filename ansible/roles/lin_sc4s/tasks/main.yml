@@ -54,8 +54,7 @@
     - name: Download latest sc4s
       get_url:
         url: https://github.com/splunk/splunk-connect-for-syslog/releases/latest/download/baremetal.tar
-        dest: /tmp/
-      register: sc4s_tar_ball
+        dest: /tmp/baremetal.tar
       become: yes
 
     - name: Untar latest sc4s
