@@ -91,7 +91,14 @@
         src: 'splunk_index.csv.j2'
         dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
       become: yes
-      
+     
+    - name: Allow service to communicate over non-standard HTTP port
+      seport:
+        ports: 8088
+        proto: tcp
+        setype: http_port_t
+        state: present  
+    
     - name: Setup service for sc4s 
       template: 
         src: 'sc4s.service.j2'
