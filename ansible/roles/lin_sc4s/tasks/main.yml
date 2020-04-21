@@ -63,6 +63,10 @@
         dest: "{{ sc4s.config.path }}"
         remote_src: yes
       become: yes
+    
+    - name: test
+      debug:
+        msg: "{{sc4s.service}}"
 
     - name: Setup service for sc4s 
       template: 
