@@ -113,7 +113,7 @@
     - name: Symlink service index mapping
       file:
         src: "{{sc4s.opt}}/local/context/splunk_index.csv"
-        dest: "{{sc4s.config.path}}/local/context/splunk_index.csv"
+        dest: "{{sc4s.config.path}}/conf.d/local/context/splunk_index.csv"
         state: link
         force: yes
       become: yes
