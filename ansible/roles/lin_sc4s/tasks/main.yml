@@ -94,11 +94,15 @@
         dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
       become: yes
 
+    - name: Run service preconfig
+      command: "{{ sc4s.service.preconfig.path }}"
+
     - name: Symlink service index mapping
       file:
         src: "{{sc4s.opt}}/local/context/splunk_index.csv"
         dest: "{{sc4s.config.path}}/local/context/splunk_index.csv"
         state: link
+        force: yes
       become: yes
      
     - name: Allow service to communicate over non-standard HTTP port
