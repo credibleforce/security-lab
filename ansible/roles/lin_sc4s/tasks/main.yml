@@ -88,12 +88,18 @@
         remote_src: yes
       become: yes
     
-    - name: Setup index mapping for sc4s
+    - name: Setup service index mappings for sc4s
       template: 
         src: 'splunk_index.csv.j2'
-        dest: "{{sc4s.config.path}}/local/context/splunk_index.csv"
+        dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
       become: yes
-      
+
+    - name: Symlink service index mapping
+      file:
+        src: "{{sc4s.config.path}}/local/context/splunk_index.csv"
+        dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
+        state: link
+     
     - name: Allow service to communicate over non-standard HTTP port
       seport:
         ports: 8088
