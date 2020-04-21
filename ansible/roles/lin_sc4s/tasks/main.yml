@@ -50,7 +50,14 @@
         name: rsyslog
         state: "restarted"
       become: yes
-    
+      
+    - name: Create sc4s directory
+      file: 
+        path: "{{sc4s.opt}}/bin"
+        state: "directory"
+        mode: 0755
+      become: yes
+      
     - name: Download latest sc4s
       get_url:
         url: https://github.com/splunk/splunk-connect-for-syslog/releases/latest/download/baremetal.tar
