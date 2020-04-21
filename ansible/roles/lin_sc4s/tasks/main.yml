@@ -35,6 +35,8 @@
         - "syslog-ng-http"
         - "syslog-ng-python" 
         - "rh-python36" 
+        - "libselinux-python"
+        - "policycoreutils-python"
       become: yes
 
     - name: Disable any syslog-ng services
