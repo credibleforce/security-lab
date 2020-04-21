@@ -99,6 +99,7 @@
         src: "{{sc4s.opt}}/local/context/splunk_index.csv"
         dest: "{{sc4s.config.path}}/local/context/splunk_index.csv"
         state: link
+      become: yes
      
     - name: Allow service to communicate over non-standard HTTP port
       seport:
