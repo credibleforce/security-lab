@@ -8,7 +8,7 @@ sc4s:
     user: splunk
     group: splunk
     config:
-        path: "/etc/syslog-ng/"
+        path: "/etc/syslog-ng"
     pid:
         path: "/var/run/syslog-ng.pid"
     service:
