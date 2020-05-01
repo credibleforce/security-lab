@@ -33,17 +33,22 @@
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ item }}.key"
   with_items: 
     - "{{ groups['splunk'] }}"
+  when: "not {{ item }} in groups['splunk_universal_forwarder']"
+
 - name: Create cert from pfx
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ item }}.crt"
   with_items: 
     - "{{ groups['splunk'] }}"
+  when: "not {{ item }} in groups['splunk_universal_forwarder']"
 
 - name: Create encrypted key in pem format
   shell: "openssl rsa -in /tmp/{{ item }}.key -aes256 -passout pass:password -out /tmp/{{ item }}.pem"
   with_items: 
     - "{{ groups['splunk'] }}"
+  when: "not {{ item }} in groups['splunk_universal_forwarder']"
 
 - name: Bundle crt, key and pem
   shell: "cat /tmp/{{ item }}.crt /tmp/{{ item }}.pem /tmp/cacert.pem > /tmp/{{ item }}-bundle.pem"
   with_items: 
     - "{{ groups['splunk'] }}"
+  when: "not {{ item }} in groups['splunk_universal_forwarder']"
