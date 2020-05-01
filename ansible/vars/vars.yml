@@ -27,8 +27,8 @@ splunk_certs:
   country: "Canada"
   state: "BC"
   city: "Vancouver"
-  org: "PSL"
-  ou: "PSL"
+  org: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('psl',true) }}"
+  ou: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('psl',true) }}"
   export_dir: "C:\\Temp"
   splunk_certs_dir: "{{ splunk.home }}/etc/auth/mycerts"
 
