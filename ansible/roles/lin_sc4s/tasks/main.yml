@@ -88,10 +88,34 @@
         remote_src: yes
       become: yes
     
-    - name: Setup service for sc4s indexes
+    - name: Setup preconfig for sc4s  
+      template: 
+        src: 'preconfig.sh.j2'
+        dest: "{{ sc4s.service.preconfig.path }}"
+        mode: 0755
+      become: yes
+      
+    - name: Setup env for sc4s  
+      template: 
+        src: 'env_file.j2'
+        dest: "{{ sc4s.service.env.path }}"
+      become: yes
+
+    - name: Setup service index mappings for sc4s
       template: 
         src: 'splunk_index.csv.j2'
         dest: "{{sc4s.opt}}/local/context/splunk_index.csv"
+      become: yes
+
+    - name: Run service preconfig
+      command: "{{ sc4s.service.preconfig.path }}"
+
+    - name: Symlink service index mapping
+      file:
+        src: "{{sc4s.opt}}/local/context/splunk_index.csv"
+        dest: "{{sc4s.config.path}}/conf.d/local/context/splunk_index.csv"
+        state: link
+        force: yes
       become: yes
      
     - name: Allow service to communicate over non-standard HTTP port
@@ -105,19 +129,6 @@
       template: 
         src: 'sc4s.service.j2'
         dest: "{{ sc4s.service.path }}"
-      become: yes
-    
-    - name: Setup preconfig for sc4s  
-      template: 
-        src: 'preconfig.sh.j2'
-        dest: "{{ sc4s.service.preconfig.path }}"
-        mode: 0755
-      become: yes
-      
-    - name: Setup env for sc4s  
-      template: 
-        src: 'env_file.j2'
-        dest: "{{ sc4s.service.env.path }}"
       become: yes
     
     - name: Reload systemd daemons

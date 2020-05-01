@@ -1,16 +1,16 @@
 # Domain Controller
 windows_domain_controller_info:
-  dns_domain_name: psl.local
-  domain_netbios_name: psl
-  domain_admin_password: myTempPassword123
-  domain_admin_user: "Administrator@psl.local"
-  safe_mode_username: Administrator
-  safe_mode_password: myTempPassword123
+  dns_domain_name: "{{ lookup('env','WIN_DNS_DOMAIN') | default('psl.local',true) }}"
+  domain_netbios_name: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('psl',true) }}"
+  domain_admin_password: "{{ lookup('env','WIN_ADMIN_PASSWORD') | default('myTempPassword123',true) }}"
+  domain_admin_user: "{{ lookup('env','WIN_ADMIN_USER') | default('Administrator',true) }}@{{ lookup('env','WIN_DNS_DOMAIN') | default('psl.local',true) }}"
+  safe_mode_username: "{{ lookup('env','WIN_ADMIN_USER') | default('Administrator',true) }}"
+  safe_mode_password: "{{ lookup('env','WIN_ADMIN_PASSWORD') | default('myTempPassword123',true) }}"
   state: domain_controller
 
 # Windows CA
 windows_certificate_authority_info:
-  CACommonName: "PSL-CA"
+  CACommonName: "{{ lookup('env','WIN_CA_COMMON_NAME') | default('PSL-CA',true) }}"
   KeyLength: 2048
   HashAlgorithmName: SHA256
   ValidityPeriod: 'Years'
@@ -27,8 +27,8 @@ splunk_certs:
   country: "Canada"
   state: "BC"
   city: "Vancouver"
-  org: "PSL"
-  ou: "PSL"
+  org: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('psl',true) }}"
+  ou: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('psl',true) }}"
   export_dir: "C:\\Temp"
   splunk_certs_dir: "{{ splunk.home }}/etc/auth/mycerts"
 
