@@ -54,6 +54,14 @@
     Set-Executionpolicy -ExecutionPolicy Unrestricted -Force -Scope LocalMachine
   when: ansible_os_name is search("Microsoft Windows 10")
 
+- name: Attempt to fix broken start menu launch
+  win_shell: |
+    Get-AppXPackage -AllUsers |Where-Object {$_.InstallLocation -like "*SystemApps*"} | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+    netsh advfirewall set currentprofile state on
+    scf /scannow
+    DISM.exe /Online /Cleanup-image /Restorehealth
+  when: ansible_os_name is search("Microsoft Windows 10")
+
 # wait for domain to be available
 - name: Wait for forest xWaitForADDomain
   win_dsc:
