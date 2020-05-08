@@ -49,6 +49,19 @@
     name: xComputerManagement
     state: present
 
+- name: Force Allow Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
+  win_shell: |
+    Set-Executionpolicy -ExecutionPolicy Unrestricted -Force -Scope LocalMachine
+  when: ansible_os_name is search("Microsoft Windows 10")
+
+- name: Attempt to fix broken start menu launch
+  win_shell: |
+    Get-AppXPackage -AllUsers |Where-Object {$_.InstallLocation -like "*SystemApps*"} | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+    netsh advfirewall set currentprofile state on
+    scf /scannow
+    DISM.exe /Online /Cleanup-image /Restorehealth
+  when: ansible_os_name is search("Microsoft Windows 10")
+
 # wait for domain to be available
 - name: Wait for forest xWaitForADDomain
   win_dsc:
@@ -69,9 +82,11 @@
     #JoinOu: "{{ join_domain_default_dn_base }}"
   register: join_domain
 
-- name: Domain join object
-  debug: 
-    msg: "Domain join result: {{ join_domain }}"
+
+- name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
+  win_shell: |
+    Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
+  when: ansible_os_name is search("Microsoft Windows 10")
 
 - name: Reboot to complete domain membership
   win_reboot:
