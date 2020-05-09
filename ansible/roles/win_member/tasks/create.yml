@@ -57,6 +57,12 @@
 - name: Fix start menu for "administrator" account on the domain
   win_shell: |
     New-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name FilterAdministratorToken -PropertyType DWord -Value 1 -Force 
+  when: ansible_os_name is search("Microsoft Windows 10")
+    
+- name: Fix desktop background double print
+  win_shell: |
+    Remove-Item 'C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\RunWallpaperSetupInit.cmd'
+  when: ansible_os_name is search("Microsoft Windows 10")
     
 
 # wait for domain to be available
