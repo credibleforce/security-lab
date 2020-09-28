@@ -1,0 +1,4 @@
+---
+    - name: Install NuGet Package Provider
+      win_shell: |
+        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5 -Force
