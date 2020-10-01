@@ -6,6 +6,16 @@
   tasks:
 
 #########################################
+# ANSIBLE COMMON
+#########################################
+
+- hosts: all:!local
+  tasks:
+    - name: Apply ansible base configuration (e.g. ssh key scan)
+      include_role:
+        name: ../roles/ansible_common
+
+#########################################
 # DOMAIN CONTROLLER
 #########################################
 
