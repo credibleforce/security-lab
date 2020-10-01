@@ -12,7 +12,7 @@ all:
         suricata:
           vars:
           hosts:
-            splk-uf1.psl.local:
+            splk-uf1.lab.local:
         syslog-collector:
           vars:
           hosts:
