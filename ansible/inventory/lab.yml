@@ -17,6 +17,12 @@ all:
           vars:
           hosts:
             splk-uf1.lab.local:
+    splunk:
+      children:
+        splunk_universal_forwarder:
+          vars:
+          hosts:
+            splk-uf1.lab.local:
     windows:
       vars:
         ansible_connection: winrm
