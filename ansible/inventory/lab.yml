@@ -12,11 +12,11 @@ all:
         suricata:
           vars:
           hosts:
-            splkids1.psl.local:
+            splk-uf1.psl.local:
         syslog-collector:
           vars:
           hosts:
-            splkuf1.psl.local:
+            splk-uf1.lab.local:
     windows:
       vars:
         ansible_connection: winrm
@@ -30,19 +30,19 @@ all:
         domain_controller:
           vars:
           hosts: 
-            splkdc1.psl.local:
+            win16-dc1.lab.local:
         certificate_authority:
           vars:
           hosts: 
-            splkdc1.psl.local:
+            win16-dc1.lab.local:
         member_server:
           vars:
           hosts: 
-            splksrv1.psl.local:
+            win16-srv1.lab.local:
         wef_server:
           vars:
           hosts: 
-            splkwec1.psl.local:
+            win16-wef1.lab.local:
     
 
     
