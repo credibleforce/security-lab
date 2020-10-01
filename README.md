@@ -28,4 +28,5 @@ In scenarios where ansible testing is taking place or where it cannot be install
 2. Change director to ansible directory `cd ansible`
 3. Install required python modules `pip3 install -r requirements.txt`
 4. Install pywinrm and requests for Windows `pip3 install requests pywinrm`
+5. Ensure ansible.windows modules are installed `ansible-galaxy collection install ansible.windows community.windows`
 5. Setup ansible environment `source ./hacking/env-setup`
