@@ -5,6 +5,8 @@
     when: ansible_distribution is search ('Microsoft')
   - include: add-psgallery-trusted-repo.yml
     when: ansible_distribution is search ('Microsoft')
+  - include: ensure-winrm-http-listener.yml
+    when: ansible_distribution is search ('Microsoft')
   #- include: chocolately-components.yml
   #  when: ansible_distribution is search ('Microsoft')
   #- include: disable-windows-defender.yml
