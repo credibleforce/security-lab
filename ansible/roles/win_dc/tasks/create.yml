@@ -61,6 +61,20 @@
     adapter_names: "*"
     ipv4_addresses: "127.0.0.1"
 
+- name: Verify the WSMan HTTP listener is active and configured correctly
+  win_shell: |
+    $port = (Get-Item -LiteralPath WSMan:\localhost\Client\DefaultPorts\HTTP).Value
+    $onlinePorts = @(Get-ChildItem -LiteralPath WSMan:\localhost\Listener |
+        Where-Object { 'Transport=HTTP' -in $_.Keys } |
+        Get-ChildItem |
+        Where-Object Name -eq Port |
+        Select-Object -ExpandProperty Value)
+
+    if ($port -notin $onlinePorts) {
+        Write-Output "Adding required HTTP listener"
+        Enable-PSRemoting -Force
+    }
+
 - name: Configure xADDomain Powershell DSC
   win_dsc:
     resource_name: xADDomain
