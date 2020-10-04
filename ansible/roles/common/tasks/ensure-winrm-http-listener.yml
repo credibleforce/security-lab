@@ -12,4 +12,7 @@
         if ($port -notin $onlinePorts) {
             Write-Output "Adding required HTTP listener"
             Enable-PSRemoting -Force
+
+            # basic auth required for DC promotion as all other auth types fail (https://github.com/ansible/ansible/issues/39235)
+            Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
         }
