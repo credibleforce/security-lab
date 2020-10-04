@@ -53,6 +53,8 @@ all:
           vars:
           hosts: 
             win16-srv1.lab.local:
+            win10-srv1.lab.local:
+            win7-srv1.lab.local:
         wef_server:
           vars:
           hosts: 
