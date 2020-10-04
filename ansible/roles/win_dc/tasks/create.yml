@@ -76,6 +76,7 @@
     msg:
       - "ansible_winrm_transport: {{ ansible_winrm_transport }}"
 
+# in addition to requiring winrm http listener being enable, basic auth is required after promotion
 - name: Force winrm auth type to basic
   set_fact:
     temp_winrm_transport: "{{ ansible_winrm_transport }}"
@@ -93,7 +94,7 @@
     reboot_timeout: 600
     post_reboot_delay: 120 # your mileage may vary
 
-- name: Force winrm auth type to basic
+- name: Reset winrm to post promo config
   set_fact:
     ansible_winrm_transport: "{{ temp_winrm_transport }}"
 

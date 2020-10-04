@@ -2,6 +2,9 @@
     # required for win_dsc
     - name: Verify the WSMan HTTP listener is active and configured correctly
       win_shell: |
+        # basic auth required for DC promotion as all other auth types fail (https://github.com/ansible/ansible/issues/39235)
+        Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
+        
         $port = (Get-Item -LiteralPath WSMan:\localhost\Client\DefaultPorts\HTTP).Value
         $onlinePorts = @(Get-ChildItem -LiteralPath WSMan:\localhost\Listener |
             Where-Object { 'Transport=HTTP' -in $_.Keys } |
@@ -13,6 +16,5 @@
             Write-Output "Adding required HTTP listener"
             Enable-PSRemoting -Force
 
-            # basic auth required for DC promotion as all other auth types fail (https://github.com/ansible/ansible/issues/39235)
-            Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
+            
         }
