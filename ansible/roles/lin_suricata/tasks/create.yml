@@ -1,4 +1,5 @@
 ---
+  
   - name: Check if splunk user exists
     getent:
       database: passwd
