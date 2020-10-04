@@ -71,18 +71,31 @@
     SafemodeAdministratorPassword_username: "{{ windows_domain_controller_info['safe_mode_username'] }}"
     SafemodeAdministratorPassword_password: "{{ windows_domain_controller_info['safe_mode_password'] }}"
 
-- name: Wait for the interface change to complete
-  wait_for_connection:
-    connect_timeout: 20
-    sleep: 5
-    delay: 120
-    timeout: 300
+- name: Display current winrm transport
+  debug:
+    msg:
+      - "ansible_winrm_transport: {{ ansible_winrm_transport }}"
+
+- name: Force winrm auth type to basic
+  set_fact:
+    temp_winrm_transport: "{{ ansible_winrm_transport }}"
+    ansible_winrm_transport: basic
+
+- name: Display modified winrm transport
+  debug:
+    msg:
+      - "ansible_winrm_transport: {{ ansible_winrm_transport }}"
+      - "temp_winrm_transport: {{ temp_winrm_transport }}"
 
 - name: Reboot to complete domain controller setup (as required)
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 120 # your mileage may vary
+
+- name: Force winrm auth type to basic
+  set_fact:
+    ansible_winrm_transport: "{{ temp_winrm_transport }}"
 
 - name: Wait for forest xWaitForADDomain
   win_dsc:
