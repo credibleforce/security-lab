@@ -1,5 +1,13 @@
 ---
   
+  - name: Check if splunk group exists
+    getent:
+      database: group
+      key: splunk
+      fail_key: yes
+    register: group_exist
+    ignore_errors: true
+
   - name: Check if splunk user exists
     getent:
       database: passwd
