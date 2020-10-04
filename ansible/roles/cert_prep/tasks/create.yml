@@ -27,7 +27,7 @@
 # [sslConfig]
 # sslPassword = $7$KicnrY+lE3mabYnGN69ZbUWPKlgHo/g4nBNx7KStomrRKWkdPamhCg==
 # serverCert = splunk.pem
-# sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
+# sslRootCAPath = /opt/splunk/etc/auth/labCA.pem
 
 - name: Create key from pfx
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ item }}.key"

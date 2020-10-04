@@ -1,13 +1,13 @@
-$CACommonName="PSL-CA"
+$CACommonName="LAB-CA"
 $pem = $true
 
-$SAN = "dns=test.psl.local"
-$CN = "test.psl.local"
+$SAN = "dns=test.lab.local"
+$CN = "test.lab.local"
 $County = "Canada"
 $State = "BC"
 $City = "Vancouver"
-$Organisation = "PSL"
-$OU = "PSL"
+$Organisation = "LAB"
+$OU = "LAB"
 $TemplateName = "WebServer"
 
 function Remove-ReqTempfiles() {
@@ -201,7 +201,7 @@ if($pem -eq $true){
 # [sslConfig]
 # sslPassword = $7$KicnrY+lE3mabYnGN69ZbUWPKlgHo/g4nBNx7KStomrRKWkdPamhCg==
 # serverCert = splunk.pem
-# sslRootCAPath = /opt/splunk/etc/auth/pslCA.pem
+# sslRootCAPath = /opt/splunk/etc/auth/labCA.pem
 
 
 
