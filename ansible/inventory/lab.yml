@@ -23,6 +23,14 @@ all:
           vars:
           hosts:
             splk-uf1.lab.local:
+        splunk_deployment_server:
+          vars:
+          hosts:
+            splk-sh1.lab.local:
+        splunk_standalone:
+          vars:
+          hosts:
+            splk-sh1.lab.local:
     windows:
       vars:
         ansible_connection: winrm
