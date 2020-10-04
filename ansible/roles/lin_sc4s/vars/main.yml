@@ -2,7 +2,7 @@ sc4s:
     opt: "/opt/sc4s"
     splunk:
         hec:
-            server: splksh1.psl.local
+            server: splk-sh1.lab.local
             port: 8088
             token: f7a5b222-7b57-41cf-9714-fb5fc333bef6
     user: splunk
