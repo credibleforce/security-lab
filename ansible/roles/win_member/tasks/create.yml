@@ -62,7 +62,9 @@
 - name: Fix desktop background double print
   win_shell: |
     Remove-Item 'C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\RunWallpaperSetupInit.cmd'
+  ignore_errors: yes
   when: ansible_os_name is search("Microsoft Windows 10")
+  
     
 
 # wait for domain to be available
