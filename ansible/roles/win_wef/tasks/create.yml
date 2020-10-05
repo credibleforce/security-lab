@@ -92,32 +92,32 @@
                 @{
                     ChannelName = 'WEC-Powershell'
                     ChannelchID = 'WEC-Powershell'
-                    ChannelSymbol = 'WEC-Powershell'
+                    ChannelSymbol = 'WEC_Powershell'
                 },
                 @{
                     ChannelName = 'WEC-WMI'
                     ChannelchID = 'WEC-WMI'
-                    ChannelSymbol = 'WEC-WMI'
+                    ChannelSymbol = 'WEC_WMI'
                 },
                 @{
                     ChannelName = 'WEC-Authentication'
                     ChannelchID = 'WEC-Authentication'
-                    ChannelSymbol = 'WEC-Authentication'
+                    ChannelSymbol = 'WEC_Authentication'
                 },
                 @{
                     ChannelName = 'WEC-Services'
                     ChannelchID = 'WEC-Services'
-                    ChannelSymbol = 'WEC-Services'
+                    ChannelSymbol = 'WEC_Services'
                 },
                 @{
                     ChannelName = 'WEC-Process-Execution'
                     ChannelchID = 'WEC-Process-Execution'
-                    ChannelSymbol = 'WEC-Process-Execution'
+                    ChannelSymbol = 'WEC_Process_Execution'
                 },
                 @{
                     ChannelName = 'WEC-Code-Integrity'
                     ChannelchID = 'WEC-Code-Integrity'
-                    ChannelSymbol = 'WEC-Code-Integrity'
+                    ChannelSymbol = 'WEC_Code_Integrity'
                 }
             )
         },
@@ -131,37 +131,37 @@
                 @{
                     ChannelName = 'WEC2-Registry'
                     ChannelchID = 'WEC2-Registry'
-                    ChannelSymbol = 'WEC2-Registry'
+                    ChannelSymbol = 'WEC2_Registry'
                 },
                 @{
                     ChannelName = 'WEC2-Applocker'
                     ChannelchID = 'WEC2-Applocker'
-                    ChannelSymbol = 'WEC2-Applocker'
+                    ChannelSymbol = 'WEC2_Applocker'
                 },
                 @{
                     ChannelName = 'WEC2-Task-Scheduler'
                     ChannelchID = 'WEC2-Task-Scheduler'
-                    ChannelSymbol = 'WEC2-Task-Scheduler'
+                    ChannelSymbol = 'WEC2_Task_Scheduler'
                 },
                 @{
                     ChannelName = 'WEC2-Application-Crashes'
                     ChannelchID = 'WEC2-Application-Crashes'
-                    ChannelSymbol = 'WEC2-Application-Crashes'
+                    ChannelSymbol = 'WEC2_Application_Crashes'
                 },
                 @{
                     ChannelName = 'WEC2-Windows-Defender'
                     ChannelchID = 'WEC2-Windows-Defender'
-                    ChannelSymbol = 'WEC2-Windows-Defender'
+                    ChannelSymbol = 'WEC2_Windows_Defender'
                 },
                 @{
                     ChannelName = 'WEC2-Group-Policy-Errors'
                     ChannelchID = 'WEC2-Group-Policy-Errors'
-                    ChannelSymbol = 'WEC-Group-Policy-Errors'
+                    ChannelSymbol = 'WEC_Group_Policy_Errors'
                 },
                 @{
                     ChannelName = 'WEC2-Object-Manipulation'
                     ChannelchID = 'WEC2-Object-Manipulation'
-                    ChannelSymbol = 'WEC2-Object-Manipulation'
+                    ChannelSymbol = 'WEC2_Object_Manipulation'
                 }
             )
         },
@@ -175,37 +175,37 @@
                 @{
                     ChannelName = 'WEC3-Drivers'
                     ChannelchID = 'WEC3-Drivers'
-                    ChannelSymbol = 'WEC3-Drivers'
+                    ChannelSymbol = 'WEC3_Drivers'
                 },
                 @{
                     ChannelName = 'WEC3-Account-Management'
                     ChannelchID = 'WEC3-Account-Management'
-                    ChannelSymbol = 'WEC3-Account-Management'
+                    ChannelSymbol = 'WEC3_Account_Management'
                 },
                 @{
                     ChannelName = 'WEC3-Windows-Diagnostics'
                     ChannelchID = 'WEC3-Windows-Diagnostics'
-                    ChannelSymbol = 'WEC3-Windows-Diagnostics'
+                    ChannelSymbol = 'WEC3_Windows_Diagnostics'
                 },
                 @{
                     ChannelName = 'WEC3-Smart-Card'
                     ChannelchID = 'WEC3-Smart-Card'
-                    ChannelSymbol = 'WEC3-Smart-Card'
+                    ChannelSymbol = 'WEC3_Smart_Card'
                 },
                 @{
                     ChannelName = 'WEC3-Print'
                     ChannelchID = 'WEC3-Print'
-                    ChannelSymbol = 'WEC3-Print'
+                    ChannelSymbol = 'WEC3_Print'
                 },
                 @{
                     ChannelName = 'WEC3-Firewall'
                     ChannelchID = 'WEC3-Firewall'
-                    ChannelSymbol = 'WEC3-Firewall'
+                    ChannelSymbol = 'WEC3_Firewall'
                 },
                 @{
                     ChannelName = 'WEC3-External-Devices'
                     ChannelchID = 'WEC3-External-Devices'
-                    ChannelSymbol = 'WEC3-External-Devices'
+                    ChannelSymbol = 'WEC3_External_Devices'
                 }
             )
         },
@@ -219,37 +219,37 @@
                 @{
                     ChannelName = 'WEC4-Wireless'
                     ChannelchID = 'WEC4-Wireless'
-                    ChannelSymbol = 'WEC4-Wireless'
+                    ChannelSymbol = 'WEC4_Wireless'
                 },
                 @{
                     ChannelName = 'WEC4-Shares'
                     ChannelchID = 'WEC4-Shares'
-                    ChannelSymbol = 'WEC4-Shares'
+                    ChannelSymbol = 'WEC4_Shares'
                 },
                 @{
                     ChannelName = 'WEC4-Bits-Client'
                     ChannelchID = 'WEC4-Bits-Client'
-                    ChannelSymbol = 'WEC4-Bits-Client'
+                    ChannelSymbol = 'WEC4_Bits_Client'
                 },
                 @{
                     ChannelName = 'WEC4-Windows-Updates'
                     ChannelchID = 'WEC4-Windows-Updates'
-                    ChannelSymbol = 'WEC4-Windows-Updates'
+                    ChannelSymbol = 'WEC4_Windows_Updates'
                 },
                 @{
                     ChannelName = 'WEC4-Hotpatching-Errors'
                     ChannelchID = 'WEC4-Hotpatching-Errors'
-                    ChannelSymbol = 'WEC4-Hotpatching-Errors'
+                    ChannelSymbol = 'WEC4_Hotpatching_Errors'
                 },
                 @{
                     ChannelName = 'WEC4-DNS'
                     ChannelchID = 'WEC4-DNS'
-                    ChannelSymbol = 'WEC4-DNS'
+                    ChannelSymbol = 'WEC4_DNS'
                 },
                 @{
                     ChannelName = 'WEC4-System-Time-Change'
                     ChannelchID = 'WEC4-System-Time-Change'
-                    ChannelSymbol = 'WEC4-System-Time-Change'
+                    ChannelSymbol = 'WEC4_System_Time_Change'
                 }
             )
         },
@@ -263,37 +263,37 @@
                 @{
                     ChannelName = 'WEC5-Operating-System'
                     ChannelchID = 'WEC5-Operating-System'
-                    ChannelSymbol = 'WEC5-Operating-System'
+                    ChannelSymbol = 'WEC5_Operating_System'
                 },
                 @{
                     ChannelName = 'WEC5-Certificate-Authority'
                     ChannelchID = 'WEC5-Certificate-Authority'
-                    ChannelSymbol = 'WEC5-Certificate-Authority'
+                    ChannelSymbol = 'WEC5_Certificate_Authority'
                 },
                 @{
                     ChannelName = 'WEC5-Crypto-API'
                     ChannelchID = 'WEC5-Crypto-API'
-                    ChannelSymbol = 'WEC5-Crypto-API'
+                    ChannelSymbol = 'WEC5_Crypto_API'
                 },
                 @{
                     ChannelName = 'WEC5-MSI-Packages'
                     ChannelchID = 'WEC5-MSI-Packages'
-                    ChannelSymbol = 'WEC5-MSI-Packages'
+                    ChannelSymbol = 'WEC5_MSI_Packages'
                 },
                 @{
                     ChannelName = 'WEC5-Log-Deletion-Security'
                     ChannelchID = 'WEC5-Log-Deletion-Security'
-                    ChannelSymbol = 'WEC5-Log-Deletion-Security'
+                    ChannelSymbol = 'WEC5_Log_Deletion_Security'
                 },
                 @{
                     ChannelName = 'WEC5-Log-Deletion-System'
                     ChannelchID = 'WEC5-Log-Deletion-System'
-                    ChannelSymbol = 'WEC5-Log-Deletion-System'
+                    ChannelSymbol = 'WEC5_Log_Deletion_System'
                 },
                 @{
                     ChannelName = 'WEC5-Autoruns'
                     ChannelchID = 'WEC5-Autoruns'
-                    ChannelSymbol = 'WEC5-Autoruns'
+                    ChannelSymbol = 'WEC5_Autoruns'
                 }
             )
         },
@@ -307,37 +307,37 @@
                 @{
                     ChannelName = 'WEC6-Software-Restriction-Policies'
                     ChannelchID = 'WEC6-Software-Restriction-Policies'
-                    ChannelSymbol = 'WEC6-Software-Restriction-Policies'
+                    ChannelSymbol = 'WEC6_Software_Restriction_Policies'
                 },
                 @{
                     ChannelName = 'WEC6-ADFS'
                     ChannelchID = 'WEC6-ADFS'
-                    ChannelSymbol = 'WEC6-ADFS'
+                    ChannelSymbol = 'WEC6_ADFS'
                 },
                 @{
                     ChannelName = 'WEC6-Device-Guard'
                     ChannelchID = 'WEC6-Device-Guard'
-                    ChannelSymbol = 'WEC6-Device-Guard'
+                    ChannelSymbol = 'WEC6_Device_Guard'
                 },
                 @{
                     ChannelName = 'WEC6-Duo-Security'
                     ChannelchID = 'WEC6-Duo-Security'
-                    ChannelSymbol = 'WEC6-Duo-Security'
+                    ChannelSymbol = 'WEC6_Duo_Security'
                 },
                 @{
                     ChannelName = 'WEC6-Microsoft-Office'
                     ChannelchID = 'WEC6-Microsoft-Office'
-                    ChannelSymbol = 'WEC6-Microsoft-Office'
+                    ChannelSymbol = 'WEC6_Microsoft_Office'
                 },
                 @{
                     ChannelName = 'WEC6-Exploit-Guard'
                     ChannelchID = 'WEC6-Exploit-Guard'
-                    ChannelSymbol = 'WEC6-Exploit-Guard'
+                    ChannelSymbol = 'WEC6_Exploit_Guard'
                 },
                 @{
                     ChannelName = 'WEC6-Sysmon'
                     ChannelchID = 'WEC6-Sysmon'
-                    ChannelSymbol = 'WEC6-Sysmon'
+                    ChannelSymbol = 'WEC6_Sysmon'
                 }
             )
         },
@@ -351,17 +351,17 @@
                 @{
                     ChannelName = 'WEC7-Active-Directory'
                     ChannelchID = 'WEC7-Active-Directory'
-                    ChannelSymbol = 'WEC7-Active-Directory'
+                    ChannelSymbol = 'WEC7_Active_Directory'
                 },
                 @{
                     ChannelName = 'WEC7-Terminal-Services'
                     ChannelchID = 'WEC7-Terminal-Services'
-                    ChannelSymbol = 'WEC7-Terminal-Services'
+                    ChannelSymbol = 'WEC7_Terminal_Services'
                 },
                 @{
                     ChannelName = 'WEC7-Privilege-Use'
                     ChannelchID = 'WEC7-Privilege-Use'
-                    ChannelSymbol = 'WEC7-Privilege-Use'
+                    ChannelSymbol = 'WEC7_Privilege_Use'
                 }
             )
         }
@@ -450,7 +450,7 @@
     Start-Service Wecsvc
 
     #remove the output directory
-    Remove-Item -Path SDKRS5_Setup.exe -Force -Recurse
+    Remove-Item -Path $OutputFolder -Force -Recurse
       
   
 
