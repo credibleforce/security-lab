@@ -57,17 +57,23 @@
 
 - name: Create Windows Event Collector Custom Event channels
   win_shell: |
+    $OutputFolder="C:\WEC"
+
+    #Create output folder if does not exist
+    if(-not (Test-Path $OutputFolder)) { 
+        New-Item -Path $OutputFolder -ItemType Directory
+    }
+
     $ProgressPreference='SilentlyContinue' #for faster download
     #Download Windows 10 RS5 SDK
-    Invoke-WebRequest -UseBasicParsing -Uri https://go.microsoft.com/fwlink/p/?LinkID=2033908 -OutFile "$env:USERPROFILE\Downloads\SDKRS5_Setup.exe"
+    Invoke-WebRequest -UseBasicParsing -Uri https://go.microsoft.com/fwlink/p/?LinkID=2033908 -OutFile "$OutputFolder\SDKRS5_Setup.exe"
     #Install SDK RS5
-    Start-Process -Wait -FilePath "$env:USERPROFILE\Downloads\SDKRS5_Setup.exe" -ArgumentList "/features OptionId.DesktopCPPx64 /quiet"
-    
+    Start-Process -Wait -FilePath "$OutputFolder\SDKRS5_Setup.exe" -ArgumentList "/features OptionId.DesktopCPPx64 /quiet"
     
     #Create Man file or run setup
     #Variables
     $CustomEventChannelsFileName="CustomEventChannels"
-    $OutputFolder="$env:UserProfile\Downloads\ECMan"
+    
     
     #some neccessaries
     $ManifestFileName = '{0}.man' -f $CustomEventChannelsFileName
@@ -407,17 +413,11 @@
     </instrumentationManifest>
     "@
     
-    #Create output folder if does not exist
-    if(-not (Test-Path $OutputFolder)) { 
-        New-Item -Path $OutputFolder -ItemType Directory
-    }
-    
     #write XML
     Set-Content -Value $content -Path (Join-Path -Path $OutputFolder -ChildPath $ManifestFileName) -Encoding ASCII
     
     #Compile manifest https://docs.microsoft.com/en-us/windows/desktop/WES/compiling-an-instrumentation-manifest
     $CustomEventChannelsFileName="CustomEventChannels"
-    $OutputFolder="$env:UserProfile\Downloads\ECMan"
     $ToolsPath="C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64"
     $dotNetPath="C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
     
@@ -429,7 +429,7 @@
     #Some variables
     $CollectorServerName="Collector"
     $CustomEventChannelsFileName="CustomEventChannels"
-    $CustomEventsFilesLocation="$env:UserProfile\Downloads\ECMan"
+    $CustomEventsFilesLocation="$OutputFolder"
     
     #configure Event Forwarding on collector server
     WECUtil qc /q
@@ -448,6 +448,9 @@
     #load new event channel file and start Wecsvc service
     wevtutil im "C:\windows\system32\$CustomEventChannelsFileName.man"
     Start-Service Wecsvc
+
+    #remove the output directory
+    Remove-Item -Path SDKRS5_Setup.exe -Force -Recurse
       
   
 
