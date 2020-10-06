@@ -55,7 +55,7 @@
       src: ../files/Subscriptions
       dest: c:\
 
-- name: Create Windows Event Collector Custom Event channels
+- name: Custom Event Channel - Download SDK and Install SDK
   win_shell: |
     $OutputFolder="C:\WEC"
 
@@ -70,10 +70,10 @@
     #Install SDK RS5
     Start-Process -Wait -FilePath "$OutputFolder\SDKRS5_Setup.exe" -ArgumentList "/features OptionId.DesktopCPPx64 /quiet"
     
-    #Create Man file or run setup
-    #Variables
+- name: Custom Event Channel - Create the Manifest
+  win_shell: |
+    $OutputFolder="C:\WEC"
     $CustomEventChannelsFileName="CustomEventChannels"
-    
     
     #some neccessaries
     $ManifestFileName = '{0}.man' -f $CustomEventChannelsFileName
@@ -416,6 +416,13 @@
     #write XML
     Set-Content -Value $content -Path (Join-Path -Path $OutputFolder -ChildPath $ManifestFileName) -Encoding ASCII
     
+- name: Custom Event Channel - Compile the Custom Event Channel dll
+  win_shell: |
+    $OutputFolder="C:\WEC"
+    #Create Man file or run setup
+    #Variables
+    $CustomEventChannelsFileName="CustomEventChannels"
+
     #Compile manifest https://docs.microsoft.com/en-us/windows/desktop/WES/compiling-an-instrumentation-manifest
     $CustomEventChannelsFileName="CustomEventChannels"
     $ToolsPath="C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64"
@@ -437,7 +444,7 @@
     #Create custom event forwarding logs
     Stop-Service Wecsvc
     #unload current event channnel (commented as there is no custom manifest)
-    #wevtutil um C:\windows\system32\CustomEventChannels.man
+    wevtutil um C:\windows\system32\$CustomEventChannelsFileName.man
     
     #copy new man and dll
     $files="$CustomEventChannelsFileName.dll","$CustomEventChannelsFileName.man"
@@ -449,11 +456,11 @@
     wevtutil im "C:\windows\system32\$CustomEventChannelsFileName.man"
     Start-Service Wecsvc
 
-    #remove the output directory
+- name: Custom Event Channel - Remove Working Directory
+  win_shell: |
+    $OutputFolder="C:\WEC"
     Remove-Item -Path $OutputFolder -Force -Recurse
-      
   
-
 - name: Configure Windows Event Collector
   win_shell: |
     # Enable WEF quick config
