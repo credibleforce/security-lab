@@ -12,15 +12,13 @@
 
 # Add powershell modules
 - name: Check for xDnsServer Powershell module
-  win_psmodule:
-    name: xDnsServer
-    state: present
+  win_shell: |
+    Install-Module -Name xDnsServer
 
 # Add powershell modules
 - name: Add xActiveDirectory
-  win_psmodule:
-    name: xActiveDirectory
-    state: present
+  win_shell: |
+    Install-Module -Name xActiveDirectory
 
 # Set static IP
 - name: Configure static IP address
