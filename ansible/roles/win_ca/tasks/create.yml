@@ -16,9 +16,8 @@
   when: windows_adcs.reboot_required
 
 - name: Add ActiveDirectoryCSDsc
-  win_psmodule:
-    name: ActiveDirectoryCSDsc
-    state: present
+  win_shell: |
+    Install-Module -Name ActiveDirectoryCSDsc
 
 - name: Configure AdcsCertificationAuthority Powershell DSC
   win_dsc:

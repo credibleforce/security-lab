@@ -40,14 +40,12 @@
 
 # Add powershell modules
 - name: Add xActiveDirectory
-  win_psmodule:
-    name: xActiveDirectory
-    state: present
+  win_shell: |
+    Install-Module -Name xActiveDirectory
 
 - name: Add xComputerManagement
-  win_psmodule:
-    name: xComputerManagement
-    state: present
+  win_shell: |
+    Install-Module -Name xComputerManagement
 
 - name: Force Allow Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
   win_shell: |
