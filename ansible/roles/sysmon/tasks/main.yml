@@ -1,0 +1,24 @@
+---
+    - name: Create ansible directories
+      win_file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - 'c:\Program Files\ansible'
+        - 'c:\ProgramData\ansible\log'
+    
+    - include: windows-sysmon.yml
+    - include: windows-logging-registry.yml
+
+    - name: Reboot to complete sysmon
+      win_reboot:
+        pre_reboot_delay: 120
+        reboot_timeout: 600
+        post_reboot_delay: 120
+
+    - name: Wait for the connection
+      wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 120
+        timeout: 300

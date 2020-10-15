@@ -48,6 +48,7 @@
         name: '{{ rolevar }}'
       loop:
         - 'win_dc'
+        - 'sysmon'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['domain_controller']
@@ -68,6 +69,7 @@
         name: '{{ rolevar }}'
       loop:
         - 'win_ca'
+        - 'sysmon'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['certificate_authority']
@@ -78,6 +80,7 @@
         name: '{{ rolevar }}'
       loop:
         - 'win_member'
+        - 'sysmon'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['member_server']
@@ -89,6 +92,7 @@
       loop:
         - 'win_member'
         - 'win_wef'
+        - 'sysmon'
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['wef_server']
