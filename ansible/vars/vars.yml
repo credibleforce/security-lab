@@ -1,16 +1,23 @@
+lab:
+  # this will be used as the base for dns config on pfsense and the domain
+  base_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}"
+  dns_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.local"
+  domain_dns_name: "{{ {{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.local }}"
+  domain_netbios_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}"
+
 # Domain Controller
 windows_domain_controller_info:
-  dns_domain_name: "{{ lookup('env','WIN_DNS_DOMAIN') | default('lab.local',true) }}"
-  domain_netbios_name: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('lab',true) }}"
+  dns_domain_name: "{{ lookup('env','WIN_DNS_DOMAIN') | default(lab.domain_dns_name,true) }}"
+  domain_netbios_name: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default(lab.domain_netbios_name,true) }}"
   domain_admin_password: "{{ lookup('env','WIN_ADMIN_PASSWORD') | default('myTempPassword123',true) }}"
-  domain_admin_user: "{{ lookup('env','WIN_ADMIN_USER') | default('Administrator',true) }}@{{ lookup('env','WIN_DNS_DOMAIN') | default('lab.local',true) }}"
+  domain_admin_user: "{{ lookup('env','WIN_ADMIN_USER') | default('Administrator',true) }}@{{ lookup('env','WIN_DNS_DOMAIN') | default(lab.domain_dns_name,true) }}"
   safe_mode_username: "{{ lookup('env','WIN_ADMIN_USER') | default('Administrator',true) }}"
   safe_mode_password: "{{ lookup('env','WIN_ADMIN_PASSWORD') | default('myTempPassword123',true) }}"
   state: domain_controller
 
 # Windows CA
 windows_certificate_authority_info:
-  CACommonName: "{{ lookup('env','WIN_CA_COMMON_NAME') | default('LAB-CA',true) }}"
+  CACommonName: "{{ lookup('env','WIN_CA_COMMON_NAME') | default(concat(upper(lab.base_name,'-CA')),true) }}"
   KeyLength: 2048
   HashAlgorithmName: SHA256
   ValidityPeriod: 'Years'
@@ -27,8 +34,8 @@ splunk_certs:
   country: "Canada"
   state: "BC"
   city: "Vancouver"
-  org: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('lab',true) }}"
-  ou: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default('lab',true) }}"
+  org: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default(lab.base_name,true) }}"
+  ou: "{{ lookup('env','WIN_NETBIOS_DOMAIN') | default(lab.base_name,true) }}"
   export_dir: "C:\\Temp"
   splunk_certs_dir: "{{ splunk.home }}/etc/auth/mycerts"
 
