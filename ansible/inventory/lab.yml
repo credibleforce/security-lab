@@ -12,25 +12,25 @@ all:
         suricata:
           vars:
           hosts:
-            splk-uf1.lab.local:
+            splk-uf1.lab.lan:
         syslog-collector:
           vars:
           hosts:
-            splk-uf1.lab.local:
+            splk-uf1.lab.lan:
     splunk:
       children:
         splunk_universal_forwarder:
           vars:
           hosts:
-            splk-uf1.lab.local:
+            splk-uf1.lab.lan:
         splunk_deployment_server:
           vars:
           hosts:
-            splk-sh1.lab.local:
+            splk-sh1.lab.lan:
         splunk_standalone:
           vars:
           hosts:
-            splk-sh1.lab.local:
+            splk-sh1.lab.lan:
     windows:
       vars:
         ansible_connection: winrm
@@ -44,21 +44,21 @@ all:
         domain_controller:
           vars:
           hosts: 
-            win16-dc1.lab.local:
+            win16-dc1.lab.lan:
         certificate_authority:
           vars:
           hosts: 
-            win16-dc1.lab.local:
+            win16-dc1.lab.lan:
         member_server:
           vars:
           hosts: 
-            win16-srv1.lab.local:
-            win10-dsk1.lab.local:
-            win7-dsk1.lab.local:
+            win16-srv1.lab.lan:
+            win10-dsk1.lab.lan:
+            win7-dsk1.lab.lan:
         wef_server:
           vars:
           hosts: 
-            win16-wef1.lab.local:
+            win16-wef1.lab.lan:
     
 
     

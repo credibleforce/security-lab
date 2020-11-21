@@ -1,8 +1,8 @@
 $CACommonName="LAB-CA"
 $pem = $true
 
-$SAN = "dns=test.lab.local"
-$CN = "test.lab.local"
+$SAN = "dns=test.lab.lan"
+$CN = "test.lab.lan"
 $County = "Canada"
 $State = "BC"
 $City = "Vancouver"

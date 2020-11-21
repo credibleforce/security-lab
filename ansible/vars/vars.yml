@@ -1,8 +1,9 @@
 lab:
   # this will be used as the base for dns config on pfsense and the domain
+  base_tld: "{{ lookup('env','LAB_BASE_TLD') | default('lan',true) }}"
   base_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}"
-  dns_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.local"
-  domain_dns_name: "{{ {{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.local }}"
+  dns_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.{{ lookup('env','LAB_BASE_TLD') | default('lan',true) }}"
+  domain_dns_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}.{{ lookup('env','LAB_BASE_TLD') | default('lan',true) }}"
   domain_netbios_name: "{{ lookup('env','LAB_BASE_NAME') | default('lab',true) }}"
 
 # Domain Controller
