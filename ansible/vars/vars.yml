@@ -18,7 +18,7 @@ windows_domain_controller_info:
 
 # Windows CA
 windows_certificate_authority_info:
-  CACommonName: "{{ lookup('env','WIN_CA_COMMON_NAME') | default(concat(upper(lab.base_name,'-CA')),true) }}"
+  CACommonName: "{{ lookup('env','WIN_CA_COMMON_NAME') | default(lab.base_name + '-CA',true) | upper }}"
   KeyLength: 2048
   HashAlgorithmName: SHA256
   ValidityPeriod: 'Years'
