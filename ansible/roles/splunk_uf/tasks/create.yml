@@ -2,6 +2,8 @@
 
     # Purpose: Installs a Splunk Universal Forwader on the host
 - name: Configure Windows Universal Forwarder
+  set_fact:
+    deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in group_names else (groups['splunk_standalone'][0] if 'splunk_standalone' in group_names)}}"
   win_shell: |
     If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
         Write-Host "Downloading Splunk Universal Forwarder"
@@ -11,7 +13,7 @@
         [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
         #(New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=7.3.4.2/windows/splunkforwarder-7.3.4.2-cb574b3d103e-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.3.4.2&product=universalforwarder&typed=release', $msiFile)
         (New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=8.0.2/windows/splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=8.0.2&product=universalforwarder&typed=release', $msiFile)
-        Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", 'DEPLOYMENT_SERVER="{{ groups['splunk_deployment_server'][0] }}:8089"  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD=changeme /quiet' -Wait
+        Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", 'DEPLOYMENT_SERVER="{{ deployment_server }}}}:8089"  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD=changeme /quiet' -Wait
     } Else {
         Write-Host "Splunk is already installed. Moving on."
     }
