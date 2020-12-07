@@ -5,7 +5,13 @@
 
 - name: Issue a cert for the CSR
   win_shell: |
-    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}')
+    # Find the fully qualified name from the inventory_hostname
+    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
+
+    # Create the CN shortname by replacing the FQDN for the domain
+    $Hostname = $FQDN -replace (".{0}" -f $env:USERDNSDOMAIN),''
+
+    # Create the export folder
     $OutputFolder = '{{ splunk_certs['export_dir'] }}'
 
     #Create output folder if does not exist
@@ -16,7 +22,7 @@
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
     $CertExportDirectoy=$OutputFolder
     $SAN = "dns=$FQDN"
-    $CN = "$FQDN"
+    $CN = "$Hostname"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
