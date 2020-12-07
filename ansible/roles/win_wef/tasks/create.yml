@@ -60,8 +60,8 @@
     $OutputFolder="C:\WEC"
 
     #Create output folder if does not exist
-    if(-not (Test-Path $OutputFolder)) { 
-        New-Item -Path $OutputFolder -ItemType Directory
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
+        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
     $ProgressPreference='SilentlyContinue' #for faster download
@@ -419,6 +419,12 @@
 - name: Custom Event Channel - Compile the Custom Event Channel dll
   win_shell: |
     $OutputFolder="C:\WEC"
+    
+    #Create output folder if does not exist
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
+        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
     $ManifestFile = "C:\Users\Administrator\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
     
     #Create Man file or run setup
@@ -449,7 +455,9 @@
     #Create custom event forwarding logs
     Stop-Service Wecsvc
     #unload current event channnel (commented as there is no custom manifest)
-    wevtutil um C:\windows\system32\$CustomEventChannelsFileName.man
+    if([System.IO.File]::Exists($CustomEventChannelsFileName.man)) {
+        wevtutil um C:\windows\system32\$CustomEventChannelsFileName.man
+    }
     
     #copy new man and dll
     $files="$CustomEventChannelsFileName.dll","$CustomEventChannelsFileName.man"
