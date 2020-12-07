@@ -1,19 +1,22 @@
 ---
-- name: Create certificate export directory
-  win_file:
-    path: "{{ splunk_certs['export_dir'] }}"
-    state: directory
-
 - name: Show target groups
   debug:
     var: groups['splunk']
 
 - name: Issue a cert for the CSR
   win_shell: |
+    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}')
+    $OutputFolder = '{{ splunk_certs['export_dir'] }}'
+
+    #Create output folder if does not exist
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
+        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
+    }
+    
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-    $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
-    $SAN = "dns={{ item }}"
-    $CN = "{{ item }}"
+    $CertExportDirectoy=$OutputFolder
+    $SAN = "dns=$FQDN"
+    $CN = "$FQDN"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
