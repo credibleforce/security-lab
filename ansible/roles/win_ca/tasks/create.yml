@@ -19,9 +19,9 @@
   win_shell: |
     Install-Module -Name ActiveDirectoryCSDsc
 
-- name: Configure AdcsCertificationAuthority Powershell DSC
+- name: Configure ActiveDirectoryCSDsc Powershell DSC
   win_dsc:
-    resource_name: AdcsCertificationAuthority
+    resource_name: DSC_AdcsCertificationAuthority
     IsSingleInstance: 'Yes'
     CAType: 'EnterpriseRootCA'
     CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
