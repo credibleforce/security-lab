@@ -15,6 +15,10 @@
     post_reboot_delay: 300
   when: windows_adcs.reboot_required
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    Set-PackageSource -Name PSGallery -Trusted
+
 - name: Add ActiveDirectoryCSDsc
   win_shell: |
     Install-Module -Name ActiveDirectoryCSDsc

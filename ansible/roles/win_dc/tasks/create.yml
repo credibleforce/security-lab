@@ -10,6 +10,10 @@
     state: present
   register: feature_check
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    Set-PackageSource -Name PSGallery -Trusted
+
 # Add powershell modules
 - name: Check for xDnsServer Powershell module
   win_shell: |

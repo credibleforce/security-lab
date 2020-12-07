@@ -3,11 +3,15 @@
   set_fact:
     ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
-    
+
 - name: Copy GPO policy to domain controller
   win_copy:
       src: ../files/GPO
       dest: c:\
+
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    Set-PackageSource -Name PSGallery -Trusted
 
 - name: Update wef policy with wef server name
   win_shell: |

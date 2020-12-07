@@ -38,6 +38,10 @@
     reboot_timeout: 600
     post_reboot_delay: 120
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    Set-PackageSource -Name PSGallery -Trusted
+
 # Add powershell modules
 - name: Add xActiveDirectory
   win_shell: |

@@ -3,13 +3,17 @@
   set_fact:
     ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
-    
+
 # list host with gathered ip address facts
 - name: Debug variables
   debug:
     msg: "{{ hostvars[item].ansible_default_ipv4.address }}"
   when: hostvars[item].ansible_default_ipv4 is defined
   with_items: "{{ groups['splunk'] }}"
+
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    Set-PackageSource -Name PSGallery -Trusted
 
 # Add powershell modules
 - name: Check for xDnsServer Powershell module
