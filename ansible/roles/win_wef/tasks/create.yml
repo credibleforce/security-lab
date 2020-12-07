@@ -60,7 +60,7 @@
     $OutputFolder="C:\WEC"
 
     #Create output folder if does not exist
-    if(!([System.IO.File]::Exists(Test-Path $OutputFolder))) { 
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
@@ -421,7 +421,7 @@
     $OutputFolder="C:\WEC"
     
     #Create output folder if does not exist
-    if(!([System.IO.File]::Exists(Test-Path $OutputFolder))) { 
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
