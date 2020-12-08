@@ -25,8 +25,10 @@
       debug:
         msg:
           - "Group names: {{ groups }}"
-          - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] | default('Not found',true)}}"
-          - "splunk_standalone: {{ groups['splunk_deployment_server'][0] | default('Not found',true) }}"
+          - "Defined splunk_deployment_server: {{ groups['splunk_standalone'] is defined }}"
+          - "Defined splunk_standalone: {{ groups['splunk_standalone'] is defined }}"
+          - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] if groups['splunk_deployment_server'] is defined else 'Not found'}}"
+          - "splunk_standalone: {{ groups['splunk_standalone'][0] if groups['splunk_standalone'] is defined else 'Not found' }}"
           - "Deployment server: {{ deployment_server }}"
 
     - name: Run windows domain setup
