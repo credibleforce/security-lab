@@ -17,6 +17,15 @@
   pre_tasks:
   post_tasks:
   tasks:
+    - name: "Set deployment_server variable"
+      set_fact:
+        deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in group_names else (groups['splunk_standalone'][0] if 'splunk_standalone' in group_names else '')}}"  
+
+    - name: Deployment server
+      debug:
+        msg:
+          - "Deployment server: {{ deployment_server }}"
+
     - name: Run windows domain setup
       debug:
         msg: "{{ hostvars[groups['splunk'][0]] }}"
