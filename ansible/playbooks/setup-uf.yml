@@ -24,6 +24,9 @@
     - name: Deployment server
       debug:
         msg:
+          - "Group names: {{ group_names }}"
+          - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] | default('Not found',true)}}"
+          - "splunk_standalone: {{ groups['splunk_deployment_server'][0] | default('Not found',true) }} "
           - "Deployment server: {{ deployment_server }}"
 
     - name: Run windows domain setup
