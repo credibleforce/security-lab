@@ -19,14 +19,14 @@
   tasks:
     - name: "Set deployment_server variable"
       set_fact:
-        deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in group_names else (groups['splunk_standalone'][0] if 'splunk_standalone' in group_names else '')}}"  
+        deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in groups else (groups['splunk_standalone'][0] if 'splunk_standalone' in groups else '')}}"  
 
     - name: Deployment server
       debug:
         msg:
           - "Group names: {{ group_names }}"
           - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] | default('Not found',true)}}"
-          - "splunk_standalone: {{ groups['splunk_deployment_server'][0] | default('Not found',true) }} "
+          - "splunk_standalone: {{ groups['splunk_deployment_server'][0] | default('Not found',true) }}"
           - "Deployment server: {{ deployment_server }}"
 
     - name: Run windows domain setup
