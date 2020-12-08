@@ -19,12 +19,12 @@
   tasks:
     - name: "Set deployment_server variable"
       set_fact:
-        deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in groups else (groups['splunk_standalone'][0] if 'splunk_standalone' in groups else '')}}"  
+        deployment_server: "{{ groups['splunk_deployment_server'][0] if groups['splunk_deployment_server'] is defined else (groups['splunk_standalone'][0] if groups['splunk_standalone'] is defined else '')}}"  
 
     - name: Deployment server
       debug:
         msg:
-          - "Group names: {{ group_names }}"
+          - "Group names: {{ groups }}"
           - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] | default('Not found',true)}}"
           - "splunk_standalone: {{ groups['splunk_deployment_server'][0] | default('Not found',true) }}"
           - "Deployment server: {{ deployment_server }}"
