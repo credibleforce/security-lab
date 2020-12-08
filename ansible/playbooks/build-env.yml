@@ -125,6 +125,8 @@
 
     # prepare the certificates for splunk servers, excluding universal forwarders
     - name: Prep the certificates for use in splunk
+      run_once: yes
+      delegate_to: localhost
       include_role:
         name: '{{ rolevar }}'
       loop:
