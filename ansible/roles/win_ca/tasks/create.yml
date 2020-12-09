@@ -17,6 +17,9 @@
 
 - name: Add PSGallery as Trusted Powershell Repo
   win_shell: |
+    # check for dns resolutions
+    $r = $null;while($r -eq $null){try{$r = [System.Net.Dns]::GetHostByName("powershellgallery.com");break}catch{write-host "Waiting for dns...";sleep -Seconds 10}}
+    # update trusted source
     Set-PackageSource -Name PSGallery -Trusted
 
 - name: Add ActiveDirectoryCSDsc
