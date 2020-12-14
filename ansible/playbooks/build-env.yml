@@ -134,14 +134,14 @@
       when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
     # stage certificates on servers
-    - name: Stage the certificates for use in splunk
+    - name: Stage the certificates for including root ca cert and splunk certs
       include_role:
         name: '{{ rolevar }}'
       loop:
         - 'cert_distribute'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['linux'] or inventory_hostname in groups['splunk']
 
 - hosts: suricata
   vars_files:

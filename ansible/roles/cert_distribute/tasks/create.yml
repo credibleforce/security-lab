@@ -5,42 +5,49 @@
     state: directory
     recurse: true
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy cert to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}.crt" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.crt"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy private key to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}.key" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy pem bundle to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy pem bundle to server
   copy: 
     src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy ca cert pem to server
   copy: 
     src: "/tmp/cacert.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Copy ca cert pem to server
   copy: 
     src: "/tmp/cacert.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Install ca package on rhel systems
   yum:
@@ -88,3 +95,4 @@
     - "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
     - "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
   become: yes
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
