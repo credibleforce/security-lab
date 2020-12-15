@@ -8,6 +8,7 @@
     fail_key: yes
   register: group_exist
   ignore_errors: true
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Check if splunk user exists
   getent:
@@ -16,12 +17,13 @@
     fail_key: yes
   register: user_exist
   ignore_errors: true
+  when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
 
 - name: Create a splunk group
   group:
     name: splunk
     state: present
-  when: group_exist["failed"] == true
+  when: group_exist["failed"] == true and inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
   become: yes
 
 - name: Create a splunk user
@@ -35,5 +37,5 @@
     system: no             # Defaults to no
     createhome: yes        # Defaults to yes
     home: /home/splunk     # Defaults to /home/<username>
-  when: user_exist["failed"] == true
+  when: user_exist["failed"] == true and inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
   become: yes
