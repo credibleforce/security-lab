@@ -102,3 +102,22 @@
     pre_reboot_delay: 120
     reboot_timeout: 600
     post_reboot_delay: 120
+
+- name: Update WinRM to Use Autoenroll Certificate
+  win_shell: |
+    # force gpupdate
+    gpupdate /force
+
+    # get thumbprint for the domain certificate
+    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ',DC=') }}"} | Select-Object Thumbprint
+
+    # only replace if autoenroll certificate found
+    if($thumbprint.count -gt 0){
+      write-output "Found Domain Certificate - Updating WinRM"
+      # remove existing HTTPS mapping
+      Get-ChildItem -Path WSMan:\localhost\Listener | Where-Object { $_.Keys -contains "Transport=HTTPS" } | Remove-Item -Recurse -Force
+      New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -CertificateThumbPrint $thumbprint.Thumbprint -Port "5986" -force
+    }else{
+        write-output "Domain Certificate Not Found - Skipping"
+    }
+        
