@@ -120,4 +120,9 @@
     }else{
         write-output "Domain Certificate Not Found - Skipping"
     }
-        
+
+- name: Reboot to complete domain membership
+  win_reboot:
+    pre_reboot_delay: 120
+    reboot_timeout: 600
+    post_reboot_delay: 120
