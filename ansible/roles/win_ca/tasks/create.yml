@@ -1,7 +1,7 @@
 ---
 - name: Stage CAPolicy.inf
   template: 
-    src: template/capolicy.inf.j2
+    src: ../template/capolicy.inf.j2
     dest: c:\windows\CAPolicy.inf
 
 - name: Create PKI Virtual Directory
