@@ -104,7 +104,7 @@
 
 - name: Copy crt and crl to pki directory
   win_shell: |
-    Copy-Item C:\Windows\system32\certsrv\certenroll\*.cr* to \\localhost\pki
+    Copy-Item C:\Windows\system32\certsrv\certenroll\*.cr* \\localhost\pki
 
 - name: Configure Client-Server Authentication and IAS RAS Server Templates for Autoenroll
   win_shell: |
