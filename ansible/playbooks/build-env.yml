@@ -72,6 +72,16 @@
         loop_var: rolevar
       when: inventory_hostname in groups['certificate_authority']
 
+    # setup policy for certificate authority autoenroll
+    - name: Run windows certificate authority policy setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_ca_policy'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['domain_controller']
+
     # member_server group only
     - name: Windows Member Server
       include_role:
