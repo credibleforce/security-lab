@@ -12,12 +12,24 @@
 - name: Create PKI Virtual Directory
   win_shell: |
     $path = "c:\pki"
-    if([System.IO.Directory]::Exists($path)){
-      Remove-Item $path -Recurse -Force
+    $share = Get-SmbShare -Name "pki" -ErrorAction SilentlyContinue
+
+    # remove share if exists
+    if($share -ne $null){
+        write-output "Removing existing share"
+        Remove-SmbShare -Name "pki" -Force
     }
+
+    # remove directory if exists
+    if([System.IO.Directory]::Exists($path)){
+        write-output "Removing existing directory"
+        Remove-Item $path -Recurse -Force
+    }
+
+    # create directory and share
     New-item -path $path –type directory
     Write-Output "Example CPS statement" | Out-File $path\cps.txt
-    New-SMBShare -Name pki $path -FullAccess SYSTEM,"{{ windows_domain_controller_info['domain_netbios_name'] }}\Domain Admins" -ChangeAccess "{{ windows_domain_controller_info['domain_netbios_name'] }}\Cert Publishers"
+    New-SMBShare -Name pki $path -FullAccess SYSTEM,"LAB\Domain Admins" -ChangeAccess "LAB\Cert Publishers"
 
 - name: Install ADCS with sub features and management tools
   win_feature:
