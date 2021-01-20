@@ -8,8 +8,7 @@
   win_shell: |
     New-item -path c:\pki –type directory
     Write-Output "Example CPS statement" | Out-File c:\pki\cps.txt
-    New-SMBShare -Name pki c:\pki -FullAccess SYSTEM,"CORP\Domain Admins" -ChangeAccess "CORP\Cert Publishers"
-# DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',', DC=') }}
+    New-SMBShare -Name pki c:\pki -FullAccess SYSTEM,"{{ windows_domain_controller_info['domain_netbios_name'] }}\Domain Admins" -ChangeAccess "{{ windows_domain_controller_info['domain_netbios_name'] }}\Cert Publishers"
 
 - name: Install ADCS with sub features and management tools
   win_feature:
