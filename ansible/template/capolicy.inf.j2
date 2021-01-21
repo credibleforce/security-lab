@@ -3,16 +3,12 @@ Signature="$Windows NT$"
 [PolicyStatementExtension]
 Policies=InternalPolicy
 [InternalPolicy]
-OID=1.2.3.4.1455.67.89.5
+OID= 1.2.3.4.1455.67.89.5
 Notice="Legal Policy Statement"
-URL=https://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/cps.txt
+URL=http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/cps.txt
 [Certsrv_Server]
 RenewalKeyLength=2048
 RenewalValidityPeriod=Years
 RenewalValidityPeriodUnits=5
-CRLPeriod=weeks
-CRLPeriodUnits=1
 LoadDefaultTemplates=0
 AlternateSignatureAlgorithm=1
-[CRLDistributionPoint]
-[AuthorityInformationAccess]
