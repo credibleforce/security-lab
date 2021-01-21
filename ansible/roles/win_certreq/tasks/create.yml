@@ -23,7 +23,11 @@
     if(!([System.IO.File]::Exists($OutputFolder))) { 
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
-    
+    # Get the name of the template
+    $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+    $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+    $Template = $ADSI.psbase.children | where {$_.displayName -eq "Web Server Policy"} | select-object -Property Name
+
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
     $CertExportDirectoy=$OutputFolder
     $SAN = "dns=$FQDN"
@@ -33,7 +37,7 @@
     $City = "{{ splunk_certs['city'] }}"
     $Organisation = "{{ splunk_certs['org'] }}"
     $OU = "{{ splunk_certs['ou'] }}"
-    $TemplateName = "WebServer"
+    $TemplateName = $Template.Name
 
     function Remove-ReqTempfiles() {
         param(

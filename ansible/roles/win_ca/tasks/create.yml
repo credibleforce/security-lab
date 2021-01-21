@@ -64,7 +64,7 @@
     resource_name: xDnsRecord
     Name: "pki"
     Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
-    Target: "{{ groups['domain_controller'][0].split('.')[0] | lower }}"
+    Target: "{{ groups['domain_controller'][0].split('.')[0] | lower }}.{{ windows_domain_controller_info['dns_domain_name'] }}"
     Type: CName
 
 # add iis virtual directory
@@ -138,7 +138,7 @@
         }
         Return $Return
     }
-
+    
     Function IsUniqueOID {
     param ($CN,$OID,$ConfigContext)
         $OID_Check = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext"
@@ -167,7 +167,7 @@
         }
     }
 
-    Function New-WorkstationAuthentication{
+    Function New-WorkstationAuthenticationTemplate{
     param($DisplayName,$ConfigContext)
 
         [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext" 
@@ -179,7 +179,7 @@
         $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
         $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
         $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
-        
+            
         # set configuration values
         $NewTempl.put("flags","131680")
         $NewTempl.put("displayName",$DisplayName)
@@ -194,14 +194,14 @@
         $NewTempl.put("msPKI-RA-Signature","0")
         $NewTempl.put("msPKI-Enrollment-Flag","32")
         $NewTempl.put("msPKI-Private-Key-Flag","67371264")
-        $NewTempl.put("msPKI-Certificate-Name-Flag","134217728")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","-2013265920")
         $NewTempl.put("msPKI-Minimal-Key-Size","2048")
         $NewTempl.put("msPKI-Template-Schema-Version","2")
         $NewTempl.put("msPKI-Template-Minor-Revision","0")
         $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
         $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
         $NewTempl.SetInfo()
-        
+            
         # copy properties from template
         $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
         $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
@@ -232,7 +232,7 @@
 
     }
 
-    Function New-RASAndIASServer{
+    Function New-RASAndIASServerTemplate{
     param($DisplayName, $ConfigContext)
         [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext" 
         $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "RAS and IAS Server"}
@@ -243,7 +243,7 @@
         $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
         $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
         $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
-        
+            
         # set configuration values
         $NewTempl.put("flags","131680")
         $NewTempl.put("displayName",$DisplayName)
@@ -258,14 +258,14 @@
         $NewTempl.put("msPKI-RA-Signature","0")
         $NewTempl.put("msPKI-Enrollment-Flag","32")
         $NewTempl.put("msPKI-Private-Key-Flag","0")
-        $NewTempl.put("msPKI-Certificate-Name-Flag","1207959552")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","-2013265920")
         $NewTempl.put("msPKI-Minimal-Key-Size","2048")
         $NewTempl.put("msPKI-Template-Schema-Version","2")
         $NewTempl.put("msPKI-Template-Minor-Revision","0")
         $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
         $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
         $NewTempl.SetInfo()
-        
+            
         # copy properties from template
         $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
         $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
@@ -297,6 +297,56 @@
 
     }
 
+    Function New-WebServerTemplate{
+    param($DisplayName, $ConfigContext)
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "Web Server"}
+
+        # build new template
+        $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
+        $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
+        $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
+            
+        # set configuration values
+        $NewTempl.put("flags","131680")
+        $NewTempl.put("displayName",$DisplayName)
+        $NewTempl.put("revision","100")
+        $NewTempl.put("pKIDefaultKeySpec","1")
+        $NewTempl.SetInfo()
+
+        $NewTempl.put("pKIMaxIssuingDepth","0")
+        $NewTempl.putex(3,"pKICriticalExtensions",@("2.5.29.7","2.5.29.15"))
+        $NewTempl.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.put("pKIDefaultCSPs","1,Microsoft RSA SChannel Cryptographic Provider")
+        $NewTempl.put("msPKI-RA-Signature","0")
+        $NewTempl.put("msPKI-Enrollment-Flag","0")
+        $NewTempl.put("msPKI-Private-Key-Flag","16842752")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","1")
+        $NewTempl.put("msPKI-Minimal-Key-Size","2048")
+        $NewTempl.put("msPKI-Template-Schema-Version","2")
+        $NewTempl.put("msPKI-Template-Minor-Revision","0")
+        $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
+        $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.SetInfo()
+            
+        # copy properties from template
+        $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
+        $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
+        $NewTempl.pKIOverlapPeriod = $WATempl.pKIOverlapPeriod
+        $NewTempl.SetInfo()
+
+        # publish template to ca
+        $Enrollment_ADSI = [ADSI]"LDAP://CN=Enrollment Services,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Enrollment_ADSI.psbase.children | % { 
+            $CA = $_
+            $CA.putex(3,'certificateTemplates',@($TemplateOID.TemplateName))
+            $CA.commitchanges()
+        } 
+
+
+    }
+
     $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext 
-    New-WorkstationAuthentication -DisplayName "Client-Server Authentication Policy" -ConfigContext $ConfigContext
-    New-RASAndIASServer -DisplayName "RAS and IAS Server Policy" -ConfigContext $ConfigContext
+    New-WorkstationAuthenticationTemplate -DisplayName "Client-Server Authentication Policy" -ConfigContext $ConfigContext
+    New-RASAndIASServerTemplate -DisplayName "RAS and IAS Server Policy" -ConfigContext $ConfigContext
+    New-WebServerTemplate -DisplayName "Web Server Policy" -ConfigContext $ConfigContext
