@@ -6,6 +6,16 @@
   tasks:
 
 #########################################
+# ANSIBLE COMMON
+#########################################
+
+- hosts: all:!local
+  tasks:
+    - name: Apply ansible base configuration (e.g. ssh key scan)
+      include_role:
+        name: ../roles/ansible_common
+
+#########################################
 # DOMAIN CONTROLLER
 #########################################
 
@@ -15,9 +25,20 @@
   gather_facts: True
   environment:
   pre_tasks:
+    # splunk universal forwarder variables
+    - name: Universal Forwarder Variable
+      include_vars: ../vars/splunk_universal_forwarder.yml
+      when:
+        - inventory_hostname in groups['splunk_universal_forwarder']
   post_tasks:
   tasks:
-    - name: Run windows domain setup
+    # all
+    - name: Deploy common tasks to all
+      include_role:
+        name: ../roles/common
+    
+    # certificate_authority group only
+    - name: Windows Enterprise PKI
       include_role:
         name: '{{ rolevar }}'
       loop:
