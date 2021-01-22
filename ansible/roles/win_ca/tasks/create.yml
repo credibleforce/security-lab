@@ -210,12 +210,15 @@
 
         $EnrollObjectType = [GUID]'0e10c968-78fb-11d2-90d4-00c04f79dc55'
         $AutoEnrollObjectType = [GUID]'a05b8cc2-17bc-4802-a710-e7c15ab866a2'
+        $GenericRead = [System.DirectoryServices.ActiveDirectoryRights] "GenericRead"
         $InheritedObjectType = [GUID]'00000000-0000-0000-0000-000000000000'
         $Type = [System.Security.AccessControl.AccessControlType]"Allow"
         $aceEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $EnrollObjectType, 'None', $InheritedObjectType
         $aceAutoEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $AutoEnrollObjectType, 'None', $InheritedObjectType
+        $aceRead  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, $GenericRead, $Type, $InheritedObjectType
         $NewTempl.ObjectSecurity.AddAccessRule($aceEnroll)
         $NewTempl.ObjectSecurity.AddAccessRule($aceAutoEnroll)
+        $NewTempl.ObjectSecurity.AddAccessRule($aceRead)
 
         $NewTempl.commitchanges()
 
