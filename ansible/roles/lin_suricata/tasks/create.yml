@@ -1,26 +1,8 @@
 ---
-  
-  - name: Check if splunk group exists
-    getent:
-      database: group
-      key: splunk
-      fail_key: yes
-    register: group_exist
-    ignore_errors: true
-
-  - name: Check if splunk user exists
-    getent:
-      database: passwd
-      key: splunk
-      fail_key: yes
-    register: user_exist
-    ignore_errors: true
-
   - name: Create a splunk group
     group:
       name: splunk
       state: present
-    when: group_exist["failed"] == true
     become: yes
 
   - name: Create a splunk user
@@ -34,7 +16,6 @@
       system: no             # Defaults to no
       createhome: yes        # Defaults to yes
       home: /home/splunk     # Defaults to /home/<username>
-    when: user_exist["failed"] == true
     become: yes
 
   - name: Install suricata
