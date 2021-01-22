@@ -138,7 +138,7 @@
         }
         Return $Return
     }
-    
+
     Function IsUniqueOID {
     param ($CN,$OID,$ConfigContext)
         $OID_Check = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext"
@@ -169,12 +169,9 @@
 
     Function New-WorkstationAuthenticationTemplate{
     param($DisplayName,$ConfigContext)
-
-        [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext" 
-        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "Workstation Authentication"}
-
         $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
-
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "Workstation Authentication"}
+        
         # build new template
         $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
         $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
@@ -234,10 +231,8 @@
 
     Function New-RASAndIASServerTemplate{
     param($DisplayName, $ConfigContext)
-        [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext" 
-        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "RAS and IAS Server"}
-
         $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "RAS and IAS Server"}
 
         # build new template
         $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
