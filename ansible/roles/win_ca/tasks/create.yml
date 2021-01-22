@@ -111,7 +111,7 @@
     }; 
     Add-CACRLDistributionPoint -Uri C:\Windows\System32\CertSrv\CertEnroll%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
     Add-CACRLDistributionPoint -Uri http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl -AddToCertificateCDP -Force
-    Add-CACRLDistributionPoint -Uri file://pki.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
+    Add-CACRLDistributionPoint -Uri file://\\pki.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
     restart-service certsvc
 
 - name: Add AIA Extension
@@ -120,7 +120,7 @@
     foreach ($aia in $aialist) {
       Remove-CAAuthorityInformationAccess $aia.uri -Force
     }; 
-    Add-CAAuthorityInformationAccess -AddToCertificateAia http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%1_%3%4.crt -Force Certutil -setreg CA\CRLPeriodUnits 2 Certutil -setreg CA\CRLPeriod "Weeks" 
+    Add-CAAuthorityInformationAccess -AddToCertificateAia http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%1_%3%4.crt -Force
     restart-service certsvc 
 
 - name: Copy crt and crl to pki directory
@@ -345,3 +345,4 @@
     New-WorkstationAuthenticationTemplate -DisplayName "Client-Server Authentication Policy" -ConfigContext $ConfigContext
     New-RASAndIASServerTemplate -DisplayName "RAS and IAS Server Policy" -ConfigContext $ConfigContext
     New-WebServerTemplate -DisplayName "Web Server Policy" -ConfigContext $ConfigContext
+    restart-service certsvc 
