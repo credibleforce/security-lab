@@ -10,3 +10,6 @@ ca_path:
         8: '{{ ca_path_debian }}'
         9: '{{ ca_path_debian }}'
         10: '{{ ca_path_debian }}'
+    Kali GNU/Linux:
+        2019: '{{ ca_path_debian }}'
+        2020: '{{ ca_path_debian }}'
