@@ -1,4 +1,38 @@
 ---
+  - name: Determine available groups
+    getent:
+      database: group
+    register: getent_groups
+
+  - name: Determine available users
+    getent:
+      database: passwd
+    register: getent_users
+
+  - name: Create a splunk group
+    group:
+      name: splunk
+      state: present
+    when:
+      - getent_groups.ansible_facts.getent_group.splunk is not defined 
+    become: yes
+
+  - name: Create a splunk user
+    user:
+      name: splunk
+      groups: # Empty by default, here we give it some groups
+        - splunk
+      state: present
+      shell: /bin/bash       # Defaults to /bin/bash
+      expires: 1             # Expire Account
+      system: no             # Defaults to no
+      createhome: yes        # Defaults to yes
+      home: /home/splunk     # Defaults to /home/<username>
+    when:
+      - getent_groups.ansible_facts.getent_passwd.splunk is not defined 
+    become: yes
+
+
   - name: Install suricata
     shell: |
       # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts from Windows
