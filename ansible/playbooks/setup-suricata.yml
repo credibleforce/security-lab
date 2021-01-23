@@ -16,7 +16,7 @@
         name: ../roles/ansible_common
 
 #########################################
-# DOMAIN CONTROLLER
+# SURICATE
 #########################################
 
 - hosts: suricata
@@ -37,8 +37,8 @@
       include_role:
         name: ../roles/common
     
-    # certificate_authority group only
-    - name: Windows Enterprise PKI
+    # suricata
+    - name: Suricata Install
       include_role:
         name: '{{ rolevar }}'
       loop:

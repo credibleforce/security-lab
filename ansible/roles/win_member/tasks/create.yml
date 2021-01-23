@@ -112,13 +112,13 @@
     $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ',DC=') }}"} | Select-Object Thumbprint
 
     # only replace if autoenroll certificate found
-    if($thumbprint.count -gt 0){
+    if($thumbprint -ne $null){
       write-output "Found Domain Certificate - Updating WinRM"
       
       $listener = Get-ChildItem -Path WSMan:\localhost\Listener | Where-Object { $_.Keys -contains "Transport=HTTPS" } | select-object *
       
       # update existing listener
-      if($listener -gt 0){
+      if($listener -ne $null){
         $name = $listener.PSChildName
         set-item WSMan:\localhost\Listener\$name\Hostname -Value "" -Force
         set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force
@@ -128,7 +128,7 @@
 
       # remove any other certs
       Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Thumbprint -notmatch $thumbprint.Thumbprint } | Remove-Item
-      
+
     }else{
         write-output "Domain Certificate Not Found - Skipping"
     }
