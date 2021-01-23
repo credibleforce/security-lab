@@ -10,10 +10,8 @@
   register: getent_users
 
 - name: Create a splunk group
-  group:
-    name: splunk
-    state: present
-  become: yes
+  command: |
+    sudo groupadd splunk
   when: getent_groups.ansible_facts.getent_group.splunk is not defined 
 
 - name: Create a splunk user
