@@ -5,16 +5,16 @@
       echo "[$(date +%H:%M:%S)]: Installing Suricata..."
 
       # Install suricata
-      yum install -y epel-release 
-      yum install -y suricata crudini git
+      sudo yum install -y epel-release 
+      sudo yum install -y suricata crudini git
       #test_suricata_prerequisites
       # Install suricata-update
       cd /opt || exit 1
-      git clone https://github.com/OISF/suricata-update.git
+      sudo git clone https://github.com/OISF/suricata-update.git
       cd /opt/suricata-update || exit 1
-      python setup.py install
-      chmod g+r /var/log/suricata/
-      usermod -a -G suricata splunk
+      sudo python setup.py install
+      sudo chmod g+r /var/log/suricata/
+      sudo usermod -a -G suricata splunk
     become: yes
 
   - name: Set primary interface name
