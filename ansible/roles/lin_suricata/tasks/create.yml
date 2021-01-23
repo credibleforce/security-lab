@@ -13,9 +13,9 @@
     group:
       name: splunk
       state: present
+    become: yes
     when:
       - getent_groups.ansible_facts.getent_group.splunk is not defined 
-    become: yes
 
   - name: Create a splunk user
     user:
@@ -28,9 +28,9 @@
       system: no             # Defaults to no
       createhome: yes        # Defaults to yes
       home: /home/splunk     # Defaults to /home/<username>
+    become: yes
     when:
       - getent_groups.ansible_facts.getent_passwd.splunk is not defined 
-    become: yes
 
 
   - name: Install suricata
