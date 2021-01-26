@@ -2,8 +2,8 @@
 # EXAMPLE DEPLOYMENT
 #########################################
 
-  - hosts: local
-    tasks:
+- hosts: local
+  tasks:
 
 #########################################
 # ANSIBLE COMMON
