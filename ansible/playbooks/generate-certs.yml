@@ -42,4 +42,4 @@
         - 'cert_distribute'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk']
+      when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
