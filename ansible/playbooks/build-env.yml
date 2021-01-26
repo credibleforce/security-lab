@@ -153,7 +153,24 @@
         loop_var: rolevar
       when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
 
-- hosts: suricata
+# - hosts: suricata
+#   vars_files:
+#     - ../vars/vars.yml
+#   gather_facts: True
+#   strategy: free
+#   environment:
+#   pre_tasks:
+#   post_tasks:
+#   tasks:
+#     - name: Run suricata setup
+#       include_role: 
+#         name: '{{ rolevar }}'
+#       loop:
+#         - 'lin_suricata'
+#       loop_control:
+#         loop_var: rolevar
+
+- hosts: syslog-collector
   vars_files:
     - ../vars/vars.yml
   gather_facts: True
@@ -162,11 +179,11 @@
   pre_tasks:
   post_tasks:
   tasks:
-    - name: Run suricata setup
+    - name: Run syslog-collector setup
       include_role: 
         name: '{{ rolevar }}'
       loop:
-        - 'lin_suricata'
+        - 'lin_sc4s'
       loop_control:
         loop_var: rolevar
 
