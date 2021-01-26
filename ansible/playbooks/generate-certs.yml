@@ -24,7 +24,7 @@
         - 'win_certreq'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['certificate_authority']
 
     - name: Prep the certificates for use in splunk
       include_role:
@@ -33,7 +33,7 @@
         - 'cert_prep'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['local']
 
     - name: Stage the certificates for use in splunk
       include_role:
@@ -42,4 +42,4 @@
         - 'cert_distribute'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['splunk']
