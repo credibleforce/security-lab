@@ -205,6 +205,8 @@
         - 'sysmon'
       loop_control:
         loop_var: rolevar
+      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
+      when: ansible_system == 'Win32NT'
 
    
   
