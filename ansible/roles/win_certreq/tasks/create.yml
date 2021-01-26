@@ -1,174 +1,173 @@
 ---
-- name: Set ansible user for role
-  set_fact:
-    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
-    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+  - name: Set ansible user for role
+    delegate_to: "{{ groups['certificate_authority']|first }}"
+    set_fact:
+        ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+        ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+    run_once: yes
 
-- name: Show target groups
-  debug:
-    var: groups['splunk']
+  - name: Issue a cert for the CSR
+    delegate_to: "{{ groups['certificate_authority']|first }}"
+    win_shell: |
+        # Find the fully qualified name from the inventory_hostname
+        $FQDN = [System.Net.Dns]::GetHostByName('{{ inventory_hostname }}').Hostname
 
-- name: Issue a cert for the CSR
-  win_shell: |
-    # Find the fully qualified name from the inventory_hostname
-    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
+        # Create the CN shortname by replacing the FQDN for the domain
+        $Hostname = $FQDN.split('.')[0]
 
-    # Create the CN shortname by replacing the FQDN for the domain
-    $Hostname = $FQDN.split('.')[0]
+        # Create the export folder
+        $OutputFolder = '{{ splunk_certs['export_dir'] }}'
 
-    # Create the export folder
-    $OutputFolder = '{{ splunk_certs['export_dir'] }}'
+        #Create output folder if does not exist
+        if(!([System.IO.File]::Exists($OutputFolder))) { 
+            New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
+        }
+        # Get the name of the template
+        $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Template = $ADSI.psbase.children | where {$_.displayName -eq "Web Server Policy"} | select-object -Property Name
 
-    #Create output folder if does not exist
-    if(!([System.IO.File]::Exists($OutputFolder))) { 
-        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
-    }
-    # Get the name of the template
-    $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
-    $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
-    $Template = $ADSI.psbase.children | where {$_.displayName -eq "Web Server Policy"} | select-object -Property Name
+        $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+        $CertExportDirectoy=$OutputFolder
+        $SAN = "dns=$FQDN"
+        $CN = "$Hostname"
+        $County = "{{ splunk_certs['country'] }}"
+        $State = "{{ splunk_certs['state'] }}"
+        $City = "{{ splunk_certs['city'] }}"
+        $Organisation = "{{ splunk_certs['org'] }}"
+        $OU = "{{ splunk_certs['ou'] }}"
+        $TemplateName = $Template.Name
 
-    $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-    $CertExportDirectoy=$OutputFolder
-    $SAN = "dns=$FQDN"
-    $CN = "$Hostname"
-    $County = "{{ splunk_certs['country'] }}"
-    $State = "{{ splunk_certs['state'] }}"
-    $City = "{{ splunk_certs['city'] }}"
-    $Organisation = "{{ splunk_certs['org'] }}"
-    $OU = "{{ splunk_certs['ou'] }}"
-    $TemplateName = $Template.Name
+        function Remove-ReqTempfiles() {
+            param(
+                [String[]]$tempfiles
+            )
+            Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
+        }
 
-    function Remove-ReqTempfiles() {
-        param(
-            [String[]]$tempfiles
-        )
-        Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
-    }
+        function Remove-ReqFromStore {
+            param(
+                [String]$CN
+            )
+            #delete pending request (if a request exists for the CN)
+            $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
+            $certstore.Open('ReadWrite')
+            foreach ($certreq in $($certstore.Certificates)) {
+                if ($certreq.Subject -eq "CN=$CN") {
+                    $certstore.Remove($certreq)
+                }
+            }
+            $certstore.close()
+        }
 
-    function Remove-ReqFromStore {
-        param(
-            [String]$CN
-        )
-        #delete pending request (if a request exists for the CN)
-        $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
-        $certstore.Open('ReadWrite')
-        foreach ($certreq in $($certstore.Certificates)) {
-            if ($certreq.Subject -eq "CN=$CN") {
-                $certstore.Remove($certreq)
+
+        # create request
+        $file = @"
+        [NewRequest]
+        Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+        MachineKeySet = TRUE
+        KeyLength = 2048
+        KeySpec=1
+        Exportable = TRUE
+        RequestType = PKCS10
+        ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+        [RequestAttributes]
+        CertificateTemplate = "$TemplateName"
+        "@
+
+        #check if SAN certificate is requested
+        if ($SAN -ne $null) {
+            if (($SAN).count -eq 1) {
+                $SAN = @($SAN -split ',')
+            }
+            $file += @'
+
+        [Extensions]
+        ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
+        ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
+
+        2.5.29.17 = "{text}"
+
+        '@
+
+            foreach ($an in $SAN) {
+                $file += "_continue_ = `"$($an)&`"`n"
             }
         }
+
+        $inf = [System.IO.Path]::GetTempFileName()
+        $req = [System.IO.Path]::GetTempFileName()
+        $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
+        $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
+
+        Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+        Set-Content -Path $inf -Value $file
+        Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
+
+        $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
+        $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
+        $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
+
+        if($CAs.Count -gt 0){
+            $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
+        }
+        else {
+            $CAName = ""
+        }
+
+        if (!$CAName -eq "") {
+            $CAName = " -config `"$CAName`""
+        }
+        Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
+        Invoke-Expression -Command "certreq -accept `"$cer`""
+
+        $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
+
+        #create a pfx export as a byte array
+        $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
+        $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.pfx"
+
+        $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
+
+        # delete certificate from computer store
+        $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
+        $certstore.Open('ReadWrite')
+        $certstore.Remove($cert)
         $certstore.close()
-    }
 
+        Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+        Remove-ReqFromStore -CN $CN
 
-    # create request
-    $file = @"
-    [NewRequest]
-    Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
-    MachineKeySet = TRUE
-    KeyLength = 2048
-    KeySpec=1
-    Exportable = TRUE
-    RequestType = PKCS10
-    ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
-    [RequestAttributes]
-    CertificateTemplate = "$TemplateName"
-    "@
+  - name: Export the CA Certificate
+    delegate_to: "{{ groups['certificate_authority']|first }}"
+    win_shell: |
+        $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+        $CertExportDirectoy="{{splunk_certs['export_dir'] }}"
 
-    #check if SAN certificate is requested
-    if ($SAN -ne $null) {
-        if (($SAN).count -eq 1) {
-            $SAN = @($SAN -split ',')
-        }
-        $file += @'
+        # export root cert pem file
+        $a = Get-ChildItem -Path cert:\LocalMachine\My | where {$_.Subject -like "CN=$CACommonName*"} 
+        $cert_bytes = $a.Export( [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
 
-    [Extensions]
-    ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
-    ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
+        $cert_content = "-----BEGIN CERTIFICATE-----`r`n"
+        $base64_string = [System.Convert]::ToBase64String($cert_bytes, [System.Base64FormattingOptions]::InsertLineBreaks)
+        $cert_content += $base64_string
+        $cert_content += "`r`n-----END CERTIFICATE-----"
+        $file_encoding = [System.Text.Encoding]::ASCII
+        $cert_bytes = $file_encoding.GetBytes($cert_content)
+        $cert_file = Join-Path -Path $CertExportDirectoy -ChildPath "cacert.pem"
+        [io.file]::WriteAllBytes($cert_file,$cert_bytes)
 
-    2.5.29.17 = "{text}"
+  - name: Retrieve webserver pfx
+    delegate_to: "{{ groups['certificate_authority']|first }}"
+    fetch: 
+        src: "{{ splunk_certs['export_dir'] }}\\{{ inventory_hostname }}.pfx" 
+        dest: "/tmp/{{ inventory_hostname }}.pfx"
+        flat: yes
 
-    '@
-
-        foreach ($an in $SAN) {
-            $file += "_continue_ = `"$($an)&`"`n"
-        }
-    }
-
-    $inf = [System.IO.Path]::GetTempFileName()
-    $req = [System.IO.Path]::GetTempFileName()
-    $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
-    $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
-
-    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-    Set-Content -Path $inf -Value $file
-    Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
-
-    $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
-    $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
-    $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
-
-    if($CAs.Count -gt 0){
-        $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
-    }
-    else {
-        $CAName = ""
-    }
-
-    if (!$CAName -eq "") {
-        $CAName = " -config `"$CAName`""
-    }
-    Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
-    Invoke-Expression -Command "certreq -accept `"$cer`""
-
-    $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
-
-    #create a pfx export as a byte array
-    $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
-    $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.pfx"
-
-    $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
-
-    # delete certificate from computer store
-    $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
-    $certstore.Open('ReadWrite')
-    $certstore.Remove($cert)
-    $certstore.close()
-
-    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-    Remove-ReqFromStore -CN $CN
-  with_items: 
-    - "{{ groups['splunk'] }}"
-
-- name: Export the CA Certificate
-  win_shell: |
-      $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-      $CertExportDirectoy="{{splunk_certs['export_dir'] }}"
-
-      # export root cert pem file
-      $a = Get-ChildItem -Path cert:\LocalMachine\My | where {$_.Subject -like "CN=$CACommonName*"} 
-      $cert_bytes = $a.Export( [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
-
-      $cert_content = "-----BEGIN CERTIFICATE-----`r`n"
-      $base64_string = [System.Convert]::ToBase64String($cert_bytes, [System.Base64FormattingOptions]::InsertLineBreaks)
-      $cert_content += $base64_string
-      $cert_content += "`r`n-----END CERTIFICATE-----"
-      $file_encoding = [System.Text.Encoding]::ASCII
-      $cert_bytes = $file_encoding.GetBytes($cert_content)
-      $cert_file = Join-Path -Path $CertExportDirectoy -ChildPath "cacert.pem"
-      [io.file]::WriteAllBytes($cert_file,$cert_bytes)
-
-- name: Retrieve webserver pfx
-  fetch: 
-    src: "{{ splunk_certs['export_dir'] }}\\{{ item }}.pfx" 
-    dest: "/tmp/{{ item }}.pfx"
-    flat: yes
-  with_items: 
-    - "{{ groups['splunk'] }}"
-
-- name: Retrieve ca cert pem
-  fetch: 
-    src: "{{ splunk_certs['export_dir'] }}\\cacert.pem" 
-    dest: "/tmp/cacert.pem"
-    flat: yes
+  - name: Retrieve ca cert pem
+    delegate_to: "{{ groups['certificate_authority']|first }}"
+    fetch: 
+        src: "{{ splunk_certs['export_dir'] }}\\cacert.pem" 
+        dest: "/tmp/cacert.pem"
+        flat: yes
+    run_once: yes
