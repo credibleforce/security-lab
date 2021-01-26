@@ -2,11 +2,15 @@
 
 - name: "Set deployment_server variable"
   set_fact:
-    deployment_server: "{{ groups['splunk_deployment_server'][0] if 'splunk_deployment_server' in group_names else (groups['splunk_standalone'][0] if 'splunk_standalone' in group_names)}}"  
+    deployment_server: "{{ groups['splunk_deployment_server'][0] if groups['splunk_deployment_server'] is defined else (groups['splunk_standalone'][0] if groups['splunk_standalone'] is defined else '')}}"  
 
   # Purpose: Installs a Splunk Universal Forwader on the host
 - name: Configure Windows Universal Forwarder
   win_shell: |
+    # ensure we have the FQDN for the deployment server
+    $deployment_server = [System.Net.Dns]::GetHostByName('{{ deployment_server }}').Hostname
+    $deployment_server_port = "8089"
+
     If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
         Write-Host "Downloading Splunk Universal Forwarder"
         $msiFile = $env:Temp + "\splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi"
@@ -15,11 +19,14 @@
         [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
         #(New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=7.3.4.2/windows/splunkforwarder-7.3.4.2-cb574b3d103e-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.3.4.2&product=universalforwarder&typed=release', $msiFile)
         (New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=8.0.2/windows/splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=8.0.2&product=universalforwarder&typed=release', $msiFile)
-        Start-Process -FilePath "c:\windows\system32\msiexec.exe" -ArgumentList '/i', "$msiFile", 'DEPLOYMENT_SERVER="{{ deployment_server }}:8089"  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD=changeme /quiet' -Wait
+        $args = ('/i "{0}" DEPLOYMENT_SERVER={1}:{2}  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD={3} /quiet /l*v "{4}\splunk_universalforwarder_install.txt"' -f $msifile, "$deployment_server", "$deployment_server_port", "changeme", $env:Temp)
+        $program = "c:\windows\system32\msiexec.exe"
+        Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Running: $program $args"
+        Start-Process $program $args -Wait
     } Else {
         Write-Host "Splunk is already installed. Moving on."
     }
-    If ((Get-Service -name splunkforwarder).Status -ne "Running")
+    If ((Get-Service -name "splunkforwarder").Status -ne "Running")
     {
         throw "Splunk forwarder service not running"
     }

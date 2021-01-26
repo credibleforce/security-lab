@@ -1,0 +1,36 @@
+---
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+
+- name: Copy GPO policy to domain controller
+  win_copy:
+      src: ../files/GPO
+      dest: c:\
+
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+      Set-PackageSource -Name PSGallery -Trusted -Force 
+    }
+
+- name: Configure Certificate Authority Autoenroll Policies
+  win_shell: |
+    $Domain_OU = "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    $DC_OU = "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    
+    $GPOName = 'Machine Certificate Autoenroll'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\machine_certificate_autoenroll" -TargetName $GPOName -CreateIfNeeded
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
+
+    $GPOName = 'User Certificate Autoenroll'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\user_certificate_autoenroll" -TargetName $GPOName -CreateIfNeeded
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+
+  register: script_result
+
+- name: Script result
+  debug: var=script_result

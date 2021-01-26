@@ -38,6 +38,12 @@
     reboot_timeout: 600
     post_reboot_delay: 120
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+      Set-PackageSource -Name PSGallery -Trusted -Force 
+    }
+
 # Add powershell modules
 - name: Add xActiveDirectory
   win_shell: |
@@ -90,6 +96,42 @@
   win_shell: |
     Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
   when: ansible_os_name is search("Microsoft Windows 10")
+
+- name: Reboot to complete domain membership
+  win_reboot:
+    pre_reboot_delay: 120
+    reboot_timeout: 600
+    post_reboot_delay: 120
+
+- name: Update WinRM to Use Autoenroll Certificate
+  win_shell: |
+    # force gpupdate
+    gpupdate /force
+    
+    # get thumbprint for the domain certificate
+    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object Thumbprint
+
+    # only replace if autoenroll certificate found
+    if($thumbprint -ne $null){
+      write-output "Found Domain Certificate - Updating WinRM"
+      
+      $listener = Get-ChildItem -Path WSMan:\localhost\Listener | Where-Object { $_.Keys -contains "Transport=HTTPS" } | select-object *
+      
+      # update existing listener
+      if($listener -ne $null){
+        $name = $listener.PSChildName
+        set-item WSMan:\localhost\Listener\$name\Hostname -Value "" -Force
+        set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force
+      }else{
+        New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -CertificateThumbPrint $thumbprint.Thumbprint -Port "5986" -force
+      }
+
+      # remove any other certs
+      Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Thumbprint -notmatch $thumbprint.Thumbprint } | Remove-Item
+
+    }else{
+        write-output "Domain Certificate Not Found - Skipping"
+    }
 
 - name: Reboot to complete domain membership
   win_reboot:

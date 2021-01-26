@@ -1,4 +1,6 @@
 ---
     - name: Add PSGallery as Trusted Powershell Repo
       win_shell: |
-        Set-PackageSource -Name PSGallery -Trusted
+        if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+          Set-PackageSource -Name PSGallery -Trusted -Force 
+        }

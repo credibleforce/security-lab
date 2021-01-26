@@ -1,4 +1,36 @@
 ---
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+
+- name: Stage CAPolicy.inf
+  template: 
+    src: ../template/capolicy.inf.j2
+    dest: c:\windows\CAPolicy.inf
+
+- name: Create PKI Virtual Directory
+  win_shell: |
+    $path = "c:\pki"
+    $share = Get-SmbShare -Name "pki" -ErrorAction SilentlyContinue
+
+    # remove share if exists
+    if($share -ne $null){
+        write-output "Removing existing share"
+        Remove-SmbShare -Name "pki" -Force
+    }
+
+    # remove directory if exists
+    if([System.IO.Directory]::Exists($path)){
+        write-output "Removing existing directory"
+        Remove-Item $path -Recurse -Force
+    }
+
+    # create directory and share
+    New-item -path $path –type directory
+    Write-Output "Example CPS statement" | Out-File $path\cps.txt
+    New-SMBShare -Name pki $path -FullAccess SYSTEM,"{{ windows_domain_controller_info['domain_netbios_name'] }}\Domain Admins" -ChangeAccess "{{ windows_domain_controller_info['domain_netbios_name'] }}\Cert Publishers"
+
 - name: Install ADCS with sub features and management tools
   win_feature:
     name: 
@@ -8,20 +40,54 @@
     include_management_tools: yes
   register: windows_adcs
 
-- name: reboot if installing Adcs-Cert-Authority feature requires it
+- name: Reboot if installing Adcs-Cert-Authority feature requires it
   win_reboot:
     shutdown_timeout: 600
     reboot_timeout: 600
     post_reboot_delay: 300
   when: windows_adcs.reboot_required
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+      Set-PackageSource -Name PSGallery -Trusted -Force 
+    }
+
+# Add powershell modules
+- name: Check for xDnsServer Powershell module
+  win_shell: |
+    Install-Module -Name xDnsServer
+
+# add pki dns cname
+- name: Configure pki CNAME
+  win_dsc:
+    resource_name: xDnsRecord
+    Name: "pki"
+    Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Target: "{{ groups['domain_controller'][0].split('.')[0] | lower }}.{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Type: CName
+
+# add iis virtual directory
+- name: Add PKI Virtual Directory
+  win_shell: |
+    Import-Module WebAdministration
+    $FolderPath = "c:\pki"
+    New-WebVirtualDirectory -Site "Default Web Site" -Name "pki" -PhysicalPath $FolderPath
+    $apppoolsid = (Get-ItemProperty IIS:\AppPools\DefaultAppPool).applicationPoolSid
+    $acl = Get-Acl $FolderPath
+    $colRights = [System.Security.AccessControl.FileSystemRights]"Read,ExecuteFile,ListDirectory"
+    $permission = "IIS AppPool\DefaultAppPool",$colRights,"ContainerInherit,ObjectInherit","None","Allow"
+    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission  
+    $acl.AddAccessRule($accessRule) 
+    $acl | Set-Acl $FolderPath
+
 - name: Add ActiveDirectoryCSDsc
   win_shell: |
     Install-Module -Name ActiveDirectoryCSDsc
 
-- name: Configure AdcsCertificationAuthority Powershell DSC
+- name: Configure ActiveDirectoryCSDsc Powershell DSC
   win_dsc:
-    resource_name: AdcsCertificationAuthority
+    resource_name: DSC_AdcsCertificationAuthority
     IsSingleInstance: 'Yes'
     CAType: 'EnterpriseRootCA'
     CryptoProviderName: 'RSA#Microsoft Software Key Storage Provider'
@@ -35,3 +101,254 @@
     PsDscRunAsCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     Credential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
     Credential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+
+# add crl extension
+- name: Add CRL Extension
+  win_shell: |
+    $crllist = Get-CACrlDistributionPoint; 
+    foreach ($crl in $crllist) {
+      Remove-CACrlDistributionPoint $crl.uri -Force
+    }; 
+    Add-CACRLDistributionPoint -Uri C:\Windows\System32\CertSrv\CertEnroll%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
+    Add-CACRLDistributionPoint -Uri http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl -AddToCertificateCDP -Force
+    Add-CACRLDistributionPoint -Uri file://\\pki.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
+    restart-service certsvc
+
+- name: Add AIA Extension
+  win_shell: |
+    $aialist = Get-CAAuthorityInformationAccess; 
+    foreach ($aia in $aialist) {
+      Remove-CAAuthorityInformationAccess $aia.uri -Force
+    }; 
+    Add-CAAuthorityInformationAccess -AddToCertificateAia http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%1_%3%4.crt -Force
+    restart-service certsvc 
+
+- name: Copy crt and crl to pki directory
+  win_shell: |
+    Copy-Item C:\Windows\system32\certsrv\certenroll\*.cr* \\localhost\pki
+
+- name: Configure Client-Server Authentication and IAS RAS Server Templates for Autoenroll
+  win_shell: |
+    Function Get-RandomHex {
+    param ([int]$Length)
+        $Hex = '0123456789ABCDEF'
+        [string]$Return = $null
+        For ($i=1;$i -le $length;$i++) {
+            $Return += $Hex.Substring((Get-Random -Minimum 0 -Maximum 16),1)
+        }
+        Return $Return
+    }
+
+    Function IsUniqueOID {
+    param ($CN,$OID,$ConfigContext)
+        $OID_Check = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext"
+        if( $($OID_Check.psbase.children | where { $_.cn -eq $Name -and $_.'msPKI-Cert-Template-OID' -eq $msPKICertTemplateOID }).Count -gt 0 ){
+            return $false
+        }else{
+            return $true
+        }
+    }
+
+    Function New-TemplateOID {
+        param ($ConfigContext)
+        do {
+            $ADSI_OID = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext" 
+            $OID_Forest = $ADSI_OID.'msPKI-Cert-Template-OID'
+
+            $OID_Part_1 = Get-Random -Minimum 1000000  -Maximum 99999999
+            $OID_Part_2 = Get-Random -Minimum 10000000 -Maximum 99999999
+            $OID_Part_3 = Get-RandomHex -Length 32
+            $Name = "$OID_Part_2.$OID_Part_3"
+            $msPKICertTemplateOID = "$OID_Forest.$OID_Part_1.$OID_Part_2"
+        } until (IsUniqueOID -CN $Name -OID $msPKICertTemplateOID -ConfigContext $ConfigContext)
+        Return @{
+            TemplateOID  = $msPKICertTemplateOID
+            TemplateName = $Name
+        }
+    }
+
+    Function New-WorkstationAuthenticationTemplate{
+    param($DisplayName,$ConfigContext)
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "Workstation Authentication"}
+        
+        # build new template
+        $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
+        $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
+        $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
+            
+        # set configuration values
+        $NewTempl.put("flags","131680")
+        $NewTempl.put("displayName",$DisplayName)
+        $NewTempl.put("revision","100")
+        $NewTempl.put("pKIDefaultKeySpec","1")
+        $NewTempl.SetInfo()
+
+        $NewTempl.put("pKIMaxIssuingDepth","0")
+        $NewTempl.put("pKICriticalExtensions","2.5.29.15")
+        $NewTempl.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.put("pKIDefaultCSPs","1,Microsoft RSA SChannel Cryptographic Provider")
+        $NewTempl.put("msPKI-RA-Signature","0")
+        $NewTempl.put("msPKI-Enrollment-Flag","32")
+        $NewTempl.put("msPKI-Private-Key-Flag","67371264")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","-2013265920")
+        $NewTempl.put("msPKI-Minimal-Key-Size","2048")
+        $NewTempl.put("msPKI-Template-Schema-Version","2")
+        $NewTempl.put("msPKI-Template-Minor-Revision","0")
+        $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
+        $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.SetInfo()
+            
+        # copy properties from template
+        $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
+        $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
+        $NewTempl.pKIOverlapPeriod = $WATempl.pKIOverlapPeriod
+        $NewTempl.SetInfo()
+
+        # add domain computers to object security
+        $objUser = New-Object System.Security.Principal.NTAccount("Domain Computers")
+
+        $EnrollObjectType = [GUID]'0e10c968-78fb-11d2-90d4-00c04f79dc55'
+        $AutoEnrollObjectType = [GUID]'a05b8cc2-17bc-4802-a710-e7c15ab866a2'
+        $GenericRead = [System.DirectoryServices.ActiveDirectoryRights] "GenericRead"
+        $InheritedObjectType = [GUID]'00000000-0000-0000-0000-000000000000'
+        $Type = [System.Security.AccessControl.AccessControlType]"Allow"
+        $aceEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $EnrollObjectType, 'None', $InheritedObjectType
+        $aceAutoEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $AutoEnrollObjectType, 'None', $InheritedObjectType
+        $aceRead  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, $GenericRead, $Type, $InheritedObjectType
+        $NewTempl.ObjectSecurity.AddAccessRule($aceEnroll)
+        $NewTempl.ObjectSecurity.AddAccessRule($aceAutoEnroll)
+        $NewTempl.ObjectSecurity.AddAccessRule($aceRead)
+
+        $NewTempl.commitchanges()
+
+        # publish template to ca
+        $Enrollment_ADSI = [ADSI]"LDAP://CN=Enrollment Services,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Enrollment_ADSI.psbase.children | % { 
+            $CA = $_
+            $CA.putex(3,'certificateTemplates',@($TemplateOID.TemplateName))
+            $CA.commitchanges()
+        } 
+
+    }
+
+    Function New-RASAndIASServerTemplate{
+    param($DisplayName, $ConfigContext)
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "RAS and IAS Server"}
+
+        # build new template
+        $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
+        $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
+        $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
+            
+        # set configuration values
+        $NewTempl.put("flags","131680")
+        $NewTempl.put("displayName",$DisplayName)
+        $NewTempl.put("revision","100")
+        $NewTempl.put("pKIDefaultKeySpec","1")
+        $NewTempl.SetInfo()
+
+        $NewTempl.put("pKIMaxIssuingDepth","0")
+        $NewTempl.put("pKICriticalExtensions","2.5.29.15")
+        $NewTempl.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.put("pKIDefaultCSPs","1,Microsoft RSA SChannel Cryptographic Provider")
+        $NewTempl.put("msPKI-RA-Signature","0")
+        $NewTempl.put("msPKI-Enrollment-Flag","32")
+        $NewTempl.put("msPKI-Private-Key-Flag","0")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","-2013265920")
+        $NewTempl.put("msPKI-Minimal-Key-Size","2048")
+        $NewTempl.put("msPKI-Template-Schema-Version","2")
+        $NewTempl.put("msPKI-Template-Minor-Revision","0")
+        $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
+        $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.SetInfo()
+            
+        # copy properties from template
+        $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
+        $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
+        $NewTempl.pKIOverlapPeriod = $WATempl.pKIOverlapPeriod
+        $NewTempl.SetInfo()
+
+        # add domain computers to object security
+        $objUser = New-Object System.Security.Principal.NTAccount("RAS and IAS Servers")
+
+        $EnrollObjectType = [GUID]'0e10c968-78fb-11d2-90d4-00c04f79dc55'
+        $AutoEnrollObjectType = [GUID]'a05b8cc2-17bc-4802-a710-e7c15ab866a2'
+        $GenericRead = [System.DirectoryServices.ActiveDirectoryRights] "GenericRead"
+        $InheritedObjectType = [GUID]'00000000-0000-0000-0000-000000000000'
+        $Type = [System.Security.AccessControl.AccessControlType]"Allow"
+        $aceEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $EnrollObjectType, 'None', $InheritedObjectType
+        $aceAutoEnroll  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, 'ExtendedRight', $Type, $AutoEnrollObjectType, 'None', $InheritedObjectType
+        $aceRead  = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $objUser, $GenericRead, $Type, $InheritedObjectType
+        $NewTempl.ObjectSecurity.AddAccessRule($aceEnroll)
+        $NewTempl.ObjectSecurity.AddAccessRule($aceAutoEnroll)
+        $NewTempl.ObjectSecurity.AddAccessRule($aceRead)
+
+        $NewTempl.commitchanges()
+
+        # publish template to ca
+        $Enrollment_ADSI = [ADSI]"LDAP://CN=Enrollment Services,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Enrollment_ADSI.psbase.children | % { 
+            $CA = $_
+            $CA.putex(3,'certificateTemplates',@($TemplateOID.TemplateName))
+            $CA.commitchanges()
+        } 
+
+
+    }
+
+    Function New-WebServerTemplate{
+    param($DisplayName, $ConfigContext)
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $WATempl = $ADSI.psbase.children | where {$_.displayName -eq "Web Server"}
+
+        # build new template
+        $TemplateOID = New-TemplateOID -ConfigContext $ConfigContext
+        $NewTempl = $ADSI.Create("pKICertificateTemplate", ("CN={0}" -f $TemplateOID.TemplateName)) 
+        $NewTempl.put("distinguishedName",("CN={0},CN=Certificate Templates,CN=Public Key Services,CN=Services,{1}" -f $TemplateOID.TemplateName,$ConfigContext)) 
+            
+        # set configuration values
+        $NewTempl.put("flags","131680")
+        $NewTempl.put("displayName",$DisplayName)
+        $NewTempl.put("revision","100")
+        $NewTempl.put("pKIDefaultKeySpec","1")
+        $NewTempl.SetInfo()
+
+        $NewTempl.put("pKIMaxIssuingDepth","0")
+        $NewTempl.putex(3,"pKICriticalExtensions",@("2.5.29.7","2.5.29.15"))
+        $NewTempl.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.put("pKIDefaultCSPs","1,Microsoft RSA SChannel Cryptographic Provider")
+        $NewTempl.put("msPKI-RA-Signature","0")
+        $NewTempl.put("msPKI-Enrollment-Flag","0")
+        $NewTempl.put("msPKI-Private-Key-Flag","16842752")
+        $NewTempl.put("msPKI-Certificate-Name-Flag","1")
+        $NewTempl.put("msPKI-Minimal-Key-Size","2048")
+        $NewTempl.put("msPKI-Template-Schema-Version","2")
+        $NewTempl.put("msPKI-Template-Minor-Revision","0")
+        $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
+        $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+        $NewTempl.SetInfo()
+            
+        # copy properties from template
+        $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
+        $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
+        $NewTempl.pKIOverlapPeriod = $WATempl.pKIOverlapPeriod
+        $NewTempl.SetInfo()
+
+        # publish template to ca
+        $Enrollment_ADSI = [ADSI]"LDAP://CN=Enrollment Services,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Enrollment_ADSI.psbase.children | % { 
+            $CA = $_
+            $CA.putex(3,'certificateTemplates',@($TemplateOID.TemplateName))
+            $CA.commitchanges()
+        } 
+
+
+    }
+
+    $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext 
+    New-WorkstationAuthenticationTemplate -DisplayName "Client-Server Authentication Policy" -ConfigContext $ConfigContext
+    New-RASAndIASServerTemplate -DisplayName "RAS and IAS Server Policy" -ConfigContext $ConfigContext
+    New-WebServerTemplate -DisplayName "Web Server Policy" -ConfigContext $ConfigContext
+    restart-service certsvc 

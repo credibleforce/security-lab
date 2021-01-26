@@ -1,8 +1,8 @@
 ---
-- name: Create certificate export directory
-  win_file:
-    path: "{{ splunk_certs['export_dir'] }}"
-    state: directory
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
 
 - name: Show target groups
   debug:
@@ -10,16 +10,34 @@
 
 - name: Issue a cert for the CSR
   win_shell: |
+    # Find the fully qualified name from the inventory_hostname
+    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
+
+    # Create the CN shortname by replacing the FQDN for the domain
+    $Hostname = $FQDN -replace (".{0}" -f $env:USERDNSDOMAIN),''
+
+    # Create the export folder
+    $OutputFolder = '{{ splunk_certs['export_dir'] }}'
+
+    #Create output folder if does not exist
+    if(!([System.IO.File]::Exists($OutputFolder))) { 
+        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
+    }
+    # Get the name of the template
+    $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+    $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+    $Template = $ADSI.psbase.children | where {$_.displayName -eq "Web Server Policy"} | select-object -Property Name
+
     $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-    $CertExportDirectoy="{{ splunk_certs['export_dir'] }}"
-    $SAN = "dns={{ item }}"
-    $CN = "{{ item }}"
+    $CertExportDirectoy=$OutputFolder
+    $SAN = "dns=$FQDN"
+    $CN = "$Hostname"
     $County = "{{ splunk_certs['country'] }}"
     $State = "{{ splunk_certs['state'] }}"
     $City = "{{ splunk_certs['city'] }}"
     $Organisation = "{{ splunk_certs['org'] }}"
     $OU = "{{ splunk_certs['ou'] }}"
-    $TemplateName = "WebServer"
+    $TemplateName = $Template.Name
 
     function Remove-ReqTempfiles() {
         param(

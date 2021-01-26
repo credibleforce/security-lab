@@ -1,11 +1,10 @@
 ---
+    - name: Check if sysmon archive is present
+      win_stat:
+        path: c:\Program Files\ansible\sysmon
+      register: sysmondl
 
     - block:
-        - name: Check if sysmon archive is present
-          win_stat:
-            path: c:\Program Files\ansible\sysmon
-          register: sysmondl
-    
         - name: Download sysmon
           win_get_url:
             url: "{{ win_sysmon_url }}"
@@ -24,8 +23,7 @@
           win_path:
             elements: 'c:\Program Files\ansible\sysmon'
           when: not sysmondl.stat.exists
-    
-    - block:
+
         - name: Copy Sysmon template
           win_template:
             src: "{{ win_sysmon_template }}.j2"
@@ -34,4 +32,4 @@
         - name: Install sysmon with defined config
           win_command: '"c:\Program Files\ansible\sysmon\sysmon64.exe" -accepteula -i "c:\Program Files\ansible\{{ win_sysmon_template }}"'
     
-      when: win_sysmon_template != ''
+      when: win_sysmon_template != '' and not sysmondl.stat.exists

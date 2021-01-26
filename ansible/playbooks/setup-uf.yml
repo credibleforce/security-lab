@@ -17,6 +17,20 @@
   pre_tasks:
   post_tasks:
   tasks:
+    - name: "Set deployment_server variable"
+      set_fact:
+        deployment_server: "{{ groups['splunk_deployment_server'][0] if groups['splunk_deployment_server'] is defined else (groups['splunk_standalone'][0] if groups['splunk_standalone'] is defined else '')}}"  
+
+    - name: Deployment server
+      debug:
+        msg:
+          - "Group names: {{ groups }}"
+          - "Defined splunk_deployment_server: {{ groups['splunk_deployment_server'] is defined }}"
+          - "Defined splunk_standalone: {{ groups['splunk_standalone'] is defined }}"
+          - "splunk_deployment_server: {{ groups['splunk_deployment_server'][0] if groups['splunk_deployment_server'] is defined else 'Not found'}}"
+          - "splunk_standalone: {{ groups['splunk_standalone'][0] if groups['splunk_standalone'] is defined else 'Not found' }}"
+          - "Deployment server: {{ deployment_server }}"
+
     - name: Run windows domain setup
       debug:
         msg: "{{ hostvars[groups['splunk'][0]] }}"

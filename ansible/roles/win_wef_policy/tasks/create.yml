@@ -1,11 +1,23 @@
 ---
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+
 - name: Copy GPO policy to domain controller
   win_copy:
       src: ../files/GPO
       dest: c:\
 
+- name: Add PSGallery as Trusted Powershell Repo
+  win_shell: |
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
+      Set-PackageSource -Name PSGallery -Trusted -Force 
+    }
+
 - name: Update wef policy with wef server name
   win_shell: |
+    $script:WEFServer = [System.Net.Dns]::GetHostByName('{{ groups['wef_server'][0] }}').Hostname
     Install-Module -Name GPRegistryPolicyParser
     $script:policyPath = 'C:\GPO\wef_configuration\{F523FD69-7E4C-4315-93D0-557089F1B8A1}\DomainSysvol\GPO\Machine'
     $script:REGFILE_SIGNATURE = 0x67655250 # PRef
@@ -30,11 +42,12 @@
 
     Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
     $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
-    $PolicySettings[1].ValueData="Server=http://{{ groups['wef_server'][0] }}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
+    $PolicySettings[1].ValueData="Server=http://${script:WEFServer}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
     Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
 
-    Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
-    Rename-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" "$script:policyPath\registry.pol"
+    Remove-Item -Force "$script:policyPath\registry.pol.bak"
+    Rename-Item -Force "$script:policyPath\registry.pol" "$script:policyPath\registry.pol.bak"
+    Rename-Item -Force "$script:policyPath\registry.pol.tmp" "$script:policyPath\registry.pol"
     Write-output "Policy updated successfully"
 
 

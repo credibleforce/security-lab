@@ -1,29 +1,25 @@
 ---
-  
-  - name: Check if splunk group exists
+  - name: Determine available groups
     getent:
       database: group
-      key: splunk
-      fail_key: yes
-    register: group_exist
-    ignore_errors: true
+    register: getent_groups
 
-  - name: Check if splunk user exists
+  - name: Determine available users
     getent:
       database: passwd
-      key: splunk
-      fail_key: yes
-    register: user_exist
-    ignore_errors: true
+    register: getent_users
 
   - name: Create a splunk group
+    become: yes
     group:
       name: splunk
       state: present
-    when: group_exist["failed"] == true
-    become: yes
+    when:
+      - getent_groups.ansible_facts.getent_group.splunk is not defined 
+    
 
   - name: Create a splunk user
+    become: yes
     user:
       name: splunk
       groups: # Empty by default, here we give it some groups
@@ -34,10 +30,11 @@
       system: no             # Defaults to no
       createhome: yes        # Defaults to yes
       home: /home/splunk     # Defaults to /home/<username>
-    when: user_exist["failed"] == true
-    become: yes
+    when:
+      - getent_groups.ansible_facts.getent_passwd.splunk is not defined 
 
   - name: Install suricata
+    become: yes
     shell: |
       # Run iwr -Uri testmyids.com -UserAgent "BlackSun" in Powershell to generate test alerts from Windows
       echo "[$(date +%H:%M:%S)]: Installing Suricata..."
@@ -53,20 +50,20 @@
       python setup.py install
       chmod g+r /var/log/suricata/
       usermod -a -G suricata splunk
-    become: yes
 
   - name: Set primary interface name
+    become: yes
     shell: |
       echo OPTIONS="-i $(ifconfig | grep ens | awk -F: '{ print $1 }') --user suricata " > /etc/sysconfig/suricata
-    become: yes
 
   - name: Copy suricata config
+    become: yes
     copy: 
       src: ../files/suricata.yaml
       dest: /etc/suricata/suricata.yaml
-    become: yes
 
   - name: Setup suricata
+    become: yes
     shell: |
       #crudini --set --format=sh /etc/default/suricata '' iface eth1
       # update suricata signature sources
@@ -81,4 +78,3 @@
       suricata-update
       service suricata stop
       service suricata start
-    become: yes
