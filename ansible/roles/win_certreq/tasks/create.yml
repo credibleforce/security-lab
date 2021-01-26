@@ -14,7 +14,7 @@
     $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
 
     # Create the CN shortname by replacing the FQDN for the domain
-    $Hostname = $FQDN -replace (".{0}" -f $env:USERDNSDOMAIN),''
+    $Hostname = $FQDN.split('.')[0]
 
     # Create the export folder
     $OutputFolder = '{{ splunk_certs['export_dir'] }}'
