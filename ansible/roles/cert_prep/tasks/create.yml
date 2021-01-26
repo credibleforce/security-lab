@@ -37,9 +37,11 @@
   run_once: yes
 
 - name: Create cert from pfx
+  delegate_to: localhost
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ item }}.crt"
   with_items: 
     - "{{ groups['linux'] | difference(groups['windows']) }}"
+  run_once: yes
 
 - name: Create encrypted key in pem format
   delegate_to: localhost

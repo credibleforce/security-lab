@@ -141,7 +141,7 @@
         - 'cert_prep'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['local']
 
     # stage certificates on servers
     - name: Stage the certificates for including root ca cert and splunk certs
