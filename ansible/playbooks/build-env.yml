@@ -153,6 +153,27 @@
         loop_var: rolevar
       when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
 
+# force all node to comply with group policy, install sysmon and reboot
+- hosts: windows
+  vars_files:
+    - ../vars/vars.yml 
+  gather_facts: True
+  strategy: free
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run group policy comply and reboot
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_group_policy_force_comply'
+        - 'sysmon'
+      loop_control:
+        loop_var: rolevar
+      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
+      when: ansible_system == 'Win32NT'
+
 # - hosts: suricata
 #   vars_files:
 #     - ../vars/vars.yml
@@ -186,27 +207,6 @@
         - 'lin_sc4s'
       loop_control:
         loop_var: rolevar
-
-# force all node to comply with group policy, install sysmon and reboot
-- hosts: windows
-  vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
-  strategy: free
-  environment:
-  pre_tasks:
-  post_tasks:
-  tasks:
-    - name: Run group policy comply and reboot
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'win_group_policy_force_comply'
-        - 'sysmon'
-      loop_control:
-        loop_var: rolevar
-      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
-      when: ansible_system == 'Win32NT'
 
    
   
