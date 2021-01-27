@@ -94,7 +94,7 @@
 
     - name: Download latest sc4s
       get_url:
-        url: https://github.com/hairyhenderson/gomplate/releases/download/v3.5.0/gomplate_linux-amd64
+        url: https://github.com/hairyhenderson/gomplate/releases/download/v3.9.0/gomplate_linux-amd64
         dest: "/usr/local/bin/gomplate"
       become: yes
 
