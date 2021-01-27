@@ -198,7 +198,23 @@
         $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
         $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
         $NewTempl.SetInfo()
-            
+        
+        # set inheritence on the template
+        $NewTempl.ObjectSecurity.SetAccessRuleProtection($WATempl.ObjectSecurity.AreAccessRulesProtected, $WATempl.ObjectSecurity.AreAccessRulesCanonical)
+
+        # copy default permission from original policy
+        $NewTempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.RemoveAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
+        $WATempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.AddAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
         # copy properties from template
         $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
         $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
@@ -263,7 +279,23 @@
         $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
         $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
         $NewTempl.SetInfo()
-            
+        
+        # set inheritence on the template
+        $NewTempl.ObjectSecurity.SetAccessRuleProtection($WATempl.ObjectSecurity.AreAccessRulesProtected, $WATempl.ObjectSecurity.AreAccessRulesCanonical)
+
+        # copy default permission from original policy
+        $NewTempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.RemoveAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
+        $WATempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.AddAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
         # copy properties from template
         $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
         $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
@@ -329,7 +361,23 @@
         $NewTempl.put("msPKI-Cert-Template-OID",$TemplateOID.TemplateOID)
         $NewTempl.putex(3,"msPKI-Certificate-Application-Policy",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
         $NewTempl.SetInfo()
-            
+        
+        # set inheritence on the template
+        $NewTempl.ObjectSecurity.SetAccessRuleProtection($WATempl.ObjectSecurity.AreAccessRulesProtected, $WATempl.ObjectSecurity.AreAccessRulesCanonical)
+
+        # copy default permission from original policy
+        $NewTempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.RemoveAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
+        $WATempl.ObjectSecurity.Access | % {
+            $ace = $_
+            $NewTempl.ObjectSecurity.AddAccessRule($ace)
+        }
+        $NewTempl.commitchanges()
+
         # copy properties from template
         $NewTempl.pKIKeyUsage = $WATempl.pKIKeyUsage
         $NewTempl.pKIExpirationPeriod = $WATempl.pKIExpirationPeriod
