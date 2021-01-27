@@ -13,7 +13,7 @@
       with_items:
         - "centos-release-scl"
       become: yes
-      when: ansible_os_family == "RedHat" and ansible_distribution_major_version==7
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version<=7
 
 
     - name: Add syslog-ng repo
@@ -27,7 +27,7 @@
         enabled: yes
       become: yes
 
-    - name: Install syslog-ng
+    - name: Install syslog-ng for centos 7
       yum:
         name: "{{ item }}"
         state: "installed"
@@ -39,6 +39,21 @@
         - "libselinux-python"
         - "policycoreutils-python"
       become: yes
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version<=7
+
+    - name: Install syslog-ng for centos 8
+      yum:
+        name: "{{ item }}"
+        state: "installed"
+      with_items:
+        - "syslog-ng"
+        - "syslog-ng-http"
+        - "syslog-ng-python" 
+        - "python3" 
+        - "python3-libselinux"
+        - "python3-policycoreutils"
+      become: yes
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version>7
 
     - name: Disable any syslog-ng services
       systemd:
