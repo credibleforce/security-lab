@@ -13,7 +13,8 @@
     gpupdate /force
     
     # get thumbprint for the domain certificate
-    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object Thumbprint -First 1
+    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object * -First 1
+    write-output ("Found Thumbprint: {0}" -f $thumbprint.Thumbprint)
 
     # only replace if autoenroll certificate found
     if($thumbprint -ne $null){
