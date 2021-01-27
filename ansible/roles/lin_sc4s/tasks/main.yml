@@ -84,6 +84,7 @@
       with_items:
         - "{{sc4s.opt}}/bin"
         - "{{sc4s.opt}}/local/context"
+        - "/usr/local/bin"
       become: yes
 
     - name: Download latest sc4s
@@ -92,7 +93,7 @@
         dest: /tmp/baremetal.tar
       become: yes
 
-    - name: Download latest sc4s
+    - name: Download latest gomplate
       get_url:
         url: https://github.com/hairyhenderson/gomplate/releases/download/v3.9.0/gomplate_linux-amd64
         dest: "/usr/local/bin/gomplate"
