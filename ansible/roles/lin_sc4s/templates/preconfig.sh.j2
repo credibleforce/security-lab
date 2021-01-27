@@ -2,7 +2,7 @@
 source scl_source enable rh-python36
 
 cd /etc/syslog-ng
-gomplate $(find . -name *.tmpl | sed -E 's/^(\/.*\/)*(.*)\..*$/--file=\2.tmpl --out=\2/') --template t=go_templates/
+gomplate $(find . -name '*.tmpl' | sed -E 's/^(\/.*\/)*(.*)\..*$/--file=\2.tmpl --out=\2/') --template t=go_templates/
 
 mkdir -p /etc/syslog-ng/conf.d/local/context/
 mkdir -p /etc/syslog-ng/conf.d/local/config/
