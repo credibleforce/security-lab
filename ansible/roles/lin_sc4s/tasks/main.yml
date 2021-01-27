@@ -132,6 +132,7 @@
 
     - name: Run service preconfig
       command: "{{ sc4s.service.preconfig.path }}"
+      become: yes
 
     - name: Symlink service index mapping
       file:
@@ -147,6 +148,7 @@
         proto: tcp
         setype: http_port_t
         state: present  
+      become: yes
     
     - name: Setup service for sc4s 
       template: 
@@ -157,12 +159,14 @@
     - name: Reload systemd daemons
       systemd:
         daemon_reload: yes
+      become: yes
     
     - name: Enable sc4s service and restart
       systemd:
         name: "{{ sc4s.service.name }}"
         enabled: yes
         state: "restarted"
+      become: yes
 
     - name: Send test message using logger
       shell: |
