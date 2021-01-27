@@ -4,7 +4,8 @@
         name: epel-release 
         state: installed
       become: yes
-      when: ansible_os_family == "RedHat"
+      when: 
+        - ansible_os_family == "RedHat"
       
     - name: Install scl manager - Centos
       yum: 
@@ -13,6 +14,7 @@
       with_items:
         - "centos-release-scl"
       become: yes
+      when:
         - ansible_os_family == "RedHat"
         - ansible_distribution_major_version=="7"
 
