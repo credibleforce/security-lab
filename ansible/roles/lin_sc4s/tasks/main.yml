@@ -4,6 +4,7 @@
         name: epel-release 
         state: installed
       become: yes
+      when: ansible_os_family == "RedHat"
       
     - name: Install scl manager - Centos
       yum: 
@@ -12,15 +13,15 @@
       with_items:
         - "centos-release-scl"
       become: yes
-      when: ansible_distribution == "CentOS"
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version==7
 
 
     - name: Add syslog-ng repo
       yum_repository:
-        name: czanik-syslog-ng326-epel-7
+        name: "czanik-syslog-ng326-epel-{{ ansible_distribution_major_version }}"
         description: Syslog-ng 3.26 repo
         #baseurl: https://copr.fedorainfracloud.org/coprs/czanik/syslog-ng326/repo/epel-7/czanik-syslog-ng326-epel-7.repo
-        baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-7-$basearch/
+        baseurl: "https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-{{ ansible_distribution_major_version }}-$basearch/"
         gpgkey: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/pubkey.gpg
         gpgcheck: yes
         enabled: yes
