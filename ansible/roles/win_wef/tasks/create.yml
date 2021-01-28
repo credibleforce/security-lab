@@ -485,41 +485,51 @@
     WECUtil qc /q
 
     # Import microsoft base (default to disabled)
-    $XMLFiles=Get-ChildItem "c:\Subscriptions"
+    $XMLFiles=Get-ChildItem "c:\Subscriptions" -Filter *.xml
 
     # Process Templates, add AD group to each template and create subscription
     foreach ($XMLFile in $XMLFiles){
-      # Subscribe all domain controllers and computers
-      $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
-      $Enabled="false"
-      $LogFile="ForwardedEvents"
-      [xml]$XML=get-content $XMLFile.FullName
-      $xml=$XML
-      $xml.subscription.Enabled=$Enabled
-      $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
-      # override eventlog - required if not using custom event channels
-      $xml.subscription.LogFile=$LogFile
-      $xml.Save("$env:TEMP\temp.xml")
-      wecutil cs "$env:TEMP\temp.xml"
+        # Subscribe all domain controllers and computers
+        $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+        $Enabled="false"
+        $LogFile="ForwardedEvents"
+        try{
+            [xml]$XML=get-content $XMLFile.FullName
+            $xml=$XML
+            $xml.subscription.Enabled=$Enabled
+            $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
+            # override eventlog - required if not using custom event channels
+            $xml.subscription.LogFile=$LogFile
+            $xml.Save("$env:TEMP\temp.xml")
+            wecutil cs "$env:TEMP\temp.xml"
+            remove-item -Path "$env:TEMP\temp.xml"
+        }catch{
+            write-output ("Error processing subscription {0}: {1}" -f $XMLFile.FullName, $_.Message)
+        }
     }
 
     # Import panatir examples and default to enabled (disable custom log channels logging as well)
-    $XMLFiles=Get-ChildItem "$env:USERPROFILE\Downloads\windows-event-forwarding-master\wef-subscriptions"
+    $XMLFiles=Get-ChildItem "$env:USERPROFILE\Downloads\windows-event-forwarding-master\wef-subscriptions" -Filter *.xml
 
     # Process Templates, add AD group to each template and create subscription
     foreach ($XMLFile in $XMLFiles){
-      # Subscribe all domain controllers and computers
-      $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
-      $Enabled="true"
-      $LogFile="ForwardedEvents"
-      [xml]$XML=get-content $XMLFile.FullName
-      $xml=$XML
-      $xml.subscription.Enabled=$Enabled
-      $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
-      # override eventlog - required if not using custom event channels
-      # $xml.subscription.LogFile=$LogFile
-      $xml.Save("$env:TEMP\temp.xml")
-      wecutil cs "$env:TEMP\temp.xml"
+        # Subscribe all domain controllers and computers
+        $AllowedSourceDomainComputers="O:NSG:NSD:(A;;GA;;;DC)(A;;GA;;;NS)(A;;GA;;;DD)"
+        $Enabled="true"
+        $LogFile="ForwardedEvents"
+        try{
+        [xml]$XML=get-content $XMLFile.FullName
+            $xml=$XML
+            $xml.subscription.Enabled=$Enabled
+            $xml.subscription.AllowedSourceDomainComputers=$AllowedSourceDomainComputers
+            # override eventlog - required if not using custom event channels
+            # $xml.subscription.LogFile=$LogFile
+            $xml.Save("$env:TEMP\temp.xml")
+            wecutil cs "$env:TEMP\temp.xml"
+            remove-item -Path "$env:TEMP\temp.xml"
+        }catch{
+            write-output ("Error processing subscription {0}: {1}" -f $XMLFile.FullName, $_.Message)
+        }
     }
 
   register: script_result
