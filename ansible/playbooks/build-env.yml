@@ -92,27 +92,6 @@
         loop_var: rolevar
       when: inventory_hostname in groups['member_server']
 
-    # setup windows event forwarding server
-    - name: Windows Event Forwarder Server Setup
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'win_member'
-        - 'win_wef'
-      loop_control:
-        loop_var: rolevar
-      when: inventory_hostname in groups['wef_server']
-    
-    # setup policy for windows event forwarding
-    - name: Windows Event Forwarder Policy Setup
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'win_wef_policy'
-      loop_control:
-        loop_var: rolevar
-      when: inventory_hostname == groups['domain_controller'][0]
-
     # install splunk universal forwarder
     - name: Splunk Universal Forwarder on WEC and Domain Controller
       include_role:
@@ -152,6 +131,27 @@
       loop_control:
         loop_var: rolevar
       when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
+
+    # setup windows event forwarding server
+    - name: Windows Event Forwarder Server Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_member'
+        - 'win_wef'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['wef_server']
+    
+    # setup policy for windows event forwarding
+    - name: Windows Event Forwarder Policy Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_wef_policy'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname == groups['domain_controller'][0]
 
 # force all node to comply with group policy, install sysmon and reboot
 - hosts: windows
