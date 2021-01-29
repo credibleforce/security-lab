@@ -43,7 +43,7 @@
 - name: Reboot if installing Adcs-Cert-Authority feature requires it
   win_reboot:
     shutdown_timeout: 600
-    reboot_timeout: 600
+    900
     post_reboot_delay: 300
   when: windows_adcs.reboot_required
 

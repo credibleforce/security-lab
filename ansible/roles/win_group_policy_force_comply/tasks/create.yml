@@ -49,6 +49,6 @@
 - name: Reboot to complete group policy compliance (NETWORK SERVICE => Event Log Readers)
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120
 

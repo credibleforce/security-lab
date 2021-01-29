@@ -35,7 +35,7 @@
 - name: Reboot to complete computer name change
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120
 
 - name: Add PSGallery as Trusted Powershell Repo
@@ -100,7 +100,7 @@
 - name: Reboot to complete domain membership
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120
 
 - name: Update WinRM to Use Autoenroll Certificate
@@ -145,5 +145,5 @@
 - name: Reboot to complete domain membership
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120

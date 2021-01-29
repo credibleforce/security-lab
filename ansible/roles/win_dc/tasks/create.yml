@@ -57,7 +57,7 @@
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120
 
 - name: Set DNS server
@@ -95,7 +95,7 @@
 - name: Reboot to complete domain controller setup (as required)
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    900
     post_reboot_delay: 120 # your mileage may vary
 
 - name: Reset winrm to post promo config
