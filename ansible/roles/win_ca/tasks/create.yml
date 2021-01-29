@@ -129,23 +129,23 @@
 
 - name: Configure Client-Server Authentication and IAS RAS Server Templates for Autoenroll
   win_shell: |
-      Function newOid {
-        param ($ConfigContext)
-        $Hex = '0123456789ABCDEF'
-        do {
-            $oid = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext" 
-            $oidforest = $oid.'msPKI-Cert-Template-OID'
-            $oid1 = Get-Random -Minimum 1000000  -Maximum 99999999
-            $oid2 = Get-Random -Minimum 10000000 -Maximum 99999999
-            $oid3 = $null
-            For ($i=1;$i -le 32;$i++) {$oid3 += $Hex.Substring((Get-Random -Minimum 0 -Maximum 16),1)}
-            $Name = "$oid2.$oid3"
-            $msPKICertTemplateOID = "$oidforest.$oid1.$oid2"
-        } until (($($oid.psbase.children | where { $_.cn -eq $Name -and $_.'msPKI-Cert-Template-OID' -eq $msPKICertTemplateOID }).Count -eq 0))
-        Return @{
-            oid  = $msPKICertTemplateOID
-            name = $Name
-        }
+    Function newOid {
+      param ($ConfigContext)
+      $Hex = '0123456789ABCDEF'
+      do {
+          $oid = [ADSI]"LDAP://CN=OID,CN=Public Key Services,CN=Services,$ConfigContext" 
+          $oidforest = $oid.'msPKI-Cert-Template-OID'
+          $oid1 = Get-Random -Minimum 1000000  -Maximum 99999999
+          $oid2 = Get-Random -Minimum 10000000 -Maximum 99999999
+          $oid3 = $null
+          For ($i=1;$i -le 32;$i++) {$oid3 += $Hex.Substring((Get-Random -Minimum 0 -Maximum 16),1)}
+          $Name = "$oid2.$oid3"
+          $msPKICertTemplateOID = "$oidforest.$oid1.$oid2"
+      } until (($($oid.psbase.children | where { $_.cn -eq $Name -and $_.'msPKI-Cert-Template-OID' -eq $msPKICertTemplateOID }).Count -eq 0))
+      Return @{
+          oid  = $msPKICertTemplateOID
+          name = $Name
+      }
     }
     Function addTemplateAcl{
     param($Template, $User, $Read, $Enroll, $AutoEnroll)
