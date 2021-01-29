@@ -43,7 +43,7 @@
 - name: Reboot if installing Adcs-Cert-Authority feature requires it
   win_reboot:
     shutdown_timeout: 600
-    900
+    reboot_timeout: 3600
     post_reboot_delay: 300
   when: windows_adcs.reboot_required
 
@@ -231,15 +231,17 @@
     $t.Template.SetInfo()
     $t = addTemplateAcl -Template $t.Template -User "RAS and IAS Servers" -Read $true -Enroll $true -AutoEnroll $true
     publishTemplate -Template $t.Template -ConfigContext $cc
-
-    $t = copyTemplate -NewTemplateName "Client-Server Authentication Policy" -SourceTemplateName "Workstation Authentication" -ConfigContext $cc
-    $t.Template.put("pKICriticalExtensions","2.5.29.15")
-    $t.Template.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
-    $t.Template.put("msPKI-Enrollment-Flag","32")
-    $t.Template.put("msPKI-Private-Key-Flag","67371264")
-    $t.Template.put("msPKI-Certificate-Name-Flag","-2013265920")
-    $t.Template.SetInfo()
-    $t = addTemplateAcl -Template $t.Template -User "Domain Computers" -Read $true -Enroll $true -AutoEnroll $true
-    publishTemplate -Template $t.Template -ConfigContext $cc
+    
+    "Workstation Authentication","Domain Controller Authentication" | % { 
+      $t = copyTemplate -NewTemplateName "$_ Policy" -SourceTemplateName $_ -ConfigContext $cc
+      $t.Template.put("pKICriticalExtensions",$p)
+      $t.Template.putex(3,"pKIExtendedKeyUsage",@("1.3.6.1.5.5.7.3.1","1.3.6.1.5.5.7.3.2"))
+      $t.Template.put("msPKI-Enrollment-Flag","32")
+      $t.Template.put("msPKI-Private-Key-Flag","67371264")
+      $t.Template.put("msPKI-Certificate-Name-Flag","-2013265920")
+      $t.Template.SetInfo()
+      if($_ -eq "Workstation Authentication") { $t = addTemplateAcl -Template $t.Template -User "Domain Computers" -Read $true -Enroll $true -AutoEnroll $true }
+      publishTemplate -Template $t.Template -ConfigContext $cc
+    }
     
     restart-service certsvc

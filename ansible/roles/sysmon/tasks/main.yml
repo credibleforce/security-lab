@@ -13,7 +13,7 @@
     - name: Reboot to complete sysmon
       win_reboot:
         pre_reboot_delay: 120
-        900
+    reboot_timeout: 3600
         post_reboot_delay: 120
 
     - name: Wait for the connection
