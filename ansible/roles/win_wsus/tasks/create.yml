@@ -1,0 +1,48 @@
+---
+- name: WSUS feature installation
+  win_feature:
+    name: UpdateServices
+    state: present
+    include_management_tools: True
+
+- name: Create content folder for WSUS
+  win_file:
+    path: "{{ wsus_content_folder }}"
+    state: directory
+    
+- name: Change content folder for WSUS
+  win_command: 'wsusutil.exe postinstall CONTENT_DIR={{ wsus_content_folder }}'
+  args:
+    chdir: 'C:\Program Files\Update Services\Tools\'
+    creates: '{{ wsus_content_folder }}\WsusContent'
+
+- name: Create automatic approval rule
+  win_shell: |
+    $WSUServer = Get-WsusServer
+    if (-Not ($WSUServer.GetInstallApprovalRules() | Where {$_.Name -Eq "Default Automatic Approval Rule"})) {
+        $WSUServer.CreateInstallApprovalRule("Default Automatic Approval Rule")
+    }
+  register: automatic_rule
+
+- name: Enable automatic approval rule
+  win_shell: |
+    $WSUServer = Get-WsusServer
+    $AutomaticRule = $WSUServer.GetInstallApprovalRules() | Where {$_.Name -Eq "Default Automatic Approval Rule"}
+    $AutomaticRule.Enabled = $True
+    $AutomaticRule.Save()
+    $AutomaticRule.ApplyRule()
+  when: automatic_rule.changed
+
+- name: Synchronize WSUS
+  win_shell: |
+    (Get-WsusServer).GetSubscription().StartSynchronization()
+
+- name: Get Latest WSUS Sync
+  win_shell: |
+    (Get-WsusServer).GetSubscription().GetLastSynchronizationInfo()
+  regiser: result
+
+- name: Output WSUS Result
+  debug:
+    msg:
+      - "Result: {{ result.stdout }}"
