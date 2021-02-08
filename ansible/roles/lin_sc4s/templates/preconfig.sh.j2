@@ -1,11 +1,26 @@
 #!/usr/bin/bash
+if echo "$(python --version)" | grep -q "Python 2"; then
 source scl_source enable rh-python36
+fi
 
-cd /etc/syslog-ng
-gomplate $(find . -name *.tmpl | sed -E 's/^(\/.*\/)*(.*)\..*$/--file=\2.tmpl --out=\2/') --template t=go_templates/
+export SC4S_ETC=/etc/syslog-ng
 
-mkdir -p /etc/syslog-ng/conf.d/local/context/
-mkdir -p /etc/syslog-ng/conf.d/local/config/
-cp /etc/syslog-ng/context_templates/* /etc/syslog-ng/conf.d/local/context/
-for file in /etc/syslog-ng/conf.d/local/context/*.example ; do cp -v -n $file ${file%.example}; done
-cp -f -v -R /etc/syslog-ng/local_config/* /etc/syslog-ng/conf.d/local/config/
+cd $SC4S_ETC
+/usr/local/bin/gomplate $(find . -name '*.tmpl' | sed -E 's/^(\/.*\/)*(.*)\..*$/--file=\2.tmpl --out=\2/') --template t=go_templates/
+
+mkdir -p $SC4S_ETC/conf.d/merged/context/
+mkdir -p $SC4S_ETC/conf.d/local/context/
+mkdir -p $SC4S_ETC/conf.d/local/config/
+
+temp_file=$(mktemp)
+awk '{print $0}' $SC4S_ETC/conf.d/configmap/context/splunk_metadata.csv $SC4S_ETC/context_templates/splunk_metadata.csv.example | grep -v '^#' | sort -b -t ',' -k1,2 -u  > $temp_file
+cp -f $temp_file $SC4S_ETC/conf.d/merged/context/splunk_metadata.csv
+
+#Create working patterndb
+pdbtool merge -p $SC4S_ETC/conf.d/patterndb.xml -r --glob=*.xml -D $SC4S_ETC/patterndb.d -s
+pdbtool merge -p $SC4S_ETC/conf.d/patterndb-raw.xml -r --glob=*.xml -D $SC4S_ETC/patterndb-raw.d -s
+
+
+cp $SC4S_ETC/context_templates/* $SC4S_ETC/conf.d/local/context/
+for file in $SC4S_ETC/conf.d/local/context/*.example ; do cp -v -n $file ${file%.example}; done
+cp -f -v -R $SC4S_ETC/local_config/* $SC4S_ETC/conf.d/local/config/

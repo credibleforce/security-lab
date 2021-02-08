@@ -35,7 +35,7 @@
 - name: Reboot to complete computer name change
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    reboot_timeout: 3600
     post_reboot_delay: 120
 
 - name: Add PSGallery as Trusted Powershell Repo
@@ -100,7 +100,7 @@
 - name: Reboot to complete domain membership
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    reboot_timeout: 3600
     post_reboot_delay: 120
 
 - name: Update WinRM to Use Autoenroll Certificate
@@ -109,7 +109,8 @@
     gpupdate /force
     
     # get thumbprint for the domain certificate
-    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object Thumbprint
+    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object * -First 1
+    write-output ("Found Thumbprint: {0}" -f $thumbprint.Thumbprint)
 
     # only replace if autoenroll certificate found
     if($thumbprint -ne $null){
@@ -119,15 +120,23 @@
       
       # update existing listener
       if($listener -ne $null){
-        $name = $listener.PSChildName
-        set-item WSMan:\localhost\Listener\$name\Hostname -Value "" -Force
-        set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force
+          $name = $listener.PSChildName
+          set-item WSMan:\localhost\Listener\$name\Hostname -Value "" -Force
+          try{
+              set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force
+          }catch{
+              Write-output "Retrying..."
+              set-item WSMan:\localhost\Listener\$name\CertificateThumbprint -Value $thumbprint.Thumbprint -force
+          }
       }else{
-        New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -CertificateThumbPrint $thumbprint.Thumbprint -Port "5986" -force
+          New-Item -Path WSMan:\LocalHost\Listener -Address * -Transport HTTPS -CertificateThumbPrint $thumbprint.Thumbprint -Port "5986" -force
       }
 
+      $current_thumb = get-item WSMan:\localhost\Listener\$name\CertificateThumbprint
+      write-output ("Certificate Thumbprint: {0}; WinRM Certificate Thumbprint: {1};" -f $thumbprint.Thumbprint,$current_thumb.Value)
+
       # remove any other certs
-      Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Thumbprint -notmatch $thumbprint.Thumbprint } | Remove-Item
+      Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -NotMatch "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}" } | Remove-Item
 
     }else{
         write-output "Domain Certificate Not Found - Skipping"
@@ -136,5 +145,5 @@
 - name: Reboot to complete domain membership
   win_reboot:
     pre_reboot_delay: 120
-    reboot_timeout: 600
+    reboot_timeout: 3600
     post_reboot_delay: 120

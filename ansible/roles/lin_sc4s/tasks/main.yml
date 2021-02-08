@@ -4,6 +4,8 @@
         name: epel-release 
         state: installed
       become: yes
+      when: 
+        - ansible_os_family == "RedHat"
       
     - name: Install scl manager - Centos
       yum: 
@@ -12,21 +14,23 @@
       with_items:
         - "centos-release-scl"
       become: yes
-      when: ansible_distribution == "CentOS"
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_distribution_major_version=="7"
 
 
     - name: Add syslog-ng repo
       yum_repository:
-        name: czanik-syslog-ng326-epel-7
+        name: "czanik-syslog-ng326-epel-{{ ansible_distribution_major_version }}"
         description: Syslog-ng 3.26 repo
         #baseurl: https://copr.fedorainfracloud.org/coprs/czanik/syslog-ng326/repo/epel-7/czanik-syslog-ng326-epel-7.repo
-        baseurl: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-7-$basearch/
+        baseurl: "https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/epel-{{ ansible_distribution_major_version }}-$basearch/"
         gpgkey: https://download.copr.fedorainfracloud.org/results/czanik/syslog-ng326/pubkey.gpg
         gpgcheck: yes
         enabled: yes
       become: yes
 
-    - name: Install syslog-ng
+    - name: Install syslog-ng for centos 7
       yum:
         name: "{{ item }}"
         state: "installed"
@@ -38,6 +42,25 @@
         - "libselinux-python"
         - "policycoreutils-python"
       become: yes
+      when: 
+        - ansible_os_family == "RedHat"
+        - ansible_distribution_major_version=="7"
+
+    - name: Install syslog-ng for centos 8
+      yum:
+        name: "{{ item }}"
+        state: "installed"
+      with_items:
+        - "syslog-ng"
+        - "syslog-ng-http"
+        - "syslog-ng-python" 
+        - "python3" 
+        - "python3-libselinux"
+        - "python3-policycoreutils"
+      become: yes
+      when: 
+        - ansible_os_family == "RedHat" 
+        - ansible_distribution_major_version=="8"
 
     - name: Disable any syslog-ng services
       systemd:
@@ -61,6 +84,7 @@
       with_items:
         - "{{sc4s.opt}}/bin"
         - "{{sc4s.opt}}/local/context"
+        - "/usr/local/bin"
       become: yes
 
     - name: Download latest sc4s
@@ -69,9 +93,9 @@
         dest: /tmp/baremetal.tar
       become: yes
 
-    - name: Download latest sc4s
+    - name: Download latest gomplate
       get_url:
-        url: https://github.com/hairyhenderson/gomplate/releases/download/v3.5.0/gomplate_linux-amd64
+        url: https://github.com/hairyhenderson/gomplate/releases/download/v3.9.0/gomplate_linux-amd64
         dest: "/usr/local/bin/gomplate"
       become: yes
 
@@ -109,6 +133,7 @@
 
     - name: Run service preconfig
       command: "{{ sc4s.service.preconfig.path }}"
+      become: yes
 
     - name: Symlink service index mapping
       file:
@@ -124,6 +149,7 @@
         proto: tcp
         setype: http_port_t
         state: present  
+      become: yes
     
     - name: Setup service for sc4s 
       template: 
@@ -134,12 +160,14 @@
     - name: Reload systemd daemons
       systemd:
         daemon_reload: yes
+      become: yes
     
     - name: Enable sc4s service and restart
       systemd:
         name: "{{ sc4s.service.name }}"
         enabled: yes
         state: "restarted"
+      become: yes
 
     - name: Send test message using logger
       shell: |

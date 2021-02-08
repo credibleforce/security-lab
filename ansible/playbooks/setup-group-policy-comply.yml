@@ -9,19 +9,21 @@
 # DOMAIN CONTROLLER
 #########################################
 
-- hosts: all
+- hosts: windows
   vars_files:
     - ../vars/vars.yml 
   gather_facts: True
+  strategy: free
   environment:
   pre_tasks:
   post_tasks:
   tasks:
-    - name: Run windows event forwarder policy setup
+    - name: Run group policy comply and reboot
       include_role:
         name: '{{ rolevar }}'
       loop:
         - 'win_group_policy_force_comply'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['windows']
+      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
+      when: ansible_os_family == 'Windows'

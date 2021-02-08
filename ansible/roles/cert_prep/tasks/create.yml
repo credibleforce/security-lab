@@ -30,25 +30,21 @@
 # sslRootCAPath = /opt/splunk/etc/auth/labCA.pem
 
 - name: Create key from pfx
-  delegate_to: localhost
-  shell: "openssl pkcs12 -in /tmp/{{ inventory_hostname }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ inventory_hostname }}.key"
-  #with_items: 
-  #  - "{{ groups['splunk'] }}"
+  shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ item }}.key"
+  with_items: 
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Create cert from pfx
-  delegate_to: localhost
-  shell: "openssl pkcs12 -in /tmp/{{ inventory_hostname }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ inventory_hostname }}.crt"
-  #with_items: 
-  #  - "{{ groups['splunk'] }}"
+  shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ item }}.crt"
+  with_items: 
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Create encrypted key in pem format
-  delegate_to: localhost
-  shell: "openssl rsa -in /tmp/{{ inventory_hostname }}.key -aes256 -passout pass:password -out /tmp/{{ inventory_hostname }}.pem"
-  #with_items: 
-  #  - "{{ groups['splunk'] }}"
+  shell: "openssl rsa -in /tmp/{{ item }}.key -aes256 -passout pass:password -out /tmp/{{ item }}.pem"
+  with_items: 
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Bundle crt, key and pem
-  delegate_to: localhost
-  shell: "cat /tmp/{{ inventory_hostname }}.crt /tmp/{{ inventory_hostname }}.pem /tmp/cacert.pem > /tmp/{{ inventory_hostname }}-bundle.pem"
-  #with_items: 
-  #  - "{{ groups['splunk'] }}"
+  shell: "cat /tmp/{{ item }}.crt /tmp/{{ item }}.pem /tmp/cacert.pem > /tmp/{{ item }}-bundle.pem"
+  with_items: 
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"

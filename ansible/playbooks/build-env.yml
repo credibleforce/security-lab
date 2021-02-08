@@ -92,27 +92,6 @@
         loop_var: rolevar
       when: inventory_hostname in groups['member_server']
 
-    # setup windows event forwarding server
-    - name: Windows Event Forwarder Server Setup
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'win_member'
-        - 'win_wef'
-      loop_control:
-        loop_var: rolevar
-      when: inventory_hostname in groups['wef_server']
-    
-    # setup policy for windows event forwarding
-    - name: Windows Event Forwarder Policy Setup
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'win_wef_policy'
-      loop_control:
-        loop_var: rolevar
-      when: inventory_hostname == groups['domain_controller'][0]
-
     # install splunk universal forwarder
     - name: Splunk Universal Forwarder on WEC and Domain Controller
       include_role:
@@ -141,7 +120,7 @@
         - 'cert_prep'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+      when: inventory_hostname in groups['local']
 
     # stage certificates on servers
     - name: Stage the certificates for including root ca cert and splunk certs
@@ -153,22 +132,26 @@
         loop_var: rolevar
       when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
 
-- hosts: suricata
-  vars_files:
-    - ../vars/vars.yml
-  gather_facts: True
-  strategy: free
-  environment:
-  pre_tasks:
-  post_tasks:
-  tasks:
-    - name: Run suricata setup
-      include_role: 
+    # setup windows event forwarding server
+    - name: Windows Event Forwarder Server Setup
+      include_role:
         name: '{{ rolevar }}'
       loop:
-        - 'lin_suricata'
+        - 'win_member'
+        - 'win_wef'
       loop_control:
         loop_var: rolevar
+      when: inventory_hostname in groups['wef_server']
+    
+    # setup policy for windows event forwarding
+    - name: Windows Event Forwarder Policy Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_wef_policy'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname == groups['domain_controller'][0]
 
 # force all node to comply with group policy, install sysmon and reboot
 - hosts: windows
@@ -186,6 +169,42 @@
       loop:
         - 'win_group_policy_force_comply'
         - 'sysmon'
+      loop_control:
+        loop_var: rolevar
+      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
+      when: ansible_os_family == 'Windows'
+
+# - hosts: suricata
+#   vars_files:
+#     - ../vars/vars.yml
+#   gather_facts: True
+#   strategy: free
+#   environment:
+#   pre_tasks:
+#   post_tasks:
+#   tasks:
+#     - name: Run suricata setup
+#       include_role: 
+#         name: '{{ rolevar }}'
+#       loop:
+#         - 'lin_suricata'
+#       loop_control:
+#         loop_var: rolevar
+
+- hosts: syslog-collector
+  vars_files:
+    - ../vars/vars.yml
+  gather_facts: True
+  strategy: free
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run syslog-collector setup
+      include_role: 
+        name: '{{ rolevar }}'
+      loop:
+        - 'lin_sc4s'
       loop_control:
         loop_var: rolevar
 
