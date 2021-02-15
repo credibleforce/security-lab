@@ -168,7 +168,7 @@
     dest: "/tmp/{{ item }}.pfx"
     flat: yes
   with_items: 
-    - "{{ groups['splunk'] | difference(groups['windows']).members }}"
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Retrieve ca cert pem
   fetch: 
