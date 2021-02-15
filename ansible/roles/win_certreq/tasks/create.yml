@@ -13,7 +13,7 @@
 
 - name: Issue a cert for the CSR
   win_shell: |
-    try{
+    try {
         $logFile = "${env:TEMP}\certreq.txt"
         write-output "Starting cert request for host: {{ item }}" | out-file -path $logFile
         # Find the fully qualified name from the inventory_hostname
@@ -73,17 +73,17 @@
 
         # create request
         $file = @"
-        [NewRequest]
-        Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
-        MachineKeySet = TRUE
-        KeyLength = 2048
-        KeySpec=1
-        Exportable = TRUE
-        RequestType = PKCS10
-        ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
-        [RequestAttributes]
-        CertificateTemplate = "$TemplateName"
-        "@
+    [NewRequest]
+    Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+    MachineKeySet = TRUE
+    KeyLength = 2048
+    KeySpec=1
+    Exportable = TRUE
+    RequestType = PKCS10
+    ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+    [RequestAttributes]
+    CertificateTemplate = "$TemplateName"
+    "@
 
         #check if SAN certificate is requested
         if ($SAN -ne $null) {
@@ -149,6 +149,7 @@
     }catch{
          write-output "Error during cert request: $_" | out-file -path $logFile
     }
+
   with_items: 
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
