@@ -15,7 +15,6 @@
   win_shell: |
     $logFile = "${env:TEMP}\certreq.txt"
     try {
-        
         write-output "Starting cert request for host: {{ item }}" | out-file $logFile
         # Find the fully qualified name from the inventory_hostname
         $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
@@ -150,8 +149,12 @@
     }catch{
             write-output "Error during cert request: $_" | out-file -Append $logFile
     }
+  register: script_result
   with_items: 
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
+
+- name: Script result
+  debug: var=script_result
 
 - name: Export the CA Certificate
   win_shell: |
@@ -170,6 +173,10 @@
       $cert_bytes = $file_encoding.GetBytes($cert_content)
       $cert_file = Join-Path -Path $CertExportDirectoy -ChildPath "cacert.pem"
       [io.file]::WriteAllBytes($cert_file,$cert_bytes)
+  register: script_result
+
+- name: Script result
+  debug: var=script_result
 
 - name: Retrieve webserver pfx
   fetch: 
