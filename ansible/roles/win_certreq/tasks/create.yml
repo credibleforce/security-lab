@@ -36,7 +36,7 @@
         $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
         $Template = $ADSI.psbase.children | where {$_.displayName -eq $TemplateDisplayName } | select-object -Property Name
         write-output "Template Display Name: $TemplateDisplayName" | out-file -Append $logFile
-        write-output "Template Name: $Template.Name" | out-file -Append $logFile
+        write-output "Template Name: $Template.Name.Value" | out-file -Append $logFile
             
         $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
         $CertExportDirectoy=$OutputFolder
@@ -47,7 +47,7 @@
         $City = "{{ splunk_certs['city'] }}"
         $Organisation = "{{ splunk_certs['org'] }}"
         $OU = "{{ splunk_certs['ou'] }}"
-        $TemplateName = $Template.Name
+        $TemplateName = $Template.Name.Value
 
         function Remove-ReqTempfiles() {
             param(
