@@ -13,8 +13,8 @@
 
 - name: Issue a cert for the CSR
   win_shell: |
-    try {
-        $logFile = "${env:TEMP}\certreq.txt"
+    $logFile = "${env:TEMP}\certreq.txt"
+    try {    
         write-output "Starting cert request for host: {{ item }}" | out-file -path $logFile
         # Find the fully qualified name from the inventory_hostname
         $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
