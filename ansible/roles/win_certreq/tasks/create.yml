@@ -6,7 +6,10 @@
 
 - name: Show target groups
   debug:
-    var: "{{ groups['splunk'] | difference(groups['windows']).members }}"
+    msg:
+        - "{{ item }}"
+  with_items:
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Issue a cert for the CSR
   win_shell: |
@@ -139,7 +142,7 @@
     Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
     Remove-ReqFromStore -CN $CN
   with_items: 
-    - "{{ groups['splunk'] | difference(groups['windows']).members }}"
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Export the CA Certificate
   win_shell: |
