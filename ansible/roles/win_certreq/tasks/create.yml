@@ -92,13 +92,13 @@
             }
             $file += @'
 
-        [Extensions]
-        ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
-        ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
+    [Extensions]
+    ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
+    ; SANs can be included in the Extensions section by using the following text format. Note 2.5.29.17 is the OID for a SAN extension.
 
-        2.5.29.17 = "{text}"
+    2.5.29.17 = "{text}"
 
-        '@
+    '@
 
             foreach ($an in $SAN) {
                 $file += "_continue_ = `"$($an)&`"`n"
