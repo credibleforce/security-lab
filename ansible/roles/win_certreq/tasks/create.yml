@@ -48,6 +48,15 @@
         $OU = "{{ splunk_certs['ou'] }}"
         $TemplateName = $Template.Name.ToString()
 
+        $allTemplates = Invoke-Expression -Command "certutil -CATemplates"
+        write-output $("Discovered Templates: {0}" -f $($allTemplates -join ";")) | out-file -Append $logFile
+
+        if($(certutil -CATemplates | % { $($_ -split ':')[0] | where-object { $_ -eq  "$TemplateName" } }) -ne $null) { 
+            write-output $("Found template via certreq: {0}" -f $TemplateName) | out-file -Append $logFile
+        } else { 
+            write-output $("Template not found via certreq: {0}" -f $TemplateName) | out-file -Append $logFile
+        }
+        
         function Remove-ReqTempfiles() {
             param(
                 [String[]]$tempfiles
