@@ -47,6 +47,7 @@
         $Organisation = "{{ splunk_certs['org'] }}"
         $OU = "{{ splunk_certs['ou'] }}"
         $TemplateName = $Template.Name.ToString()
+        $Signature = '$Windows NT$' 
 
         $allTemplates = Invoke-Expression -Command "certutil -CATemplates"
         write-output $("Discovered Templates: {0}" -f $($allTemplates -join ";")) | out-file -Append $logFile
@@ -56,7 +57,7 @@
         } else { 
             write-output $("Template not found via certreq: {0}" -f $TemplateName) | out-file -Append $logFile
         }
-        
+
         function Remove-ReqTempfiles() {
             param(
                 [String[]]$tempfiles
@@ -82,14 +83,23 @@
 
         # create request
         $file = @"
+    [Version]
+    Signature= "$Signature" 
+    
     [NewRequest]
     Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
     MachineKeySet = TRUE
     KeyLength = 2048
     KeySpec=1
     Exportable = TRUE
+    SMIME = False
+    PrivateKeyArchive = FALSE
+    UserProtected = FALSE
+    UseExistingKeySet = FALSE
+    ProviderName = "Microsoft RSA SChannel Cryptographic Provider"
+    ProviderType = 12
     RequestType = PKCS10
-    ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+
     [RequestAttributes]
     CertificateTemplate = "$TemplateName"
     "@
@@ -114,14 +124,14 @@
             }
         }
 
-        $inf = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.inf"
-        $req = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.req"
-        $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
-        $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
+        $inf = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.inf"
+        $req = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.req"
+        $cer = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.cer"
+        $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.rsp"
 
         Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-        Set-Content -Path $inf -Value $file
-        Invoke-Expression -Command "certreq -q -new `"$inf`" `"$req`""
+        $file | Out-File -FilePath $inf -Force
+        certreq -q -new "$inf" "$req"
 
         $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$ConfigContext"
         $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
@@ -136,8 +146,8 @@
         if (!$CAName -eq "") {
             $CAName = " -config `"$CAName`""
         }
-        Invoke-Expression -Command "certreq -q -submit$CAName `"$req`" `"$cer`""
-        Invoke-Expression -Command "certreq -q -accept `"$cer`""
+        certreq -q -submit$CAName "$req" "$cer"
+        certreq -q -accept "$cer"
 
         $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
 
