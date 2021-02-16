@@ -23,7 +23,7 @@
         $Hostname = $FQDN.split('.')[0]
         write-output $("Hostname: {0}" -f $Hostname) | out-file -Append $logFile
         # Create the export folder
-        $OutputFolder = '{{ splunk_certs['export_dir'] }}'
+        $OutputFolder = "{{ splunk_certs['export_dir'] }}"
         write-output $("OutputFolder: {0} -f $OutputFolder) | out-file -Append $logFile
         #Create output folder if does not exist
         if(!([System.IO.File]::Exists($OutputFolder))) { 
@@ -147,7 +147,7 @@
         Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
         Remove-ReqFromStore -CN $CN
     }catch{
-            write-output $("Error during cert request: {0}" -f $_) | out-file -Append $logFile
+        write-output $("Error during cert request: {0}" -f $_) | out-file -Append $logFile
     }
   register: script_result
   with_items: 
