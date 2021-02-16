@@ -131,7 +131,7 @@
 
         Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
         $file | Out-File -FilePath $inf -Force
-        certreq -q -new "$inf" "$req"
+        certreq -q -new "$inf" "$req" >> $logFile 2>&1
 
         $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$ConfigContext"
         $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
@@ -146,8 +146,8 @@
         if (!$CAName -eq "") {
             $CAName = " -config `"$CAName`""
         }
-        certreq -q -submit$CAName "$req" "$cer"
-        certreq -q -accept "$cer"
+        certreq -q -submit$CAName "$req" "$cer" >> $logFile 2>&1
+        certreq -q -accept "$cer" >> $logFile 2>&1
 
         $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
 
