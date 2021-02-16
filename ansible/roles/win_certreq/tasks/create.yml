@@ -18,13 +18,13 @@
         write-output "Starting cert request for host: {{ item }}" | out-file $logFile
         # Find the fully qualified name from the inventory_hostname
         $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
-        write-output "FQDN: $FQDN" | out-file -Append $logFile
+        write-output $("FQDN: {0}" -f $FQDN) | out-file -Append $logFile
         # Create the CN shortname by replacing the FQDN for the domain
         $Hostname = $FQDN.split('.')[0]
-        write-output "Hostname: $Hostname" | out-file -Append $logFile
+        write-output $("Hostname: {0}" -f $Hostname) | out-file -Append $logFile
         # Create the export folder
         $OutputFolder = '{{ splunk_certs['export_dir'] }}'
-        write-output "OutputFolder: $OutputFolder" | out-file -Append $logFile
+        write-output $("OutputFolder: {0} -f $OutputFolder) | out-file -Append $logFile
         #Create output folder if does not exist
         if(!([System.IO.File]::Exists($OutputFolder))) { 
             New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
@@ -34,8 +34,8 @@
         $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
         $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
         $Template = $ADSI.psbase.children | where {$_.displayName -eq $TemplateDisplayName } | select-object -Property Name
-        write-output "Template Display Name: $TemplateDisplayName" | out-file -Append $logFile
-        write-output "Template Name: $Template.Name.Value" | out-file -Append $logFile
+        write-output $("Template Display Name: {0}" -f $TemplateDisplayName) | out-file -Append $logFile
+        write-output $("Template Name: {0}" -f $Template.Name.ToString()) | out-file -Append $logFile
             
         $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
         $CertExportDirectoy=$OutputFolder
@@ -46,7 +46,7 @@
         $City = "{{ splunk_certs['city'] }}"
         $Organisation = "{{ splunk_certs['org'] }}"
         $OU = "{{ splunk_certs['ou'] }}"
-        $TemplateName = $Template.Name.Value
+        $TemplateName = $Template.Name.ToString()
 
         function Remove-ReqTempfiles() {
             param(
@@ -105,8 +105,8 @@
             }
         }
 
-        $inf = [System.IO.Path]::GetTempFileName()
-        $req = [System.IO.Path]::GetTempFileName()
+        $inf = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.inf"
+        $req = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.req"
         $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
         $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
 
@@ -147,7 +147,7 @@
         Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
         Remove-ReqFromStore -CN $CN
     }catch{
-            write-output "Error during cert request: $_" | out-file -Append $logFile
+            write-output $("Error during cert request: {0}" -f $_) | out-file -Append $logFile
     }
   register: script_result
   with_items: 
