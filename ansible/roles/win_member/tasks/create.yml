@@ -27,10 +27,15 @@
     delay: 120
     timeout: 300
 
+- name: Display DNS server IP
+  debug:
+    msg:
+      - "Setting DNS Server: {{ windows_domain_info['dns_servers'] }}"
+
 - name: Setting DNS Servers
   win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "{{ windows_domain_info['dns_servers'] }}"
+    adapter_names: 'Ethernet*'
+    dns_servers: windows_domain_info['dns_servers']
 
 - name: Reboot to complete computer name change
   win_reboot:
