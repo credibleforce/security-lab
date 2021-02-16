@@ -41,7 +41,7 @@
         $CertExportDirectoy=$OutputFolder
         $SAN = "dns=$FQDN"
         $CN = "$Hostname"
-        $County = "{{ splunk_certs['country'] }}"
+        $Country = "{{ splunk_certs['country'] }}"
         $State = "{{ splunk_certs['state'] }}"
         $City = "{{ splunk_certs['city'] }}"
         $Organisation = "{{ splunk_certs['org'] }}"
@@ -100,8 +100,6 @@
     ProviderType = 12
     RequestType = PKCS10
 
-    [RequestAttributes]
-    CertificateTemplate = "$TemplateName"
     "@
 
         #check if SAN certificate is requested
@@ -125,29 +123,21 @@
         }
 
         $inf = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.inf"
-        $req = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.req"
+        $csr = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.csr"
         $cer = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.cer"
         $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.rsp"
 
-        Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
         $file | Out-File -FilePath $inf -Force
-        certreq -q -new "$inf" "$req" >> $logFile 2>&1
 
         $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$ConfigContext"
         $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
-
-        if($CAs.Count -gt 0){
-            $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
-        }
-        else {
-            $CAName = ""
-        }
-
-        if (!$CAName -eq "") {
-            $CAName = " -config `"$CAName`""
-        }
-        certreq -q -submit$CAName "$req" "$cer" >> $logFile 2>&1
-        certreq -q -accept "$cer" >> $logFile 2>&1
+        $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
+        
+        
+        certreq -q -new -config "$CAName" "$inf" "$csr" >> $logFile 2>&1
+        certreq -q -submit -config "$CAName" -attrib "CertificateTemplate:$TemplateName" "$csr" "$cer" >> $logFile 2>&1
+        certreq -q -accept -config "$CAName" "$cer" >> $logFile 2>&1
 
         $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
 
@@ -163,7 +153,7 @@
         $certstore.Remove($cert)
         $certstore.close()
 
-        Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
+        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
         Remove-ReqFromStore -CN $CN
     }catch{
         write-output $("Error during cert request: {0}" -f $_) | out-file -Append $logFile
