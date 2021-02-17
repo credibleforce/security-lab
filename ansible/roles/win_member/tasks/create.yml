@@ -35,7 +35,9 @@
 - name: Setting DNS Servers
   win_dns_client:
     adapter_names: 'Ethernet*'
-    dns_servers: windows_domain_info['dns_servers']
+    dns_servers: 
+     - "{{ windows_domain_info['dns_servers'][0] }}"
+     - "{{ windows_domain_info['dns_servers'][1] }}"
 
 - name: Reboot to complete computer name change
   win_reboot:

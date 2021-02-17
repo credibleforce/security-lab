@@ -46,7 +46,7 @@ function Remove-ReqFromStore {
 # create request
 $file = @"
 [NewRequest]
-Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+Subject = "CN=$CN, c=$Country, s=$State, l=$City, o=$Organisation, ou=$OU"
 MachineKeySet = TRUE
 KeyLength = 2048
 KeySpec=1
