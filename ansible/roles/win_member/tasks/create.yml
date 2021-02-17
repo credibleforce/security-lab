@@ -100,17 +100,24 @@
     #JoinOu: "{{ join_domain_default_dn_base }}"
   register: join_domain
 
-
-- name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
-  win_shell: |
-    Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
-  when: ansible_os_name is search("Microsoft Windows 10")
+# migrate to domain user
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+    ansible_winrm_transport: ntlm
+  no_log: true
 
 - name: Reboot to complete domain membership
   win_reboot:
     pre_reboot_delay: 120
     reboot_timeout: 3600
     post_reboot_delay: 120
+
+- name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
+  win_shell: |
+    Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
+  when: ansible_os_name is search("Microsoft Windows 10")
 
 - name: Update WinRM to Use Autoenroll Certificate
   win_shell: |
