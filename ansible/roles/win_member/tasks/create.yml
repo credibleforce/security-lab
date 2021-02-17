@@ -33,11 +33,14 @@
       - "Setting DNS Server: {{ windows_domain_info['dns_servers'] }}"
 
 - name: Setting DNS Servers
-  win_dns_client:
-    adapter_names: 'Ethernet*'
-    dns_servers: 
-     - "{{ windows_domain_info['dns_servers'][0] }}"
-     - "{{ windows_domain_info['dns_servers'][1] }}"
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'][0] }}","{{ windows_domain_info['dns_servers'][1] }}"
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 - name: Reboot to complete computer name change
   win_reboot:

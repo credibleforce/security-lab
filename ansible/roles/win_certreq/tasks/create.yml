@@ -87,11 +87,11 @@
     Signature= "$Signature" 
     
     [NewRequest]
-    Subject = "CN=$CN, c=$Country, s=$State, l=$City, o=$Organisation, ou=$OU"
-    MachineKeySet = TRUE
-    KeyLength = 2048
+    Subject = "CN=$CN, OU=$OU, O=$Organisation, L=$City, S=$State, C=$Country"
     KeySpec=1
+    KeyLength = 2048
     Exportable = TRUE
+    MachineKeySet = TRUE
     SMIME = False
     PrivateKeyArchive = FALSE
     UserProtected = FALSE
@@ -100,6 +100,8 @@
     ProviderType = 12
     RequestType = PKCS10
 
+    [EnhancedKeyUsageExtension]
+    OID=1.3.6.1.5.5.7.3.1
     "@
 
         #check if SAN certificate is requested
@@ -134,10 +136,53 @@
         $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
         $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
         
-        
-        certreq -q -new -config "$CAName" "$inf" "$csr" >> $logFile 2>&1
-        certreq -q -submit -config "$CAName" -attrib "CertificateTemplate:$TemplateName" "$csr" "$cer" >> $logFile 2>&1
-        certreq -q -accept -config "$CAName" "$cer" >> $logFile 2>&1
+        $result = Invoke-Expression -Command $('certreq -q -new -config "{0}" "{1}" "{2}"'-f $CAName,$inf,$csr)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
+
+        $result = Invoke-Expression -Command $('certreq -q -submit -config "{0}" -attrib "CertificateTemplate:{1}" "{2}" "{3}"'-f $CAName,$TemplateName,$csr,$cer)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
+
+        $result = Invoke-Expression -Command $('certreq -q -accept -config "{0}" "{1}"'-f $CAName,$cer)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
 
         $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
 
@@ -153,10 +198,10 @@
         $certstore.Remove($cert)
         $certstore.close()
 
-        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
-        Remove-ReqFromStore -CN $CN
+        #Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
+        #Remove-ReqFromStore -CN $CN
     }catch{
-        write-output $("Error during cert request: {0}" -f $_) | out-file -Append $logFile
+        write-output $('Error during cert request: {0}' -f $_) | out-file -Append $logFile
     }
   register: script_result
   with_items: 
