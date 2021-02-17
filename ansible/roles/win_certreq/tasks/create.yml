@@ -87,7 +87,7 @@
     Signature= "$Signature" 
     
     [NewRequest]
-    Subject = "CN=$CN, OU=Computer, DC=lab, DC=lan"
+    Subject = "CN=$CN, OU=Computers, DC=lab, DC=lan"
     KeySpec=1
     KeyLength = 2048
     Exportable = TRUE
@@ -99,7 +99,7 @@
     ProviderName = "Microsoft RSA SChannel Cryptographic Provider"
     ProviderType = 12
     RequestType = PKCS10
-    
+
     "@
 
         #check if SAN certificate is requested
