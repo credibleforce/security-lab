@@ -30,7 +30,7 @@
 - name: Display DNS server IP
   debug:
     msg:
-      - "Setting DNS Server: {{ windows_domain_info['dns_servers'] }}"
+      - "Setting DNS Server: {{ windows_domain_info }}"
 
 - name: Setting DNS Servers
   win_shell: |
