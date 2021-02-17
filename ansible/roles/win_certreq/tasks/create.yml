@@ -197,8 +197,8 @@
         $certstore.Remove($cert)
         $certstore.close()
 
-        #Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
-        #Remove-ReqFromStore -CN $CN
+        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
+        Remove-ReqFromStore -CN $CN
     }catch{
         write-output $('Error during cert request: {0}' -f $_) | out-file -Append $logFile
     }

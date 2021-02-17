@@ -37,6 +37,7 @@
 
     $adapter = get-netadapter
     $interface = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $adapter.InterfaceIndex
+    Disable-NetAdapterBinding –InterfaceAlias 'Ethernet*' –ComponentID ms_tcpip6
     $gateway = get-netroute -DestinationPrefix '0.0.0.0/0' | select -ExpandProperty NextHop
     $mask = [Net.IPAddress]::Parse((INT64-toIP -int ([convert]::ToInt64(("1"*$interface.PrefixLength+"0"*(32-$interface.PrefixLength)),2))))
 
