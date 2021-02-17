@@ -32,6 +32,7 @@
         # Get the name of the template
         $TemplateDisplayName = "Web Server Policy"
         $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+        $DefaultNamingContext = ([ADSI]"LDAP://RootDSE").defaultNamingContext
         $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
         $Template = $ADSI.psbase.children | where {$_.displayName -eq $TemplateDisplayName } | select-object -Property Name
         write-output $("Template Display Name: {0}" -f $TemplateDisplayName) | out-file -Append $logFile
@@ -87,7 +88,7 @@
     Signature= "$Signature" 
     
     [NewRequest]
-    Subject = "CN=$CN, $ConfigContext"
+    Subject = "CN=$CN, $DefaultNamingContext"
     KeySpec=1
     KeyLength = 2048
     Exportable = TRUE
