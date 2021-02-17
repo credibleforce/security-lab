@@ -87,7 +87,7 @@
     Signature= "$Signature" 
     
     [NewRequest]
-    Subject = "CN=$CN, OU=$OU, O=$Organisation, L=$City, S=$State, C=$Country"
+    Subject = "CN=$CN, OU=Computer, DC=lab, DC=lan"
     KeySpec=1
     KeyLength = 2048
     Exportable = TRUE
