@@ -3,6 +3,8 @@
   set_fact:
     ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+    ansible_winrm_transport: kerberos
+  no_log: true
 
 - name: Show target groups
   debug:
