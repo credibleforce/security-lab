@@ -29,7 +29,7 @@
     - name: Universal Forwarder Variable
       include_vars: ../vars/splunk_universal_forwarder.yml
       when:
-        - inventory_hostname in groups['splunk_universal_forwarder']
+        - groups.splunk_universal_forwarder is defined and inventory_hostname in groups['splunk_universal_forwarder']
   post_tasks:
   tasks:
     # all
@@ -50,7 +50,7 @@
         - 'win_dc'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['domain_controller']
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
 
     # configure dns forwarding and records
     - name: Setup Windows DNS server forwarding and hostnames
@@ -60,7 +60,7 @@
         - 'win_dns'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname == groups['domain_controller'][0]
+      when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
 
     # certificate_authority group only
     - name: Windows Enterprise PKI
@@ -70,7 +70,7 @@
         - 'win_ca'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['certificate_authority']
+      when: groups.certificate_authority is defined and inventory_hostname in groups['certificate_authority']
 
     # setup policy for certificate authority autoenroll
     - name: Run windows certificate authority policy setup
@@ -80,7 +80,7 @@
         - 'win_ca_policy'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['domain_controller']
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
 
     # member_server group only
     - name: Windows Member Server
@@ -90,7 +90,7 @@
         - 'win_member'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['member_server']
+      when: groups.member_server is defined and inventory_hostname in groups['member_server']
 
     # install splunk universal forwarder
     - name: Splunk Universal Forwarder on WEC and Domain Controller
@@ -100,7 +100,7 @@
         - 'splunk_uf'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname == groups['wef_server'][0] or inventory_hostname == groups['domain_controller'][0]
+      when: (groups.wef_server is defined and inventory_hostname == groups['wef_server'][0]) or (groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0])
     
     # request certificates
     - name: Request and export required certificates from the CA
@@ -110,7 +110,7 @@
         - 'win_certreq'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['certificate_authority']
+      when: groups.certificate_authority is defined and inventory_hostname in groups['certificate_authority']
 
     # prepare the certificates for splunk servers, excluding universal forwarders
     - name: Prep the certificates for use in splunk
@@ -130,7 +130,7 @@
         - 'cert_distribute'
       loop_control:
         loop_var: rolevar
-      when: (inventory_hostname in groups['linux'] or inventory_hostname in groups['kali'] or inventory_hostname in groups['splunk']) and not inventory_hostname in groups['windows']
+      when: ((groups.linux is defined and inventory_hostname in groups['linux']) or (groups.kali is defined and inventory_hostname in groups['kali']) or ((groups.splunk is defined) and inventory_hostname in groups['splunk'])) and not inventory_hostname in groups['windows']
 
     # setup windows event forwarding server
     - name: Windows Event Forwarder Server Setup
@@ -141,7 +141,7 @@
         - 'win_wef'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['wef_server']
+      when: groups.wef_server is defined and inventory_hostname in groups['wef_server']
     
     # setup policy for windows event forwarding
     - name: Windows Event Forwarder Policy Setup
@@ -151,7 +151,7 @@
         - 'win_wef_policy'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname == groups['domain_controller'][0]
+      when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
 
 # force all node to comply with group policy, install sysmon and reboot
 - hosts: windows
