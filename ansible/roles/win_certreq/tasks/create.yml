@@ -87,7 +87,7 @@
     Signature= "$Signature" 
     
     [NewRequest]
-    Subject = "CN=$CN, OU=Computers, DC=lab, DC=lan"
+    Subject = "CN=$CN, $ConfigContext"
     KeySpec=1
     KeyLength = 2048
     Exportable = TRUE
