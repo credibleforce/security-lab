@@ -432,7 +432,7 @@
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
-    $ManifestFile = "C:\Users\Administrator\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
+    $ManifestFile = "$env:USERPROFILE\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
     
     #Create Man file or run setup
     #Variables
