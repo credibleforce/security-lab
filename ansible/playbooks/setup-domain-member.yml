@@ -24,4 +24,4 @@
         - 'win_member'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['win_member']
+      when: groups.member_server is defined and inventory_hostname in groups['member_server']
