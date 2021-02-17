@@ -34,7 +34,7 @@
 
 - name: Setting DNS Servers
   win_shell: |
-    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}""
+    Set-DnsClientServerAddress -InterfaceAlias * -ServerAddresses "{{ windows_domain_info['dns_servers'] }}""
   register: script_result
 
 - name: Script result
