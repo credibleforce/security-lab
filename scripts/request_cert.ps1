@@ -1,14 +1,21 @@
 $CACommonName="LAB-CA"
 $pem = $true
 
-$SAN = "dns=test.lab.lan"
-$CN = "test.lab.lan"
+$SAN = "dns=splk-uf1.lab.lan"
+$CN = "splk-uf1.lab.lan"
 $County = "Canada"
 $State = "BC"
 $City = "Vancouver"
 $Organisation = "LAB"
 $OU = "LAB"
-$TemplateName = "WebServer"
+$SourceTemplateName = "Web Server Policy"
+
+$cc = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext 
+$ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$cc"
+$st = $ADSI.psbase.children | where {$_.displayName -eq $SourceTemplateName}
+$TemplateName = $st.Name
+
+Write-output $TemplateName
 
 function Remove-ReqTempfiles() {
     param(
@@ -39,7 +46,7 @@ function Remove-ReqFromStore {
 # create request
 $file = @"
 [NewRequest]
-Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
+Subject = "CN=$CN, c=$Country, s=$State, l=$City, o=$Organisation, ou=$OU"
 MachineKeySet = TRUE
 KeyLength = 2048
 KeySpec=1

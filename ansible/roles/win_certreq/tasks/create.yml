@@ -3,85 +3,114 @@
   set_fact:
     ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+    ansible_winrm_transport: ntlm
+  no_log: true
 
 - name: Show target groups
   debug:
-    var: "{{ groups['splunk'] | difference(groups['windows']) }}"
+    msg:
+        - "{{ item }}"
+  with_items:
+    - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Issue a cert for the CSR
   win_shell: |
-    # Find the fully qualified name from the inventory_hostname
-    $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
-
-    # Create the CN shortname by replacing the FQDN for the domain
-    $Hostname = $FQDN.split('.')[0]
-
-    # Create the export folder
-    $OutputFolder = '{{ splunk_certs['export_dir'] }}'
-
-    #Create output folder if does not exist
-    if(!([System.IO.File]::Exists($OutputFolder))) { 
-        New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
-    }
-    # Get the name of the template
-    $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
-    $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
-    $Template = $ADSI.psbase.children | where {$_.displayName -eq "Web Server Policy"} | select-object -Property Name
-
-    $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
-    $CertExportDirectoy=$OutputFolder
-    $SAN = "dns=$FQDN"
-    $CN = "$Hostname"
-    $County = "{{ splunk_certs['country'] }}"
-    $State = "{{ splunk_certs['state'] }}"
-    $City = "{{ splunk_certs['city'] }}"
-    $Organisation = "{{ splunk_certs['org'] }}"
-    $OU = "{{ splunk_certs['ou'] }}"
-    $TemplateName = $Template.Name
-
-    function Remove-ReqTempfiles() {
-        param(
-            [String[]]$tempfiles
-        )
-        Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
-    }
-
-    function Remove-ReqFromStore {
-        param(
-            [String]$CN
-        )
-        #delete pending request (if a request exists for the CN)
-        $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
-        $certstore.Open('ReadWrite')
-        foreach ($certreq in $($certstore.Certificates)) {
-            if ($certreq.Subject -eq "CN=$CN") {
-                $certstore.Remove($certreq)
-            }
+    $logFile = "${env:TEMP}\certreq.txt"
+    try {
+        write-output "Starting cert request for host: {{ item }}" | out-file $logFile
+        # Find the fully qualified name from the inventory_hostname
+        $FQDN = [System.Net.Dns]::GetHostByName('{{ item }}').Hostname
+        write-output $("FQDN: {0}" -f $FQDN) | out-file -Append $logFile
+        # Create the CN shortname by replacing the FQDN for the domain
+        $Hostname = $FQDN.split('.')[0]
+        write-output $("Hostname: {0}" -f $Hostname) | out-file -Append $logFile
+        # Create the export folder
+        $OutputFolder = "{{ splunk_certs['export_dir'] }}"
+        write-output $("OutputFolder: {0}" -f $OutputFolder) | out-file -Append $logFile
+        #Create output folder if does not exist
+        if(!([System.IO.File]::Exists($OutputFolder))) { 
+            New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
         }
-        $certstore.close()
-    }
+        # Get the name of the template
+        $TemplateDisplayName = "Web Server Policy"
+        $ConfigContext = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+        $DefaultNamingContext = ([ADSI]"LDAP://RootDSE").defaultNamingContext
+        $ADSI = [ADSI]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigContext"
+        $Template = $ADSI.psbase.children | where {$_.displayName -eq $TemplateDisplayName } | select-object -Property Name
+        write-output $("Template Display Name: {0}" -f $TemplateDisplayName) | out-file -Append $logFile
+        write-output $("Template Name: {0}" -f $Template.Name.ToString()) | out-file -Append $logFile
+            
+        $CACommonName="{{ windows_certificate_authority_info['CACommonName'] }}"
+        $CertExportDirectoy=$OutputFolder
+        $SAN = "dns=$FQDN"
+        $CN = "$Hostname"
+        $Country = "{{ splunk_certs['country'] }}"
+        $State = "{{ splunk_certs['state'] }}"
+        $City = "{{ splunk_certs['city'] }}"
+        $Organisation = "{{ splunk_certs['org'] }}"
+        $OU = "{{ splunk_certs['ou'] }}"
+        $TemplateName = $Template.Name.ToString()
+        $Signature = '$Windows NT$' 
+
+        $allTemplates = Invoke-Expression -Command "certutil -CATemplates"
+        write-output $("Discovered Templates: {0}" -f $($allTemplates -join ";")) | out-file -Append $logFile
+
+        if($(certutil -CATemplates | % { $($_ -split ':')[0] | where-object { $_ -eq  "$TemplateName" } }) -ne $null) { 
+            write-output $("Found template via certreq: {0}" -f $TemplateName) | out-file -Append $logFile
+        } else { 
+            write-output $("Template not found via certreq: {0}" -f $TemplateName) | out-file -Append $logFile
+        }
+
+        function Remove-ReqTempfiles() {
+            param(
+                [String[]]$tempfiles
+            )
+            Remove-Item -Path $tempfiles -Force -ErrorAction SilentlyContinue
+        }
+
+        function Remove-ReqFromStore {
+            param(
+                [String]$CN
+            )
+            #delete pending request (if a request exists for the CN)
+            $certstore = new-object system.security.cryptography.x509certificates.x509Store('REQUEST', 'LocalMachine')
+            $certstore.Open('ReadWrite')
+            foreach ($certreq in $($certstore.Certificates)) {
+                if ($certreq.Subject -eq "CN=$CN") {
+                    $certstore.Remove($certreq)
+                }
+            }
+            $certstore.close()
+        }
 
 
-    # create request
-    $file = @"
+        # create request
+        $file = @"
+    [Version]
+    Signature= "$Signature" 
+    
     [NewRequest]
-    Subject = "CN=$CN,c=$Country, s=$State, l=$City, o=$Organisation, ou=$Department"
-    MachineKeySet = TRUE
-    KeyLength = 2048
+    Subject = "CN=$CN, $DefaultNamingContext"
     KeySpec=1
+    KeyLength = 2048
     Exportable = TRUE
+    MachineKeySet = TRUE
+    SMIME = False
+    PrivateKeyArchive = FALSE
+    UserProtected = FALSE
+    UseExistingKeySet = FALSE
+    ProviderName = "Microsoft RSA SChannel Cryptographic Provider"
+    ProviderType = 12
     RequestType = PKCS10
-    ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
-    [RequestAttributes]
-    CertificateTemplate = "$TemplateName"
+
     "@
 
-    #check if SAN certificate is requested
-    if ($SAN -ne $null) {
-        if (($SAN).count -eq 1) {
-            $SAN = @($SAN -split ',')
-        }
-        $file += @'
+        #check if SAN certificate is requested
+        if ($SAN -ne $null) {
+            if (($SAN).count -eq 1) {
+                $SAN = @($SAN -split ',')
+            }
+            $file += @'
 
     [Extensions]
     ; If your client operating system is Windows Server 2008, Windows Server 2008 R2, Windows Vista, or Windows 7
@@ -91,55 +120,96 @@
 
     '@
 
-        foreach ($an in $SAN) {
-            $file += "_continue_ = `"$($an)&`"`n"
+            foreach ($an in $SAN) {
+                $file += "_continue_ = `"$($an)&`"`n"
+            }
         }
-    }
 
-    $inf = [System.IO.Path]::GetTempFileName()
-    $req = [System.IO.Path]::GetTempFileName()
-    $cer = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.cer"
-    $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.rsp"
+        $inf = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.inf"
+        $csr = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.csr"
+        $cer = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.cer"
+        $rsp = Join-Path -Path $CertExportDirectoy -ChildPath "${CN}.rsp"
 
-    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-    Set-Content -Path $inf -Value $file
-    Invoke-Expression -Command "certreq -new `"$inf`" `"$req`""
+        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
+        $file | Out-File -FilePath $inf -Force
 
-    $rootDSE = [System.DirectoryServices.DirectoryEntry]'LDAP://RootDSE'
-    $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$($rootDSE.configurationNamingContext)"
-    $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
-
-    if($CAs.Count -gt 0){
+        $searchBase = [System.DirectoryServices.DirectoryEntry]"LDAP://$ConfigContext"
+        $CAs = [System.DirectoryServices.DirectorySearcher]::new($searchBase,'objectClass=pKIEnrollmentService').FindAll()
         $CAName = "$($CAs[0].Properties.dnshostname)\$($CAs[0].Properties.cn)"
+        
+        $result = Invoke-Expression -Command $('certreq -q -new -config "{0}" "{1}" "{2}"'-f $CAName,$inf,$csr)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
+
+        $result = Invoke-Expression -Command $('certreq -q -submit -config "{0}" -attrib "CertificateTemplate:{1}" "{2}" "{3}"'-f $CAName,$TemplateName,$csr,$cer)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
+
+        $result = Invoke-Expression -Command $('certreq -q -accept -config "{0}" "{1}"'-f $CAName,$cer)
+        if(!($LastExitCode -eq 0))
+        {
+            write-output "Error: $result" | Out-File -FilePath $logFile
+        }
+
+        if(($LastExitCode -eq 0) -and ($? -eq $true))
+        {
+            write-output "Success: $result" | Out-File -FilePath $logFile
+                
+        }
+        else
+        {
+            write-output "Unknown: $result" | Out-File -FilePath $logFile
+        }
+
+        $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
+
+        #create a pfx export as a byte array
+        $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
+        $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath "{{ item }}.pfx"
+
+        $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
+
+        # delete certificate from computer store
+        $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
+        $certstore.Open('ReadWrite')
+        $certstore.Remove($cert)
+        $certstore.close()
+
+        Remove-ReqTempfiles -tempfiles $inf, $csr, $cer, $rsp
+        Remove-ReqFromStore -CN $CN
+    }catch{
+        write-output $('Error during cert request: {0}' -f $_) | out-file -Append $logFile
     }
-    else {
-        $CAName = ""
-    }
-
-    if (!$CAName -eq "") {
-        $CAName = " -config `"$CAName`""
-    }
-    Invoke-Expression -Command "certreq -submit$CAName `"$req`" `"$cer`""
-    Invoke-Expression -Command "certreq -accept `"$cer`""
-
-    $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item $cer).FullName, "")).Thumbprint}
-
-    #create a pfx export as a byte array
-    $certbytes = $cert.export([System.Security.Cryptography.X509Certificates.X509ContentType]::pfx)
-    $pfxPath = Join-Path -Path $CertExportDirectoy -ChildPath "$CN.pfx"
-
-    $certbytes | Set-Content -Encoding Byte -Path $pfxPath -ea Stop
-
-    # delete certificate from computer store
-    $certstore = new-object system.security.cryptography.x509certificates.x509Store('My', 'LocalMachine')
-    $certstore.Open('ReadWrite')
-    $certstore.Remove($cert)
-    $certstore.close()
-
-    Remove-ReqTempfiles -tempfiles $inf, $req, $cer, $rsp
-    Remove-ReqFromStore -CN $CN
+  register: script_result
   with_items: 
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
+
+- name: Script result
+  debug: var=script_result
 
 - name: Export the CA Certificate
   win_shell: |
@@ -158,6 +228,10 @@
       $cert_bytes = $file_encoding.GetBytes($cert_content)
       $cert_file = Join-Path -Path $CertExportDirectoy -ChildPath "cacert.pem"
       [io.file]::WriteAllBytes($cert_file,$cert_bytes)
+  register: script_result
+
+- name: Script result
+  debug: var=script_result
 
 - name: Retrieve webserver pfx
   fetch: 

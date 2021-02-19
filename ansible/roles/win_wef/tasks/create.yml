@@ -3,6 +3,8 @@
   set_fact:
     ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+    ansible_winrm_transport: ntlm
+  no_log: true
     
 # - name: Download NSA Subscription Templates
 #   win_shell: |
@@ -430,7 +432,7 @@
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
-    $ManifestFile = "C:\Users\Administrator\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
+    $ManifestFile = "$env:USERPROFILE\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
     
     #Create Man file or run setup
     #Variables

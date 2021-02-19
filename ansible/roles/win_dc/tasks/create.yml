@@ -37,6 +37,7 @@
 
     $adapter = get-netadapter
     $interface = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $adapter.InterfaceIndex
+    Disable-NetAdapterBinding –InterfaceAlias 'Ethernet*' –ComponentID ms_tcpip6
     $gateway = get-netroute -DestinationPrefix '0.0.0.0/0' | select -ExpandProperty NextHop
     $mask = [Net.IPAddress]::Parse((INT64-toIP -int ([convert]::ToInt64(("1"*$interface.PrefixLength+"0"*(32-$interface.PrefixLength)),2))))
 
@@ -62,8 +63,8 @@
 
 - name: Set DNS server
   win_dns_client:
-    adapter_names: "*"
-    ipv4_addresses: "127.0.0.1"
+    adapter_names: 'Ethernet*'
+    dns_servers: 127.0.0.1
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:

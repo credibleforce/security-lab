@@ -25,8 +25,7 @@ windows_certificate_authority_info:
   ValidityPeriodUnits: 99
 
 windows_domain_info:
-  dns_servers:
-    - "{{ hostvars[groups['domain_controller'][0]].ansible_ip_addresses[0] }}"
+  dns_servers: "{{ hostvars[groups['domain_controller'][0]].ansible_ip_addresses | select('match','\\d+\\.\\d+\\.\\d+\\.\\d+') | list | first }}"
   dns_forward_lookup:
     - "8.8.8.8"
     - "8.8.4.4"

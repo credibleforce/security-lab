@@ -1,0 +1,127 @@
+all:
+    children:
+      local:
+        hosts:
+          localhost:
+        vars:
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      lab:
+        children:
+          linux:
+            vars:
+              ansible_connection: ssh
+              ansible_system: Linux
+            children:
+              centos:
+                hosts:
+                  splk-sh1.lab.lan:
+                    ansible_ssh_user: "{{ centos.ansible_ssh_user }}"
+              ansible:
+                hosts:
+                  ansible-srv1.lab.lan:
+                    ansible_ssh_user: "{{ ansible.ansible_ssh_user }}"
+          windows:
+            children:
+              win10:
+                hosts:
+                    win10-dsk1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+              member_server:
+                hosts:
+                    win10-dsk1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+                    win16-svr1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+              win16:
+                hosts:
+                    win16-dc1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+                    win16-wef1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+                    win16-svr1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+              domain_controller:
+                hosts:
+                    win16-dc1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+              certificate_authority:
+                hosts:
+                    win16-dc1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+              wef_server:
+                hosts:
+                    win16-wef1.lab.lan:
+                      ansible_connection: "{{ windows.ansible_connection }}"
+                      ansible_ssh_port: "{{ windows.ansible_ssh_port }}"
+                      ansible_ssh_user: "{{ windows.ansible_ssh_user }}"
+                      ansible_ssh_pass: "{{ windows.ansible_ssh_pass }}"
+                      ansible_winrm_transport: "{{ windows.ansible_winrm_transport }}"
+                      ansible_winrm_server_cert_validation: "{{ windows.ansible_winrm_server_cert_validation }}"
+                      ansible_winrm_read_timeout_sec: "{{ windows.ansible_winrm_read_timeout_sec }}"
+          splunk:
+            children:
+              splunk_standalone:
+                vars:
+                  splunk:
+                    hostname: "{{ inventory_hostname }}"
+                    role: splunk_standalone
+                hosts:
+                  splk-sh1.lab.lan:
+                    ansible_connection: ssh
+                    ansible_system: Linux
+                    ansible_ssh_user: "{{ centos.ansible_ssh_user }}"
+              splunk_universal_forwarder:
+                vars:
+                  splunk:
+                    hostname: "{{ inventory_hostname }}"
+                    role: splunk_universal_forwarder
+                hosts:
