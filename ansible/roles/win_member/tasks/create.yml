@@ -49,19 +49,11 @@
     reboot_timeout: 3600
     post_reboot_delay: 120
 
-- name: Add PSGallery as Trusted Powershell Repo
+- name: Check for xDnsServer xActiveDirectory Powershell modules
   win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
-    }
-
-# Add powershell modules
-- name: Add xActiveDirectory
-  win_shell: |
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Set-PackageSource -Name PSGallery -Trusted -Force 
     Install-Module -Name xActiveDirectory
-
-- name: Add xComputerManagement
-  win_shell: |
     Install-Module -Name xComputerManagement
 
 - name: Force Allow Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)

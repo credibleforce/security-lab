@@ -9,21 +9,13 @@
     include_sub_features: yes
     state: present
   register: feature_check
-
-- name: Add PSGallery as Trusted Powershell Repo
-  win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
-    }
-
+  
 # Add powershell modules
-- name: Check for xDnsServer Powershell module
+- name: Check for xDnsServer xActiveDirectory Powershell modules
   win_shell: |
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Set-PackageSource -Name PSGallery -Trusted -Force 
     Install-Module -Name xDnsServer
-
-# Add powershell modules
-- name: Add xActiveDirectory
-  win_shell: |
     Install-Module -Name xActiveDirectory
 
 # Set static IP
