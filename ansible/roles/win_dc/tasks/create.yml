@@ -13,6 +13,8 @@
     [Net.DNS]::GetHostEntry("google.com")
     Get-PSRepository
     Get-PackageSource
+    $PSVersionTable
+    $env:PSModulePath
   register: script_result
 
 - name: Script result
