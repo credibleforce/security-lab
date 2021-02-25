@@ -1,6 +1,8 @@
 ---
     - name: Add PSGallery as Trusted Powershell Repo
       win_shell: |
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Set-ExecutionPolicy RemoteSigned -Force -Scope CurrentUser
         if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
           Set-PackageSource -Name PSGallery -Trusted -Force 
         }
