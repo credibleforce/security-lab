@@ -1,15 +1,23 @@
 ---
-# Add windows features
-- name: features | Installing AD Domain Services
-  win_feature: 
-    name: 
-      - RSAT-AD-AdminCenter
-      - AD-Domain-Services
-    include_management_tools: yes
-    include_sub_features: yes
-    state: present
-  register: feature_check
-  
+# pre-config static dns server
+- name: Set DNS server
+  win_dns_client:
+    adapter_names: 'Ethernet*'
+    dns_servers: 
+      - 8.8.8.8
+      - 8.8.4.4
+
+- name: Validate DNS
+  win_shell: |
+    ipconfig /all
+    [Net.DNS]::GetHostEntry("google.com")
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
+
 # Add powershell modules
 - name: Check for xDnsServer xActiveDirectory Powershell modules
   win_shell: |
@@ -46,6 +54,17 @@
     sleep: 5
     delay: 120
     timeout: 300
+
+# Add windows features
+- name: features | Installing AD Domain Services
+  win_feature: 
+    name: 
+      - RSAT-AD-AdminCenter
+      - AD-Domain-Services
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  register: feature_check
 
 - name: Reboot to complete feature setup and computer name change
   win_reboot:
