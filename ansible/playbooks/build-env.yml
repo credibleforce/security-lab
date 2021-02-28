@@ -91,16 +91,6 @@
       loop_control:
         loop_var: rolevar
       when: groups.member_server is defined and inventory_hostname in groups['member_server']
-
-    # install splunk universal forwarder
-    - name: Splunk Universal Forwarder on WEC and Domain Controller
-      include_role:
-        name: '{{ rolevar }}'
-      loop:
-        - 'splunk_uf'
-      loop_control:
-        loop_var: rolevar
-      when: (groups.wef_server is defined and inventory_hostname == groups['wef_server'][0]) or (groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0])
     
     # request certificates
     - name: Request and export required certificates from the CA
@@ -141,8 +131,8 @@
         - 'win_wef'
       loop_control:
         loop_var: rolevar
-      when: groups.wef_server is defined and inventory_hostname in groups['wef_server']
-    
+      when: groups.wef_server is defined and inventory_hostname in groups['wef_server']    
+
     # setup policy for windows event forwarding
     - name: Windows Event Forwarder Policy Setup
       include_role:
@@ -154,7 +144,7 @@
       when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
 
     # install sysmon on the domain controller and ensure network service in eventlogreader group
-    - name: Run group policy comply and reboot for domain controll
+    - name: Run group policy comply and reboot for domain controller
       include_role:
         name: '{{ rolevar }}'
       loop:
@@ -163,6 +153,16 @@
       loop_control:
         loop_var: rolevar
       when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
+
+    # install splunk universal forwarder
+    - name: Splunk Universal Forwarder on WEC and Domain Controller
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'splunk_uf'
+      loop_control:
+        loop_var: rolevar
+      when: (groups.wef_server is defined and inventory_hostname in groups['wef_server']) or (groups.domain_controller is defined and inventory_hostname in groups['domain_controller'])
 
 # force all node to comply with group policy, install sysmon and reboot (note: strategy free)
 - hosts: windows
