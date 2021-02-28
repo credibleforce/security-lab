@@ -2,7 +2,7 @@
 # pre-config static dns server
 - name: Set DNS server
   win_shell: |
-    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}"
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] | join('","') }}"
   register: script_result
 
 - name: Validate DNS
@@ -25,7 +25,7 @@
   win_shell: |
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Set-PackageSource -Name PSGallery -Trusted -Force 
-    Install-Module -Name xDnsServer -Repository
+    Install-Module -Name xDnsServer
     Install-Module -Name xActiveDirectory
 
 # Set static IP
