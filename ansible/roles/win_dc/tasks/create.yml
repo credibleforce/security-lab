@@ -1,11 +1,9 @@
 ---
 # pre-config static dns server
 - name: Set DNS server
-  win_dns_client:
-    adapter_names: 'Ethernet*'
-    ipv4_addresses:
-      - '8.8.8.8'
-      - '8.8.4.4'
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}"
+  register: script_result
 
 - name: Validate DNS
   win_shell: |
@@ -77,10 +75,9 @@
     post_reboot_delay: 120
 
 - name: Set DNS server
-  win_dns_client:
-    adapter_names: 'Ethernet*'
-    ipv4_addresses:
-      - '127.0.0.1'
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "127.0.0.1"
+  register: script_result
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
