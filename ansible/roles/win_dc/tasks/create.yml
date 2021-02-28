@@ -2,7 +2,7 @@
 # pre-config static dns server
 - name: Set DNS server
   win_shell: |
-    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] | join('","') }}"
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_forward_lookup'] | join('","') }}"
   register: script_result
 
 - name: Script result

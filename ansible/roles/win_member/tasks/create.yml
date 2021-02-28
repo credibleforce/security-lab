@@ -35,7 +35,7 @@
 
 - name: Setting DNS Servers
   win_shell: |
-    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] | join('","') }}"
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_forward_lookup'] | join('","') }}"
   register: script_result
 
 - name: Script result
@@ -71,6 +71,16 @@
     Remove-Item 'C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\RunWallpaperSetupInit.cmd'
   ignore_errors: yes
   when: ansible_os_name is search("Microsoft Windows 10")
+
+- name: Setting DNS Servers
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}"
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 # wait for domain to be available
 - name: Wait for forest xWaitForADDomain
