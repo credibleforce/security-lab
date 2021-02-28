@@ -3,9 +3,9 @@
 - name: Set DNS server
   win_dns_client:
     adapter_names: 'Ethernet*'
-    dns_servers: 
-      - 8.8.8.8
-      - 8.8.4.4
+    ipv4_addresses:
+      - '8.8.8.8'
+      - '8.8.4.4'
 
 - name: Validate DNS
   win_shell: |
@@ -79,7 +79,8 @@
 - name: Set DNS server
   win_dns_client:
     adapter_names: 'Ethernet*'
-    dns_servers: 127.0.0.1
+    ipv4_addresses:
+      - '127.0.0.1'
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
