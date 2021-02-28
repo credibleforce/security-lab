@@ -5,6 +5,11 @@
     Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] | join('","') }}"
   register: script_result
 
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
+
 - name: Validate DNS
   win_shell: |
     ipconfig /all
@@ -78,6 +83,11 @@
   win_shell: |
     Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "127.0.0.1"
   register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
