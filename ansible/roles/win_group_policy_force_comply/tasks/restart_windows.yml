@@ -1,15 +1,9 @@
 ---
-  
   - name: Current user account
     debug:
       msg: 
         - "ansible_ssh_user: {{ ansible_ssh_user }}"
         - "ansible_winrm_transport: {{ ansible_winrm_transport}}"
-
-
-  - name: Set max retry
-    set_fact:
-      max_retry_reconnect: 10
 
   - name: Reboot retry wait block
     block:
@@ -47,7 +41,7 @@
     rescue:
       - fail:
           msg: Maximum retries of grouped tasks reached
-        when: retry_count | int == {{ max_retry_reconnect  }}
+        when: retry_count | int == 10
 
       - debug:
           msg: "Task Group failed, attempting retry"
