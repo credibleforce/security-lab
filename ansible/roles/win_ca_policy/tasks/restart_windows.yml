@@ -7,8 +7,8 @@
     block:
       - name: Increment the retry count
         set_fact:
-          retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
-          reboot_required: "{{ true if reboot_required is undefined else false }}"
+          retry_count: "{{ 0 if (retry_count is undefined or retry_count is none) else retry_count | int + 1 }}"
+          reboot_required: "{{ true if (reboot_required is undefined or reboot_required is none) else false }}"
 
       - name: Reboot
         win_reboot:
@@ -30,6 +30,11 @@
         assert:
           that:
               - connection_wait_time is defined and connection_wait_time.elapsed is defined
+
+      - name: Reset
+        set_fact:
+          reboot_required: null
+          retry_count: null
     rescue:
       - fail:
           msg: Maximum retries of grouped tasks reached
