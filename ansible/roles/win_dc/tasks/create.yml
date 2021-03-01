@@ -36,10 +36,18 @@
       - "ansible_winrm_transport: {{ ansible_winrm_transport }}"
       - "temp_winrm_transport: {{ temp_winrm_transport }}"
 
+- name: Set ansible user for role
+  set_fact:
+    ansible_ssh_user: "{{ windows_domain_controller_info.domain_admin_user }}"
+    ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
+  no_log: true
+
+- name: Reboot to complete domain controller setup (as required)
+  include: restart_windows.yml
+
 - name: Reset winrm to post promo config
   set_fact:
     ansible_winrm_transport: "{{ temp_winrm_transport }}"
 
-- name: Reboot to complete domain controller setup (as required)
-  include: restart_windows.yml
+
 
