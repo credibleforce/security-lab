@@ -202,7 +202,7 @@
 #       loop_control:
 #         loop_var: rolevar
 
-- hosts: syslog-collector
+- hosts: syslog_collector
   vars_files:
     - ../vars/vars.yml
   gather_facts: True
@@ -211,7 +211,7 @@
   pre_tasks:
   post_tasks:
   tasks:
-    - name: Run syslog-collector setup
+    - name: Run syslog_collector setup
       include_role: 
         name: '{{ rolevar }}'
       loop:
