@@ -1,7 +1,7 @@
 ---
   - name: Set max retry
     set_fact:
-      max_retry_connect: 10
+      max_retry_reconnect: 10
 
   - name: Reboot retry wait block
     block:
