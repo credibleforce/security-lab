@@ -1,0 +1,43 @@
+---
+  - name: Set max retry
+    set_fact:
+      max_retry_connect: 10
+
+  - name: Reboot retry wait block
+    block:
+      - name: Increment the retry count
+        set_fact:
+          retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+          reboot_required: true if reboot_required is undefined else false
+
+      - name: Reboot
+        win_reboot:
+          reboot_timeout: 120
+          post_reboot_delay: 90
+        when: reboot_required == true
+
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 900
+          sleep: 60
+          delay: 120
+
+      - name: "Check to see if our host was unreachable and assert"
+        assert:
+          that:
+              - <check for successful result else resuce>
+    rescue:
+      - fail:
+          msg: Maximum retries of grouped tasks reached
+        when: retry_count | int == {{ max_retry_reconnect  }}
+
+      - debug:
+          msg: "Task Group failed, attempting retry"
+
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 120
+          sleep: 30
+          delay: 30
+
+      - include_tasks: ../handlers/restart_windows.yml

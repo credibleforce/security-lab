@@ -1,2 +1,3 @@
 ---
+- include: stage.yml
 - include: create.yml

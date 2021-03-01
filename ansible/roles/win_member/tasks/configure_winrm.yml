@@ -5,9 +5,11 @@
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
     ansible_winrm_transport: ntlm
   no_log: true
-
-- name: Update Group Policy
-  win_command: gpupdate /force
+  
+- name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
+  win_shell: |
+    Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
+  when: ansible_os_name is search("Microsoft Windows 10")
 
 - name: Update WinRM to Use Autoenroll Certificate
   win_shell: |
@@ -47,12 +49,9 @@
     }else{
         write-output "Domain Certificate Not Found - Skipping"
     }
-  register: script_result
 
-- name: Display results and reboot
+- name: Reboot to complete domain membership
   debug:
-    msg:
-      - "{{ script_result }}"
-      - "Rebooting..."
+    msg: "Rebooting..."
   notify: Restart windows
   changed_when: true

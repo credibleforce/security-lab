@@ -1,8 +1,4 @@
 ---
-- name: restart splunk
-  win_service:
-    name: SplunkForwarder
-    state: restarted
-
-- name: restart machine
-  win_reboot:
+# handlers file for splunk_common
+- name: "Restart windows"
+  include_tasks: ../handlers/restart_windows.yml

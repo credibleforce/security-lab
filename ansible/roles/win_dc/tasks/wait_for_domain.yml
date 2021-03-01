@@ -1,0 +1,9 @@
+---
+- name: Wait for forest xWaitForADDomain
+  win_dsc:
+    resource_name: xWaitForADDomain
+    DomainName: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    DomainUserCredential_username: "{{ windows_domain_controller_info['domain_admin_user'] }}"
+    DomainUserCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
+    RetryCount: 100
+    RetryIntervalSec: 5
