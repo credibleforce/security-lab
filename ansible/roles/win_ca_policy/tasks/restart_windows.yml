@@ -8,7 +8,7 @@
       - name: Increment the retry count
         set_fact:
           retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
-          reboot_required: true if reboot_required is undefined else false
+          reboot_required: "{{ true if reboot_required is undefined else false }}"
 
       - name: Reboot
         win_reboot:
@@ -21,11 +21,15 @@
           timeout: 900
           sleep: 60
           delay: 120
+        register: connection_wait_time
+
+      - debug:
+          msg: "{{ inventory_hostname }} needed to wait {{ connection_wait_time.elapsed }} seconds"
 
       - name: "Check to see if our host was unreachable and assert"
         assert:
           that:
-              - <check for successful result else resuce>
+              - connection_wait_time is defined and connection_wait_time.elapsed is defined
     rescue:
       - fail:
           msg: Maximum retries of grouped tasks reached
@@ -40,4 +44,4 @@
           sleep: 30
           delay: 30
 
-      - include_tasks: ../handlers/restart_windows.yml
+      - include_tasks: restart_windows.yml
