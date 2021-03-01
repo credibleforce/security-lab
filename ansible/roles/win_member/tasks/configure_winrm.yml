@@ -5,7 +5,7 @@
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
     ansible_winrm_transport: ntlm
   no_log: true
-  
+
 - name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
   win_shell: |
     Set-Executionpolicy -ExecutionPolicy Undefined -Force -Scope LocalMachine
@@ -51,7 +51,4 @@
     }
 
 - name: Reboot to complete domain membership
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+  include: restart_windows.yml

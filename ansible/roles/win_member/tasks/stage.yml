@@ -44,7 +44,4 @@
       - "{{ script_result }}"
 
 - name: Reboot to complete computer name change
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+  include: restart_windows.yml

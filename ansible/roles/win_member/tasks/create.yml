@@ -61,7 +61,4 @@
   no_log: true
 
 - name: Reboot to complete domain membership
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+  include: restart_windows.yml

@@ -1,4 +1,1 @@
 ---
-# handlers file for splunk_common
-- name: "Restart windows"
-  include_tasks: ../handlers/restart_windows.yml

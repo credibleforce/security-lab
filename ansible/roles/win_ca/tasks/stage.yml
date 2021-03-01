@@ -5,7 +5,7 @@
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
     ansible_winrm_transport: ntlm
   no_log: true
-  
+
 - name: Stage CAPolicy.inf
   template: 
     src: ../template/capolicy.inf.j2
@@ -43,7 +43,5 @@
   register: windows_adcs
 
 - name: Reboot if installing Adcs-Cert-Authority feature requires it
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: windows_adcs.reboot_required
+  include: restart_windows.yml
+  when: windows_adcs.reboot_required

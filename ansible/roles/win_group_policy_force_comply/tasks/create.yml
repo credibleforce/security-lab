@@ -49,10 +49,10 @@
     }
   register: script_result
 
-- name: Display results and reboot
+- name: Display results
   debug:
     msg:
       - "{{ script_result }}"
-      - "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+
+- name: Reboot to complete feature setup and computer name change
+  include: restart_windows.yml

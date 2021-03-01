@@ -41,8 +41,5 @@
     ansible_winrm_transport: "{{ temp_winrm_transport }}"
 
 - name: Reboot to complete domain controller setup (as required)
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+  include: restart_windows.yml
 

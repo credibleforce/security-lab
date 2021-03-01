@@ -73,7 +73,4 @@
   register: feature_check
 
 - name: Reboot to complete feature setup and computer name change
-  debug:
-    msg: "Rebooting..."
-  notify: Restart windows
-  changed_when: true
+  include: restart_windows.yml
