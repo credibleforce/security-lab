@@ -20,8 +20,9 @@
 
       - name: Reboot
         win_reboot:
-          reboot_timeout: 120
-          post_reboot_delay: 90
+          pre_reboot_delay: 120
+          reboot_timeout: 3600
+          post_reboot_delay: 120 # your mileage may vary
         when: reboot_required == true
 
       - name: Wait for system to become reachable over WinRM

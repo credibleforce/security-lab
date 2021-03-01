@@ -1,4 +1,2 @@
 ---
-- include: stage.yml
 - include: create.yml
-- include: wait_for_domain.yml

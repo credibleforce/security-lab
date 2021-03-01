@@ -209,7 +209,9 @@
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
 - name: Script result
-  debug: var=script_result
+  debug: 
+    msg: 
+        - "{{ script_result }}"
 
 - name: Export the CA Certificate
   win_shell: |
@@ -231,7 +233,9 @@
   register: script_result
 
 - name: Script result
-  debug: var=script_result
+  debug: 
+    msg: 
+        - "{{ script_result }}"
 
 - name: Retrieve webserver pfx
   fetch: 

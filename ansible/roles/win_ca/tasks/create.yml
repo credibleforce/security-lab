@@ -5,7 +5,47 @@
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
     ansible_winrm_transport: ntlm
   no_log: true
-  
+
+- name: Stage CAPolicy.inf
+  template: 
+    src: ../template/capolicy.inf.j2
+    dest: c:\windows\CAPolicy.inf
+
+- name: Create PKI Virtual Directory
+  win_shell: |
+    $path = "c:\pki"
+    $share = Get-SmbShare -Name "pki" -ErrorAction SilentlyContinue
+
+    # remove share if exists
+    if($share -ne $null){
+        write-output "Removing existing share"
+        Remove-SmbShare -Name "pki" -Force
+    }
+
+    # remove directory if exists
+    if([System.IO.Directory]::Exists($path)){
+        write-output "Removing existing directory"
+        Remove-Item $path -Recurse -Force
+    }
+
+    # create directory and share
+    New-item -path $path –type directory
+    Write-Output "Example CPS statement" | Out-File $path\cps.txt
+    New-SMBShare -Name pki $path -FullAccess SYSTEM,"{{ windows_domain_controller_info['domain_netbios_name'] }}\Domain Admins" -ChangeAccess "{{ windows_domain_controller_info['domain_netbios_name'] }}\Cert Publishers"
+
+- name: Install ADCS with sub features and management tools
+  win_feature:
+    name: 
+      - Adcs-Cert-Authority
+      - Adcs-Enroll-Web-Pol
+    state: present
+    include_management_tools: yes
+  register: windows_adcs
+
+- name: Reboot if installing Adcs-Cert-Authority feature requires it
+  include: restart_windows.yml
+  when: windows_adcs.reboot_required
+
 - name: Add PSGallery as Trusted Powershell Repo
   win_shell: |
     if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
