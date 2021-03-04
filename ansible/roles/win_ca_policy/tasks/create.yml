@@ -35,4 +35,6 @@
   register: script_result
 
 - name: Script result
-  debug: var=script_result
+  debug: 
+    msg: 
+      - "{{ script_result }}"

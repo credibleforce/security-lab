@@ -1,5 +1,5 @@
 SYSLOGNG_OPTS=-f {{ sc4s.config.path }}/syslog-ng.conf 
-SPLUNK_HEC_URL=https://{{ sc4s.splunk.hec.server }}:{{ sc4s.splunk.hec.port }}
+SPLUNK_HEC_URL=https://{{ sc4s.splunk.hec.server }}:{{ sc4s.splunk.hec.port }}/services/collector/event
 SPLUNK_HEC_TOKEN={{ sc4s.splunk.hec.token }}
 SC4S_DEST_SPLUNK_HEC_WORKERS=6
 #Uncomment the following line if using untrusted SSL certificates

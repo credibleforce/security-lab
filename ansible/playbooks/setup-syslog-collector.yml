@@ -19,7 +19,7 @@
   tasks:
     - name: DEBUG - syslog-collector targets
       debug:
-        msg: "{{ hostvars[groups['syslog-collector'][0]] }}"
+        msg: "{{ hostvars[groups['syslog_collector'][0]] }}"
 
     - name: Run syslog-collector setup
       include_role:
@@ -30,4 +30,4 @@
         - 'lin_sc4s'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['syslog-collector']
+      when: inventory_hostname in groups['syslog_collector']

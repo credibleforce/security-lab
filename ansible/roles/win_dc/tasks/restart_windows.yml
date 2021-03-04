@@ -1,0 +1,55 @@
+---
+  - name: Current user account
+    debug:
+      msg: 
+        - "ansible_ssh_user: {{ ansible_ssh_user }}"
+        - "ansible_winrm_transport: {{ ansible_winrm_transport}}"
+
+  - name: Reboot retry wait block
+    block:
+      - name: Increment the retry count
+        set_fact:
+          retry_count: "{{ 0 if (retry_count is undefined or retry_count is none) else retry_count | int + 1 }}"
+          reboot_required: "{{ true if (reboot_required is undefined or reboot_required is none) else false }}"
+
+      - name: Reboot
+        win_reboot:
+          pre_reboot_delay: 120
+          reboot_timeout: 3600
+          post_reboot_delay: 120 # your mileage may vary
+        when: reboot_required == true
+
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 900
+          sleep: 60
+          delay: 120
+        register: connection_wait_time
+
+      - debug:
+          msg: "{{ inventory_hostname }} needed to wait {{ connection_wait_time.elapsed }} seconds"
+
+      - name: "Check to see if our host was unreachable and assert"
+        assert:
+          that:
+              - connection_wait_time is defined and connection_wait_time.elapsed is defined
+
+      - name: Reset
+        set_fact:
+          reboot_required: null
+          retry_count: null
+    rescue:
+      - fail:
+          msg: Maximum retries of grouped tasks reached
+        when: retry_count | int == 10
+
+      - debug:
+          msg: "Task Group failed, attempting retry"
+
+      - name: Wait for system to become reachable over WinRM
+        wait_for_connection:
+          timeout: 120
+          sleep: 30
+          delay: 30
+
+      - include_tasks: restart_windows.yml

@@ -35,7 +35,7 @@
 
 - name: Setting DNS Servers
   win_shell: |
-    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}"
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_forward_lookup'] | join('","') }}"
   register: script_result
 
 - name: Script result
@@ -43,25 +43,14 @@
     msg:
       - "{{ script_result }}"
 
-- name: Reboot to complete computer name change
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120
+- name: Reboot to complete feature setup and computer name change
+  include: restart_windows.yml
 
-- name: Add PSGallery as Trusted Powershell Repo
+- name: Check for xDnsServer xActiveDirectory Powershell modules
   win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
-    }
-
-# Add powershell modules
-- name: Add xActiveDirectory
-  win_shell: |
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Set-PackageSource -Name PSGallery -Trusted -Force 
     Install-Module -Name xActiveDirectory
-
-- name: Add xComputerManagement
-  win_shell: |
     Install-Module -Name xComputerManagement
 
 - name: Force Allow Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
@@ -79,6 +68,16 @@
     Remove-Item 'C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\RunWallpaperSetupInit.cmd'
   ignore_errors: yes
   when: ansible_os_name is search("Microsoft Windows 10")
+
+- name: Setting DNS Servers
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_servers'] }}"
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 # wait for domain to be available
 - name: Wait for forest xWaitForADDomain
@@ -108,11 +107,8 @@
     ansible_winrm_transport: ntlm
   no_log: true
 
-- name: Reboot to complete domain membership
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120
+- name: Reboot to complete feature setup and computer name change
+  include: restart_windows.yml
 
 - name: Disable Powershell Unrestricted Execution (required for xWaitForADDomain on Windows 10)
   win_shell: |
@@ -158,8 +154,5 @@
         write-output "Domain Certificate Not Found - Skipping"
     }
 
-- name: Reboot to complete domain membership
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120
+- name: Reboot to complete feature setup and computer name change
+  include: restart_windows.yml

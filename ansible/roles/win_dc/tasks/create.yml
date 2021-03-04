@@ -1,29 +1,36 @@
 ---
-# Add windows features
-- name: features | Installing AD Domain Services
-  win_feature: 
-    name: 
-      - RSAT-AD-AdminCenter
-      - AD-Domain-Services
-    include_management_tools: yes
-    include_sub_features: yes
-    state: present
-  register: feature_check
-
-- name: Add PSGallery as Trusted Powershell Repo
+# pre-config static dns server
+- name: Set DNS server
   win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
-    }
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "{{ windows_domain_info['dns_forward_lookup'] | join('","') }}"
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
+
+- name: Validate DNS
+  win_shell: |
+    ipconfig /all
+    [Net.DNS]::GetHostEntry("google.com")
+    Get-PSRepository
+    Get-PackageSource
+    $PSVersionTable
+    $env:PSModulePath
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 # Add powershell modules
-- name: Check for xDnsServer Powershell module
+- name: Check for xDnsServer xActiveDirectory Powershell modules
   win_shell: |
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Set-PackageSource -Name PSGallery -Trusted -Force 
     Install-Module -Name xDnsServer
-
-# Add powershell modules
-- name: Add xActiveDirectory
-  win_shell: |
     Install-Module -Name xActiveDirectory
 
 # Set static IP
@@ -55,16 +62,29 @@
     delay: 120
     timeout: 300
 
+# Add windows features
+- name: features | Installing AD Domain Services
+  win_feature: 
+    name: 
+      - RSAT-AD-AdminCenter
+      - AD-Domain-Services
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  register: feature_check
+
 - name: Reboot to complete feature setup and computer name change
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120
+  include: restart_windows.yml
 
 - name: Set DNS server
-  win_dns_client:
-    adapter_names: 'Ethernet*'
-    dns_servers: 127.0.0.1
+  win_shell: |
+    Set-DnsClientServerAddress -InterfaceAlias 'Ethernet*' -ServerAddresses "127.0.0.1"
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
 
 - name: Configure xADDomain Powershell DSC
   win_dsc:
@@ -94,10 +114,7 @@
       - "temp_winrm_transport: {{ temp_winrm_transport }}"
 
 - name: Reboot to complete domain controller setup (as required)
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120 # your mileage may vary
+  include: restart_windows.yml
 
 - name: Reset winrm to post promo config
   set_fact:

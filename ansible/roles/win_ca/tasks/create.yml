@@ -43,10 +43,7 @@
   register: windows_adcs
 
 - name: Reboot if installing Adcs-Cert-Authority feature requires it
-  win_reboot:
-    shutdown_timeout: 600
-    reboot_timeout: 3600
-    post_reboot_delay: 300
+  include: restart_windows.yml
   when: windows_adcs.reboot_required
 
 - name: Add PSGallery as Trusted Powershell Repo

@@ -171,7 +171,7 @@
 
     - name: Send test message using logger
       shell: |
-        logger -P {{ item.value.port }} {{ '-T' if (item.value.protocol == 'tcp') else '-d' }} -n {{ item.value.destination }} "{{ item.value.message }}"
+        logger -P {{ item.value.port }} {{ '-T' if (item.value.protocol == 'tcp') else '-d' }} {{ '--octet-count' if (item.value.protocol == 'tcp') }} -n {{ item.value.destination }} "{{ item.value.message }}"
       with_dict: "{{ sc4s.test }}"
 
 

@@ -15,7 +15,7 @@
     gpupdate /force
     
     # get thumbprint for the domain certificate
-    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object * -First 1
+    $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}" -and $_.Subject -Match "CN=${env:COMPUTERNAME},.* DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object * -First 1
     write-output ("Found Thumbprint: {0}" -f $thumbprint.Thumbprint)
 
     # only replace if autoenroll certificate found
@@ -49,12 +49,10 @@
     }
   register: script_result
 
-- name: Script result
-  debug: var=script_result
+- name: Display results
+  debug:
+    msg:
+      - "{{ script_result }}"
 
-- name: Reboot to complete group policy compliance (NETWORK SERVICE => Event Log Readers)
-  win_reboot:
-    pre_reboot_delay: 120
-    reboot_timeout: 3600
-    post_reboot_delay: 120
-
+- name: Reboot to complete feature setup and computer name change
+  include: restart_windows.yml
