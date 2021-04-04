@@ -14,22 +14,22 @@
     name: splunk
     state: present
   when:
-    - getent_groups.ansible_facts.getent_group.splunk is not defined 
-    - inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+    - getent_groups.ansible_facts.getent_group.splunk is not defined
+    - 'splunk' in groups and inventory_hostname in groups['splunk'] and ((not 'splunk_universal_forwarder' in groups) or ('splunk_universal_forwarder' in groups and not inventory_hostname in groups['splunk_universal_forwarder']))
   become: yes
 
 - name: Create a splunk user
   user:
     name: splunk
-    groups: # Empty by default, here we give it some groups
+    groups:                # Empty by default, here we give it some groups
       - splunk
     state: present
     shell: /bin/bash       # Defaults to /bin/bash
     expires: 1             # Expire Account
-    system: no             # Defaults to no
-    createhome: yes        # Defaults to yes
+    system: true             # Defaults to no
+    createhome: true        # Defaults to yes
     home: /home/splunk     # Defaults to /home/<username>
   when:
-    - getent_groups.ansible_facts.getent_passwd.splunk is not defined 
-    - inventory_hostname in groups['splunk'] and not inventory_hostname in groups['splunk_universal_forwarder']
+    - getent_groups.ansible_facts.getent_passwd.splunk is not defined
+    - 'splunk' in groups and inventory_hostname in groups['splunk'] and ((not 'splunk_universal_forwarder' in groups) or ('splunk_universal_forwarder' in groups and not inventory_hostname in groups['splunk_universal_forwarder']))
   become: yes
