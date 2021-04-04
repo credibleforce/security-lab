@@ -16,7 +16,7 @@
       state: present
     when:
       - getent_groups.ansible_facts.getent_group.splunk is not defined 
-    
+
 
   - name: Create a splunk user
     become: yes

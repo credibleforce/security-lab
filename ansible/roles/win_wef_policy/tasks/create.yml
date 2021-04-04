@@ -57,7 +57,7 @@
   win_shell: |
     $Domain_OU = "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
     $DC_OU = "OU=Domain Controllers,DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
-    
+
     $GPOName = 'Windows Event Forwarding Server'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\wef_configuration" -TargetName $GPOName -CreateIfNeeded
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU

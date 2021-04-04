@@ -11,8 +11,8 @@
 
 - hosts: windows
   vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
+    - ../vars/vars.yml
+  gather_facts: true
   strategy: free
   environment:
   pre_tasks:

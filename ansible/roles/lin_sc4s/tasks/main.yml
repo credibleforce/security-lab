@@ -111,7 +111,7 @@
         dest: "{{ sc4s.config.path }}"
         remote_src: yes
       become: yes
-    
+
     - name: Setup preconfig for sc4s  
       template: 
         src: 'preconfig.sh.j2'
@@ -150,18 +150,18 @@
         setype: http_port_t
         state: present  
       become: yes
-    
+
     - name: Setup service for sc4s 
       template: 
         src: 'sc4s.service.j2'
         dest: "{{ sc4s.service.path }}"
       become: yes
-    
+
     - name: Reload systemd daemons
       systemd:
         daemon_reload: yes
       become: yes
-    
+
     - name: Enable sc4s service and restart
       systemd:
         name: "{{ sc4s.service.name }}"

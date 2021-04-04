@@ -19,12 +19,12 @@
         group: "{{ syslog.group }}"
         mode: 0755
       become: yes
-    
+
     - name: Reload systemd daemons
       systemd:
         daemon_reload: yes
       become: yes
-    
+
     - name: Enable rsyslog service and restart
       systemd:
         name: "{{ syslog.service.name }}"

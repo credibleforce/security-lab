@@ -13,7 +13,7 @@
   win_shell: |
     # force gpupdate
     gpupdate /force
-    
+
     # get thumbprint for the domain certificate
     $thumbprint = Get-ChildItem  -Path Cert:\LocalMachine\MY | Where-Object {$_.Issuer -Match "CN={{ windows_certificate_authority_info['CACommonName'] }}, DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}" -and $_.Subject -Match "CN=${env:COMPUTERNAME},.* DC={{ windows_domain_controller_info['dns_domain_name']| replace('.', ', DC=') }}"} | Select-Object * -First 1
     write-output ("Found Thumbprint: {0}" -f $thumbprint.Thumbprint)

@@ -59,6 +59,6 @@ all:
           vars:
           hosts: 
             win16-wef1:
-    
+
 
     

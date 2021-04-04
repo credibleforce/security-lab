@@ -5,7 +5,7 @@
     ansible_ssh_pass: "{{ windows_domain_controller_info.domain_admin_password }}"
     ansible_winrm_transport: ntlm
   no_log: true
-    
+
 # - name: Download NSA Subscription Templates
 #   win_shell: |
 #     #download zip with all NSA samples
@@ -76,17 +76,17 @@
     Invoke-WebRequest -UseBasicParsing -Uri https://go.microsoft.com/fwlink/p/?LinkID=2033908 -OutFile "$OutputFolder\SDKRS5_Setup.exe"
     #Install SDK RS5
     Start-Process -Wait -FilePath "$OutputFolder\SDKRS5_Setup.exe" -ArgumentList "/features OptionId.DesktopCPPx64 /quiet"
-    
+
 # - name: Custom Event Channel - Create the Manifest
 #   win_shell: |
 #     $OutputFolder="C:\WEC"
 #     $CustomEventChannelsFileName="CustomEventChannels"
-    
+
 #     #some neccessaries
 #     $ManifestFileName = '{0}.man' -f $CustomEventChannelsFileName
 #     $ResourceFileName = 'C:\Windows\system32\{0}.dll' -f $CustomEventChannelsFileName
 #     $message = '$(string.Custom Forwarded Events.event.100.message)' 
-    
+
 #     #Events definition - based on palantir
 #     $EventsArray = @(
 #         @{
@@ -373,17 +373,17 @@
 #             )
 #         }
 #     )
-    
+
 #     #Generate XML
 #     $EventsArrayFinal = foreach ($Event in $EventsArray) {
 #         $channels = foreach ($channel in $Event.Channels) {
 #         @"
-    
+
 #                         <channel name="$($Channel.ChannelName)" chid="$($Channel.ChannelchID)" symbol="$($Channel.ChannelSymbol)" type="Operational" enabled="true"></channel>
 #     "@
 #         }
 #         @"
-    
+
 #                 <provider name="$($Event.EventProviderName)" guid="{$($Event.EventGUID)}" symbol="$($Event.EventSymbol)" resourceFileName="$($Event.EventResourceFileName)" messageFileName="$($Event.EventResourceFileName)">
 #                     <events>
 #                         <event symbol="DUMMY_EVENT" value="100" version="0" template="DUMMY_TEMPLATE" message="$message"></event>
@@ -419,21 +419,21 @@
 #         </localization>
 #     </instrumentationManifest>
 #     "@
-    
+
 #     #write XML
 #     Set-Content -Value $content -Path (Join-Path -Path $OutputFolder -ChildPath $ManifestFileName) -Encoding ASCII
-    
+
 - name: Custom Event Channel - Compile the Custom Event Channel dll
   win_shell: |
     $OutputFolder="C:\WEC"
-    
+
     #Create output folder if does not exist
     if(!([System.IO.File]::Exists($OutputFolder))) { 
         New-Item $OutputFolder -ItemType Directory -ErrorAction SilentlyContinue
     }
 
     $ManifestFile = "$env:USERPROFILE\Downloads\windows-event-forwarding-master\windows-event-channels\CustomEventChannels.man"
-    
+
     #Create Man file or run setup
     #Variables
     $CustomEventChannelsFileName="CustomEventChannels"
@@ -442,7 +442,7 @@
     $CustomEventChannelsFileName="CustomEventChannels"
     $ToolsPath="C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64"
     $dotNetPath="C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
-    
+
     # User Palantir Manifest File
     Copy-Item "$ManifestFile" "$OutputFolder\$CustomEventChannelsFileName.man"
 
@@ -450,22 +450,22 @@
     Start-Process -Wait -FilePath "$ToolsPath\mc.exe" -ArgumentList "-css CustomEventChannels.DummyEvent  $OutputFolder\$CustomEventChannelsFileName.man" -WorkingDirectory $OutputFolder
     Start-Process -Wait -FilePath "$ToolsPath\rc.exe" -ArgumentList "$OutputFolder\$CustomEventChannelsFileName.rc"
     Start-Process -Wait -FilePath "$dotNetPath\csc.exe" -ArgumentList "/win32res:$OutputFolder\$CustomEventChannelsFileName.res /unsafe /target:library /out:$OutputFolder\$CustomEventChannelsFileName.dll"
-    
+
     #Some variables
     $CollectorServerName="Collector"
     $CustomEventChannelsFileName="CustomEventChannels"
     $CustomEventsFilesLocation="$OutputFolder"
-    
+
     #configure Event Forwarding on collector server
     WECUtil qc /q
-    
+
     #Create custom event forwarding logs
     Stop-Service Wecsvc
     #unload current event channnel (commented as there is no custom manifest)
     if([System.IO.File]::Exists($CustomEventChannelsFileName.man)) {
         wevtutil um C:\windows\system32\$CustomEventChannelsFileName.man
     }
-    
+
     #copy new man and dll
     $files="$CustomEventChannelsFileName.dll","$CustomEventChannelsFileName.man"
     $Path="$CustomEventsFilesLocation"

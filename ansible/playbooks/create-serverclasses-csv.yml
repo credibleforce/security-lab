@@ -12,6 +12,6 @@
           {% endfor %}
           {% endfor %}
         dest: /tmp/lab_inventory.csv
-        backup: yes
-      run_once: yes
+        backup: true
+      run_once: true
       delegate_to: localhost

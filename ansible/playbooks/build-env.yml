@@ -21,8 +21,8 @@
 
 - hosts: all
   vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
+    - ../vars/vars.yml
+  gather_facts: true
   environment:
   pre_tasks:
     # splunk universal forwarder variables
@@ -36,12 +36,12 @@
     - name: Deploy common tasks to all
       include_role:
         name: ../roles/common
-    
+
     #  build importable inventory for splunk serverclasses.conf (copied over during splunk build)
     - name: Build serverclasses inventory
       include_role:
         name: create_serverclasses_csv
-    
+
     # setup domain controller
     - name: Windows Domain Controllers Setup
       include_role:
@@ -91,7 +91,7 @@
       loop_control:
         loop_var: rolevar
       when: groups.member_server is defined and inventory_hostname in groups['member_server']
-    
+
     # request certificates
     - name: Request and export required certificates from the CA
       include_role:
@@ -167,8 +167,8 @@
 # force all node to comply with group policy, install sysmon and reboot (note: strategy free)
 - hosts: windows
   vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
+    - ../vars/vars.yml
+  gather_facts: true
   strategy: free
   environment:
   pre_tasks:
@@ -188,7 +188,7 @@
 # - hosts: suricata
 #   vars_files:
 #     - ../vars/vars.yml
-#   gather_facts: True
+#   gather_facts: true
 #   strategy: free
 #   environment:
 #   pre_tasks:
@@ -205,19 +205,16 @@
 - hosts: syslog_collector
   vars_files:
     - ../vars/vars.yml
-  gather_facts: True
+  gather_facts: true
   strategy: free
   environment:
   pre_tasks:
   post_tasks:
   tasks:
     - name: Run syslog_collector setup
-      include_role: 
+      include_role:
         name: '{{ rolevar }}'
       loop:
         - 'lin_sc4s'
       loop_control:
         loop_var: rolevar
-
-   
-  

@@ -11,8 +11,8 @@
 
 - hosts: all
   vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
+    - ../vars/vars.yml
+  gather_facts: true
   environment:
   pre_tasks:
   post_tasks:
@@ -27,5 +27,3 @@
       loop_control:
         loop_var: rolevar
       when: inventory_hostname in groups['splunk']
-   
-  

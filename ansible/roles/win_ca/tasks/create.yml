@@ -230,7 +230,7 @@
     $t.Template.SetInfo()
     $t = addTemplateAcl -Template $t.Template -User "RAS and IAS Servers" -Read $true -Enroll $true -AutoEnroll $true
     publishTemplate -Template $t.Template -ConfigContext $cc
-    
+
     "Workstation Authentication","Domain Controller Authentication" | % { 
       $t = copyTemplate -NewTemplateName "$_ Policy" -SourceTemplateName $_ -ConfigContext $cc
       $t.Template.put("pKICriticalExtensions",$p)
@@ -242,5 +242,5 @@
       if($_ -eq "Workstation Authentication") { $t = addTemplateAcl -Template $t.Template -User "Domain Computers" -Read $true -Enroll $true -AutoEnroll $true }
       publishTemplate -Template $t.Template -ConfigContext $cc
     }
-    
+
     restart-service certsvc

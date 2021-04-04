@@ -31,7 +31,7 @@
     Name: DNSServerProperties
     NoRecursion: false
     Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
-    
+
 # add a records
 - name: Configure Splunk DNS
   win_dsc:

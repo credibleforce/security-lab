@@ -14,7 +14,7 @@
     If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
         Write-Host "Downloading Splunk Universal Forwarder"
         $msiFile = $env:Temp + "\splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi"
-    
+
         Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing & Starting Splunk"
         [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
         #(New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=7.3.4.2/windows/splunkforwarder-7.3.4.2-cb574b3d103e-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.3.4.2&product=universalforwarder&typed=release', $msiFile)

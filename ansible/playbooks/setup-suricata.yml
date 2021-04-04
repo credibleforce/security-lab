@@ -21,8 +21,8 @@
 
 - hosts: suricata
   vars_files:
-    - ../vars/vars.yml 
-  gather_facts: True
+    - ../vars/vars.yml
+  gather_facts: true
   environment:
   pre_tasks:
     # splunk universal forwarder variables
@@ -36,7 +36,7 @@
     - name: Deploy common tasks to all
       include_role:
         name: ../roles/common
-    
+
     # suricata
     - name: Suricata Install
       include_role:

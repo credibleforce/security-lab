@@ -12,7 +12,7 @@
 - hosts: all
   vars_files:
     - ../vars/vars.yml
-  gather_facts: True
+  gather_facts: true
   environment:
   pre_tasks:
   post_tasks:
