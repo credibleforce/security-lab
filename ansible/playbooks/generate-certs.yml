@@ -24,7 +24,7 @@
         - 'win_certreq'
       loop_control:
         loop_var: rolevar
-      when: 'certificate_authority' in groups and inventory_hostname in groups['certificate_authority']
+      when: groups.certificate_authority is defined and inventory_hostname in groups['certificate_authority']
 
     - name: Prep the certificates for use in splunk
       include_role:
