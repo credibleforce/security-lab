@@ -27,9 +27,10 @@
 # setup forwarding
 - name: Configure DNS Forwarders
   win_dsc:
-    resource_name: xDnsServerSetting
-    NoRecursion: false
-    Forwarders: "8.8.8.8"
+    resource_name: xDnsServerForwarder
+    Name: DnsServerForwarder
+    UseRootHint: false
+    IPAddresses: "{{ windows_domain_info['dns_forward_lookup'] }}"
 
 # add a records
 - name: Configure Splunk DNS
