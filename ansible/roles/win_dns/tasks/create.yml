@@ -28,7 +28,7 @@
 - name: Configure DNS Forwarders
   win_dsc:
     resource_name: xDnsServerForwarder
-    Name: DnsServerForwarder
+    Name: SetForwarders
     UseRootHint: false
     IPAddresses: "{{ windows_domain_info['dns_forward_lookup'] }}"
 
