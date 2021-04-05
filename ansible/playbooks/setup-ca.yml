@@ -29,7 +29,7 @@
     - name: Universal Forwarder Variable
       include_vars: ../vars/splunk_universal_forwarder.yml
       when:
-        - inventory_hostname in groups['splunk_universal_forwarder']
+        - 'splunk_universal_forwarder' in groups and inventory_hostname in groups['splunk_universal_forwarder']
   post_tasks:
   tasks:
     # all
@@ -45,4 +45,4 @@
         - 'win_ca'
       loop_control:
         loop_var: rolevar
-      when: inventory_hostname in groups['certificate_authority']
+      when: 'certificate_authority' in groups and inventory_hostname in groups['certificate_authority']

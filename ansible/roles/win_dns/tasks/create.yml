@@ -15,8 +15,8 @@
 
 - name: Add PSGallery as Trusted Powershell Repo
   win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){
+      Set-PackageSource -Name PSGallery -Trusted -Force
     }
 
 # Add powershell modules
@@ -67,5 +67,4 @@
       -EnableLoggingForServerStartStopEvent $true `
       -EnableLoggingForTombstoneEvent $true `
       -EnableLoggingForZoneDataWriteEvent $true `
-      -EnableLoggingForZoneLoadingEvent $true 
-  
+      -EnableLoggingForZoneLoadingEvent $true
