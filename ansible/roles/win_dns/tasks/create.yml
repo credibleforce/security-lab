@@ -22,13 +22,12 @@
 # Add powershell modules
 - name: Check for xDnsServer Powershell module
   win_shell: |
-    Install-Module -Name xDnsServer
+    Install-Module -Name xDnsServerDsc
 
 # setup forwarding
 - name: Configure DNS Forwarders
   win_dsc:
     resource_name: xDnsServerSetting
-    Name: DnsServer
     NoRecursion: false
     Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
 
