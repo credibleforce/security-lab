@@ -44,7 +44,7 @@
 
     Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
     $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
-    $PolicySettings[1].ValueData="Server=http://${script:WEFServer}:5985/wsman/SubscriptionManager/WEC,Refresh=60"
+    $PolicySettings[1].ValueData="Server=https://${script:WEFServer}:5986/wsman/SubscriptionManager/WEC,Refresh=60"
     Append-RegistryPolicies -RegistryPolicies $PolicySettings -Path "$script:policyPath\registry.pol.tmp"
 
     Remove-Item -Force "$script:policyPath\registry.pol.bak"
@@ -85,6 +85,6 @@
   register: script_result
 
 - name: Script result
-  debug: 
-    msg: 
+  debug:
+    msg:
       - "{{ script_result }}"
