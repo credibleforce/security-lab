@@ -28,7 +28,6 @@
 - name: Configure DNS Forwarders
   win_dsc:
     resource_name: xDnsServerSetting
-    Name: DNSServerProperties
     NoRecursion: false
     Forwarders: "{{ windows_domain_info['dns_forward_lookup'] }}"
 
