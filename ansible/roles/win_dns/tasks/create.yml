@@ -29,7 +29,9 @@
   win_dsc:
     resource_name: xDnsServerSetting
     NoRecursion: false
-    Forwarders: windows_domain_info['dns_forward_lookup']
+    Forwarders: 
+      - windows_domain_info['dns_forward_lookup'][0]
+      - windows_domain_info['dns_forward_lookup'][1]
 
 # add a records
 - name: Configure Splunk DNS
