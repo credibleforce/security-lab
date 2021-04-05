@@ -30,6 +30,7 @@
     resource_name: xDnsServerForwarder
     UseRootHint: false
     IPAddresses: "{{ windows_domain_info['dns_forward_lookup'] }}"
+    IsSingleInstance: true
 
 # add a records
 - name: Configure Splunk DNS
