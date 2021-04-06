@@ -6,4 +6,4 @@
     group: "{{ splunk.group }}"
     recurse: yes
   become: yes
-  when: 'splunk' in groups and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
+  when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
