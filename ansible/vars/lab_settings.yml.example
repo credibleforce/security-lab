@@ -1,4 +1,4 @@
-# should be passed into the play or template run
+# should be passed into the play or template run as extra vars
 lab:
     settings:
         kali:
@@ -27,3 +27,4 @@ lab:
         splunk:
             ansible_ssh_user: centos
             admin_password: changeme
+            splunkbase_token: xxx-xxxx-xxx-xxxx
