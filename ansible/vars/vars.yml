@@ -11,7 +11,7 @@ windows_domain_controller_info:
   dns_domain_name: "{{ lab.settings.windows.internal_domain }}"
   domain_netbios_name: "{{ lab.settings.windows.win_netbios_domain }}"
   domain_admin_password: "{{ lab.settings.windows.win_admin_password }}"
-  domain_admin_user: "{{ lab.settings.windows.win_admin_user }}"
+  domain_admin_user: "{{ lab.settings.windows.win_admin_user }}@{{ lab.settings.windows.internal_domain }}"
   safe_mode_username: "{{ lab.settings.windows.win_admin_user }}"
   safe_mode_password: "{{ lab.settings.windows.win_admin_password }}"
   state: domain_controller
