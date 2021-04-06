@@ -29,22 +29,42 @@
 # serverCert = splunk.pem
 # sslRootCAPath = /opt/splunk/etc/auth/labCA.pem
 
-- name: Create key from pfx
+- name: Create splunk key from pfx
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ item }}.key"
-  with_items: 
+  with_items:
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
-- name: Create cert from pfx
+- name: Create ansible key from pfx
+  shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -nocerts -passin pass: -passout pass:password | openssl rsa -passin pass:password -passout pass: -out /tmp/{{ item }}.key"
+  with_items:
+    - "{{ groups['ansible'] | difference(groups['windows']) }}"
+
+- name: Create splunk cert from pfx
   shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ item }}.crt"
-  with_items: 
+  with_items:
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
-- name: Create encrypted key in pem format
+- name: Create ansible cert from pfx
+  shell: "openssl pkcs12 -in /tmp/{{ item }}.pfx -passin pass: -clcerts -nokeys -out /tmp/{{ item }}.crt"
+  with_items:
+    - "{{ groups['ansible'] | difference(groups['windows']) }}"
+
+- name: Create encrypted splunk key in pem format
   shell: "openssl rsa -in /tmp/{{ item }}.key -aes256 -passout pass:password -out /tmp/{{ item }}.pem"
-  with_items: 
+  with_items:
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
 
-- name: Bundle crt, key and pem
+- name: Create encrypted ansible key in pem format
+  shell: "openssl rsa -in /tmp/{{ item }}.key -aes256 -passout pass:password -out /tmp/{{ item }}.pem"
+  with_items:
+    - "{{ groups['ansible'] | difference(groups['windows']) }}"
+
+- name: Bundle splunk crt, key and pem
   shell: "cat /tmp/{{ item }}.crt /tmp/{{ item }}.pem /tmp/cacert.pem > /tmp/{{ item }}-bundle.pem"
-  with_items: 
+  with_items:
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
+
+- name: Bundle ansible crt, key and pem
+  shell: "cat /tmp/{{ item }}.crt /tmp/{{ item }}.pem /tmp/cacert.pem > /tmp/{{ item }}-bundle.pem"
+  with_items:
+    - "{{ groups['ansible'] | difference(groups['windows']) }}"
