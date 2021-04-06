@@ -8,13 +8,13 @@
 
 - name: Copy GPO policy to domain controller
   win_copy:
-      src: ../files/GPO
-      dest: c:\
+    src: ../files/GPO
+    dest: c:\
 
 - name: Add PSGallery as Trusted Powershell Repo
   win_shell: |
-    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){ 
-      Set-PackageSource -Name PSGallery -Trusted -Force 
+    if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){
+      Set-PackageSource -Name PSGallery -Trusted -Force
     }
 
 - name: Update wef policy with wef server name
@@ -40,7 +40,7 @@
         [System.BitConverter]::GetBytes($script:REGISTRY_FILE_VERSION) | Add-Content -Path $Path -Encoding Byte
     }
 
-    Remove-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp" 
+    Remove-Item -ErrorAction Ignore -Force "$script:policyPath\registry.pol.tmp"
 
     Create-GPRegistryPolicyFile -Path "$script:policyPath\registry.pol.tmp"
     $PolicySettings = Parse-PolFile -Path "$script:policyPath\registry.pol"
