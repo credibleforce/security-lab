@@ -1,0 +1,29 @@
+# should be passed into the play or template run
+lab:
+    settings:
+        kali:
+            ansible_ssh_user: kali
+        centos:
+            ansible_ssh_user: centos
+        windows:
+            internal_domain: internal.domain
+            win_dns_domain: internal.domain
+            win_netbios_domain: INTERNAL
+            win_admin_user: administrator
+            win_admin_password: changeme
+            win_ca_common_name: INTERNAL-PKI
+            lab_base_tld: internal
+            lab_base_name: domain
+            ansible_connection: winrm
+            ansible_ssh_port: 5986
+            ansible_ssh_user: administrator
+            ansible_ssh_pass: changeme
+            ansible_winrm_transport: ntlm
+            ansible_winrm_server_cert_validation: ignore
+            ansible_winrm_read_timeout_sec: 600
+        ansible:
+            ansible_ssh_user: centos
+            admin_password: changeme
+        splunk:
+            ansible_ssh_user: centos
+            admin_password: changeme

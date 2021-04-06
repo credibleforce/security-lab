@@ -18,7 +18,7 @@ Ansible build of splunk demo environment.
 5. Change directory to ansible-deployment folder `cd lab-ansible`
 6. Update `hosts` and `vars/vars.yml` as required
 7. Update the `playbooks/build-env.yml` playbook as required
-8. Run `anisble-playbook -i hosts playbooks/build-env.yml`
+8. Run `anisble-playbook -i hosts playbooks/build-env.yml --extra-vars "@vars_base.yml`
 
 **Testing**:
 

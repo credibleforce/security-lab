@@ -1,3 +1,4 @@
 .DS_Store
 *.retry
 *.log
+ansible/vars/vars_base.yml
