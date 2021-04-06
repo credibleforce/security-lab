@@ -40,8 +40,18 @@
     Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     Target: "{{ hostvars[item].ansible_default_ipv4.address }}"
     Type: ARecord
-  when: hostvars[item].ansible_default_ipv4 is defined
+  when: group.splunk is defined and hostvars[item].ansible_default_ipv4 is defined
   with_items: "{{ groups['splunk'] }}"
+
+- name: Configure Ansible DNS
+  win_dsc:
+    resource_name: xDnsRecord
+    Name: "{{ item.split('.')[0] | lower }}"
+    Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
+    Target: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    Type: ARecord
+  when: group.ansible is defined and hostvars[item].ansible_default_ipv4 is defined
+  with_items: "{{ groups['ansible'] }}"
 
 
 # enable dns debug eos_logging
