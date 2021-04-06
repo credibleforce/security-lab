@@ -237,13 +237,21 @@
     msg: 
         - "{{ script_result }}"
 
-- name: Retrieve webserver pfx
+- name: Retrieve splunk webserver pfx
   fetch: 
     src: "{{ splunk_certs['export_dir'] }}\\{{ item }}.pfx" 
     dest: "/tmp/{{ item }}.pfx"
     flat: yes
   with_items: 
     - "{{ groups['splunk'] | difference(groups['windows']) }}"
+
+- name: Retrieve ansible webserver pfx
+  fetch: 
+    src: "{{ splunk_certs['export_dir'] }}\\{{ item }}.pfx" 
+    dest: "/tmp/{{ item }}.pfx"
+    flat: yes
+  with_items: 
+    - "{{ groups['ansible'] | difference(groups['windows']) }}"
 
 - name: Retrieve ca cert pem
   fetch: 
