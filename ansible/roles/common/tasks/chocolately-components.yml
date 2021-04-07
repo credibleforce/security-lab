@@ -1,6 +1,22 @@
 ---
 - name: Install Chocolately via Powershell
-  win_shell: "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))"
+  win_shell: |
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
+
 - name: Install notepadplusplus
   win_chocolatey:
     name: notepadplusplus
+    state: present
+
+- name: Install office365business
+  win_chocolatey:
+    name: office365business
+    package_params: '/productid:O365HomePremRetail'
+    install_args: '/exclude:"Access Groove Lync OneDrive OneNote Outlook Publisher" /updates:"FALSE" /eula:"FALSE"'
+    state: present

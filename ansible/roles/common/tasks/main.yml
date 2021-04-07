@@ -7,8 +7,10 @@
     when: ansible_distribution is search ('Microsoft')
   - include: ensure-winrm-http-listener.yml
     when: ansible_distribution is search ('Microsoft')
-  #- include: chocolately-components.yml
-  #  when: ansible_distribution is search ('Microsoft')
+  - include: chocolately-components.yml
+    when: 
+      - ansible_distribution is search ('Microsoft')
+      - groups.win10 is defined and inventory_hostname in groups['win10']
   #- include: disable-windows-defender.yml
   #  when: ansible_distribution is search ('Microsoft')
   #- include: install-visual-c++.yml
