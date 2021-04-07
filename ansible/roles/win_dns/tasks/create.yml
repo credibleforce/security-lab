@@ -40,7 +40,7 @@
     Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     Target: "{{ hostvars[item].ansible_ip_addresses | select('match','\\d+\\.\\d+\\.\\d+\\.\\d+') | list | first }}"
     Type: ARecord
-  when: group.splunk is defined and hostvars[item].ansible_ip_addresses is defined
+  when: groups.splunk is defined and hostvars[item].ansible_ip_addresses is defined
   with_items: "{{ groups['splunk'] }}"
 
 - name: Configure Ansible DNS
@@ -50,7 +50,7 @@
     Zone: "{{ windows_domain_controller_info['dns_domain_name'] }}"
     Target: "{{ hostvars[item].ansible_ip_addresses | select('match','\\d+\\.\\d+\\.\\d+\\.\\d+') | list | first }}"
     Type: ARecord
-  when: group.ansible is defined and hostvars[item].ansible_ip_addresses is defined
+  when: groups.ansible is defined and hostvars[item].ansible_ip_addresses is defined
   with_items: "{{ groups['ansible'] }}"
 
 
