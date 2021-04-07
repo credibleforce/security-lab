@@ -11,12 +11,15 @@
 
 - name: Install notepadplusplus
   win_chocolatey:
-    name: notepadplusplus
+    name: "{{ item }}"
     state: present
+  with_items:
+    - notepadplusplus
+    - googlechrome
+    - microsoft-edge
 
 - name: Install office365business
   win_chocolatey:
     name: office365business
-    package_params: '/productid:O365HomePremRetail'
-    install_args: '/exclude:"Access Groove Lync OneDrive OneNote Outlook Publisher" /updates:"FALSE" /eula:"FALSE"'
+    package_params: /productid:O365HomePremRetail /exclude:"Access,Groove,Lync OneDrive OneNote Outlook Publisher" /language:"en-US" /updates:"FALSE" /eula:"FALSE"
     state: present
