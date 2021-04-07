@@ -60,7 +60,7 @@
         - 'win_dns'
       loop_control:
         loop_var: rolevar
-      when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
 
     # certificate_authority group only
     - name: Windows Enterprise PKI
