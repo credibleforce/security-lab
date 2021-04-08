@@ -128,4 +128,3 @@
     DomainUserCredential_password: "{{ windows_domain_controller_info['domain_admin_password'] }}"
     RetryCount: 100
     RetryIntervalSec: 5
-
