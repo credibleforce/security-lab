@@ -541,6 +541,21 @@
     msg:
       - "{{ script_result }}"
 
+- name: Update logsize to 1GB for WEC logs
+  win_shell: |
+    $targetLogs = $(Get-WinEvent -ListLog WEC* | select-object * | Where-object { $_.LogName -match "WEC-Authentication|WEC-Powershell|WEC-Process-Execution|WEC-Services|WEC-WMI|WEC2-Application-Crashes|WEC2-Object-Manipulation|WEC2-Registry|WEC2-Task-Scheduler|WEC3-Account-Management|WEC3-External-Devices|WEC3-Firewall|WEC3-Windows-Diagnostics|WEC4-Bits-Client|WEC4-DNS|WEC4-Shares|WEC4-System-Time-Change|WEC5-Log-Deletion-Security|WEC5-Log-Deletion-System|WEC5-MSI-Packages|WEC5-Operating-System|WEC6-Exploit-Guard|WEC6-Sysmon|WEC7-Active-Directory|WEC7-Privilege-Use|WEC7-Terminal-Services" })
+    $targetLogs | % {
+        $logFile = New-Object System.Diagnostics.Eventing.Reader.EventLogConfiguration $_.LogName 
+        $logFile.MaximumSizeInBytes = 1073741824 
+        $logFile.SaveChanges() 
+    }
+  register: script_result
+
+- name: Script result
+  debug:
+    msg:
+      - "{{ script_result }}"
+
 - name: Update wsman acls
   win_shell: |
     $result = Start-Process -FilePath "netsh" -ArgumentList "http delete urlacl url=http://+:5985/wsman/" -Wait
