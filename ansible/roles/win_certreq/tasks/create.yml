@@ -232,7 +232,7 @@
         $Hostname = $FQDN.split('.')[0]
         write-output $("Hostname: {0}" -f $Hostname) | out-file -Append $logFile
         # Create the export folder
-        $OutputFolder = "{{ splunk_certs['export_dir'] }}"
+        $OutputFolder = "{{ ansible_certs['export_dir'] }}"
         write-output $("OutputFolder: {0}" -f $OutputFolder) | out-file -Append $logFile
         #Create output folder if does not exist
         if(!([System.IO.File]::Exists($OutputFolder))) { 
@@ -251,11 +251,11 @@
         $CertExportDirectoy=$OutputFolder
         $SAN = "dns=$FQDN"
         $CN = "$Hostname"
-        $Country = "{{ splunk_certs['country'] }}"
-        $State = "{{ splunk_certs['state'] }}"
-        $City = "{{ splunk_certs['city'] }}"
-        $Organisation = "{{ splunk_certs['org'] }}"
-        $OU = "{{ splunk_certs['ou'] }}"
+        $Country = "{{ ansible_certs['country'] }}"
+        $State = "{{ ansible_certs['state'] }}"
+        $City = "{{ ansible_certs['city'] }}"
+        $Organisation = "{{ ansible_certs['org'] }}"
+        $OU = "{{ ansible_certs['ou'] }}"
         $TemplateName = $Template.Name.ToString()
         $Signature = '$Windows NT$' 
 
@@ -294,7 +294,7 @@
         # create request
         $file = @"
     [Version]
-    Signature= "$Signature" 
+    Signature= "$Signature"
 
     [NewRequest]
     Subject = "CN=$CN, $DefaultNamingContext"
@@ -454,7 +454,7 @@
 
 - name: Retrieve ansible webserver pfx
   fetch: 
-    src: "{{ splunk_certs['export_dir'] }}\\{{ item }}.pfx" 
+    src: "{{ ansible_certs['export_dir'] }}\\{{ item }}.pfx" 
     dest: "/tmp/{{ item }}.pfx"
     flat: yes
   with_items: 

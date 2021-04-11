@@ -1,59 +1,97 @@
 ---
-- name: Creates directory
+# splunk certs
+- name: Creates splunk directory
   file:
     path: "{{ splunk_certs.splunk_certs_dir }}"
     state: directory
     recurse: true
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
-- name: Copy cert to server
-  copy: 
-    src: "/tmp/{{ inventory_hostname }}.crt" 
+- name: Copy splunk cert to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}.crt"
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.crt"
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
-- name: Copy private key to server
-  copy: 
-    src: "/tmp/{{ inventory_hostname }}.key" 
+- name: Copy splunk private key to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}.key"
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
-- name: Copy pem bundle to server
-  copy: 
-    src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
+- name: Copy splunk pem bundle to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}-bundle.pem"
     dest: "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
-- name: Copy pem bundle to server
-  copy: 
-    src: "/tmp/{{ inventory_hostname }}-bundle.pem" 
+- name: Copy splunk pem bundle to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}-bundle.pem"
     dest: "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
-- name: Copy ca cert pem to server
-  copy: 
-    src: "/tmp/cacert.pem" 
+- name: Copy splunk ca cert pem to server
+  copy:
+    src: "/tmp/cacert.pem"
     dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
-  become: yes
+  become: true
+  when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
+  
+- name: Restrict access to splunk cert material
+  file:
+    path: "{{ item }}"
+    mode: '0400'
+  with_items:
+    - "{{ splunk_certs.splunk_certs_dir }}/splunk.crt"
+    - "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
+    - "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
+    - "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
 - name: Copy ca cert pem to server
-  copy: 
+  copy:
     src: "/tmp/cacert.pem" 
     dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
-  become: yes
+  become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
+# ansible awx cert
+- name: Copy ansible cert to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}.crt"
+    dest: "{{ ansible_certs.ansible_certs_dir }}/awx.crt"
+  become: true
+  when: groups.ansible is defined and inventory_hostname in groups['ansible']
+
+- name: Copy splunk private key to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}.key"
+    dest: "{{ ansible_certs.ansible_certs_dir }}/awx.key"
+  become: true
+  when: groups.ansible is defined and inventory_hostname in groups['ansible']
+
+- name: Copy splunk pem bundle to server
+  copy:
+    src: "/tmp/{{ inventory_hostname }}-bundle.pem"
+    dest: "{{ ansible_certs.ansible_certs_dir }}/awx.pem"
+  become: true
+  when: groups.ansible is defined and inventory_hostname in groups['ansible']
+
+# install ca cert on linux
 - name: Install ca package on rhel systems
   yum:
     name: ca-certificates
     state: present
-  become: yes
+  become: true
   when: ansible_os_family == "RedHat"
 
 - name: install ca package on debian systems
@@ -61,12 +99,12 @@
     name: ca-certificates
     state: present
     update_cache: yes
-  become: yes
+  become: true
   when: ansible_os_family == "Debian"
 
 - name: Enable dynamic ca configuration on rhel6
   shell: /bin/update-ca-trust enable
-  become: yes
+  become: true
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
 
 - name: Copy certificate authority to trusted ca path of the os
@@ -81,18 +119,4 @@
   notify:
     - update trusted ca debian
     - update trusted ca redhat
-  become: yes
-  
-- name: Restrict access to cert material
-  file:
-    path: "{{ item }}"
-    mode: '0400'
-  with_items:
-    - "{{ splunk_certs.splunk_certs_dir }}/splunk.crt"
-    - "{{ splunk_certs.splunk_certs_dir }}/splunk.key"
-    - "{{ splunk_certs.splunk_certs_dir }}/splunk.pem"
-    - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
-    - "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
-    - "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
-  become: yes
-  when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
+  become: true

@@ -39,6 +39,15 @@ splunk_certs:
   export_dir: "C:\\Temp"
   splunk_certs_dir: "{{ splunk.home }}/etc/auth/mycerts"
 
+ansible_certs:
+  country: "Canada"
+  state: "BC"
+  city: "Vancouver"
+  org: "{{ lab.settings.windows.win_netbios_domain }}"
+  ou: "{{ lab.settings.windows.win_netbios_domain }}"
+  export_dir: "C:\\Temp"
+  ansible_certs_dir: "/opt/awx/certs"
+
 splunk:
   home: /opt/splunk
   user: splunk
