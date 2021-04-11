@@ -42,7 +42,14 @@
     dest: "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
   become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
-  
+
+- name: Copy ca cert pem to server
+  copy:
+    src: "/tmp/cacert.pem" 
+    dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
+  become: true
+  when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
+
 - name: Restrict access to splunk cert material
   file:
     path: "{{ item }}"
@@ -54,13 +61,6 @@
     - "{{ splunk_certs.splunk_certs_dir }}/cacert.pem"
     - "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
     - "{{ splunk_certs.splunk_certs_dir }}/../server.pem"
-  become: true
-  when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
-
-- name: Copy ca cert pem to server
-  copy:
-    src: "/tmp/cacert.pem" 
-    dest: "{{ splunk_certs.splunk_certs_dir }}/../cacert.pem"
   become: true
   when: groups.splunk is defined and inventory_hostname in groups['splunk'] and ((not groups.splunk_universal_forwarder is defined) or (groups.splunk_universal_forwarder is defined and not inventory_hostname in groups['splunk_universal_forwarder']))
 
