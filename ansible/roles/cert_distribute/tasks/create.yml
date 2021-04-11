@@ -72,14 +72,14 @@
   become: true
   when: groups.ansible is defined and inventory_hostname in groups['ansible']
 
-- name: Copy splunk private key to server
+- name: Copy ansible private key to server
   copy:
     src: "/tmp/{{ inventory_hostname }}.key"
     dest: "{{ ansible_certs.ansible_certs_dir }}/awx.key"
   become: true
   when: groups.ansible is defined and inventory_hostname in groups['ansible']
 
-- name: Copy splunk pem bundle to server
+- name: Copy ansible pem bundle to server
   copy:
     src: "/tmp/{{ inventory_hostname }}-bundle.pem"
     dest: "{{ ansible_certs.ansible_certs_dir }}/awx.pem"
