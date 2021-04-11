@@ -77,6 +77,12 @@
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
 
+    $OU = "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
+    $GPOName = 'Atomic Redteam Exclusion'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\atomic_redteam_exclusion" -TargetName $GPOName -CreateIfNeeded
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
+
     $GPOName = 'Workstations Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Workstations_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
     #New-GPLink -Name $GPOName -ErrorAction Ignore -Target "DC={{ windows_domain_controller_info['dns_domain_name']| replace('.',',DC=') }}"
