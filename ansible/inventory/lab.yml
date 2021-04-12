@@ -36,7 +36,7 @@ all:
         ansible_connection: winrm
         ansible_ssh_port: 5986
         ansible_ssh_user: Administrator
-        ansible_ssh_pass: myTempPassword123
+        ansible_ssh_pass: changeme
         ansible_winrm_transport: ntlm
         ansible_winrm_server_cert_validation: ignore
         ansible_winrm_read_timeout_sec: 600
