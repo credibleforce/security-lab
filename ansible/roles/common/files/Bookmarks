@@ -1,0 +1,76 @@
+{
+   "checksum": "60af7d28dc7700827ac8462d6be99004",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "children": [ {
+               "date_added": "13262761160986811",
+               "guid": "6d4b394a-f11f-4196-b885-1aa6cfb43b20",
+               "id": "8",
+               "name": "Main GitHub",
+               "type": "url",
+               "url": "https://github.com/redcanaryco/atomic-red-team"
+            }, {
+               "date_added": "13262761197696136",
+               "guid": "ca2a45ee-9e81-4828-a111-649dbb260cd2",
+               "id": "10",
+               "name": "Atomics Folder",
+               "type": "url",
+               "url": "https://github.com/redcanaryco/atomic-red-team/tree/master/atomics"
+            }, {
+               "date_added": "13262761635674868",
+               "guid": "78744536-1191-4213-92dd-6cd21c379009",
+               "id": "11",
+               "name": "Execution Frameworks",
+               "type": "url",
+               "url": "https://github.com/redcanaryco/atomic-red-team/wiki/Executing-Atomic-Tests#execute-an-atomic-test-with-an-execution-framework"
+            }, {
+               "date_added": "13262762194614255",
+               "guid": "e16c0196-3d8f-479b-a783-2a39d577a039",
+               "id": "12",
+               "name": "Invoke-AtomicRedTeam",
+               "type": "url",
+               "url": "https://github.com/redcanaryco/invoke-atomicredteam"
+            }, {
+               "date_added": "13262762317857556",
+               "guid": "86c121d2-fa65-45ae-8791-6e40d872f318",
+               "id": "13",
+               "name": "Inovke-AtomicRedTeam Wiki",
+               "type": "url",
+               "url": "https://github.com/redcanaryco/invoke-atomicredteam/wiki"
+            } ],
+            "date_added": "13262761190077920",
+            "date_modified": "13262762317857556",
+            "guid": "95311416-2240-4943-823d-9a11d2f677ac",
+            "id": "9",
+            "name": "ART",
+            "type": "folder"
+         } ],
+         "date_added": "13262754841885372",
+         "date_modified": "13262761160986811",
+         "guid": "00000000-0000-4000-a000-000000000002",
+         "id": "1",
+         "name": "Bookmarks bar",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13262754841885374",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000003",
+         "id": "2",
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13262754841885375",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-a000-000000000004",
+         "id": "3",
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

@@ -18,6 +18,11 @@
     - googlechrome
     - microsoft-edge
 
+- name: Copy default bookmarks
+  win_copy:
+    src: ../files/Bookmarks
+    dest: C:\Users\Administrator\AppData\Local\Google\Chrome\User Data\Default\Bookmarks
+
 - name: Install office365business
   win_chocolatey:
     name: office365business
