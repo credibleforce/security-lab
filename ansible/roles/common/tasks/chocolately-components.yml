@@ -9,7 +9,7 @@
     msg:
       - "{{ script_result }}"
 
-- name: Install notepadplusplus
+- name: Install notepadplusplus, chrome, and edge
   win_chocolatey:
     name: "{{ item }}"
     state: present
