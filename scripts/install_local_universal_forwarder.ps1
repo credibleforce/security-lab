@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory=$true,Position=0,HelpMessage="Splunk Web Password")]
+    [Parameter(Mandatory=$true,Position=0,HelpMessage="Splunk Local Password")]
     [string]$SplunkPassword,
     
     [Parameter(Mandatory=$true,Position=1,HelpMessage="Splunk Deployment Server Hostname")]
