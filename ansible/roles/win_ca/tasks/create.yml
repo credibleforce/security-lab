@@ -72,6 +72,7 @@
     Import-Module WebAdministration
     $FolderPath = "c:\pki"
     New-WebVirtualDirectory -Site "Default Web Site" -Name "pki" -PhysicalPath $FolderPath
+    Set-WebConfiguration -Filter system.webServer/security/requestFiltering -PSPath 'IIS:\sites\Default Web Site\pki' -Value @{allowDoubleEscaping=$true}
     $apppoolsid = (Get-ItemProperty IIS:\AppPools\DefaultAppPool).applicationPoolSid
     $acl = Get-Acl $FolderPath
     $colRights = [System.Security.AccessControl.FileSystemRights]"Read,ExecuteFile,ListDirectory"
@@ -79,6 +80,8 @@
     $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission  
     $acl.AddAccessRule($accessRule) 
     $acl | Set-Acl $FolderPath
+    Stop-WebSite -Name "Default Web Site"
+    Start-WebSite -Name "Default Web Site"
 
 - name: Add ActiveDirectoryCSDsc
   win_shell: |
