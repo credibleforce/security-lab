@@ -20,7 +20,7 @@
 
 - name: Create bookmark path
   win_file:
-    path: C:\Users\Administrator\AppData\Local\Google\Chrome\User Data\Default\Bookmarks
+    path: C:\Users\Administrator\AppData\Local\Google\Chrome\User Data\Default
     state: directory
 
 - name: Copy default bookmarks
