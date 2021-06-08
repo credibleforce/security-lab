@@ -1,0 +1,25 @@
+{
+  "homepage": "about:blank",
+  "bookmark_bar": {
+    "show_on_all_tabs": true
+  },
+  "sync_promo": {
+    "show_on_first_run_allowed": false
+  },
+  "distribution": {
+    "ping_delay": 60,
+    "suppress_first_run_bubble": true,
+    "do_not_create_desktop_shortcut": false,
+    "do_not_create_quick_launch_shortcut": false,
+    "do_not_launch_chrome": false,
+    "do_not_register_for_update_launch": false,
+    "make_chrome_default": true,
+    "make_chrome_default_for_user": true,
+    "suppress_first_run_default_browser_prompt": true,
+    "system_level": true,
+    "verbose_logging": true
+  },
+  "first_run_tabs": [
+    "about:blank"
+  ]
+}
