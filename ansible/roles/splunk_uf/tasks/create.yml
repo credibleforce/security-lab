@@ -13,12 +13,13 @@
 
     If (-not (Test-Path "C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe")) {
         Write-Host "Downloading Splunk Universal Forwarder"
-        $msiFile = $env:Temp + "\splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi"
+        $msiFile = $env:Temp + "\splunkforwarder-8.2.0-e053ef3c985f-x64-release.msi"
 
         Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Installing & Starting Splunk"
         [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
         #(New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=7.3.4.2/windows/splunkforwarder-7.3.4.2-cb574b3d103e-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=7.3.4.2&product=universalforwarder&typed=release', $msiFile)
-        (New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=8.0.2/windows/splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=8.0.2&product=universalforwarder&typed=release', $msiFile)
+        #(New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/page/download_track?file=8.0.2/windows/splunkforwarder-8.0.2-a7f645ddaf91-x64-release.msi&ac=&wget=true&name=wget&platform=Windows&architecture=x86_64&version=8.0.2&product=universalforwarder&typed=release', $msiFile)
+        (New-Object System.Net.WebClient).DownloadFile('https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=windows&version=8.2.0&product=universalforwarder&filename=splunkforwarder-8.2.0-e053ef3c985f-x64-release.msi&wget=true', $msiFile)
         $args = ('/i "{0}" DEPLOYMENT_SERVER={1}:{2}  AGREETOLICENSE=Yes SERVICESTARTTYPE=auto LAUNCHSPLUNK=1 SPLUNKPASSWORD={3} /quiet /l*v "{4}\splunk_universalforwarder_install.txt"' -f $msifile, "$deployment_server", "$deployment_server_port", "changeme", $env:Temp)
         $program = "c:\windows\system32\msiexec.exe"
         Write-Host "$('[{0:HH:mm}]' -f (Get-Date)) Running: $program $args"
