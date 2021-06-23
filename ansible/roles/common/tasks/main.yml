@@ -11,6 +11,8 @@
     when: 
       - ansible_distribution is search ('Microsoft')
       - groups.win10 is defined and inventory_hostname in groups['win10']
+  - include: set-explorer-options.yml
+    when: ansible_distribution is search ('Microsoft')
   #- include: disable-windows-defender.yml
   #  when: ansible_distribution is search ('Microsoft')
   #- include: install-visual-c++.yml
