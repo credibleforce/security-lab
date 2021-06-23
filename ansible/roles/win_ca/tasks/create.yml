@@ -136,6 +136,9 @@
     restart-service certsvc
     start-sleep -seconds 30
 
+    # publish the crl
+    certutil.exe -crl
+
 - name: Add AIA Extension
   win_shell: |
     $aialist = Get-CAAuthorityInformationAccess;
