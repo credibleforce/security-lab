@@ -114,7 +114,27 @@
     Add-CACRLDistributionPoint -Uri C:\Windows\System32\CertSrv\CertEnroll\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
     Add-CACRLDistributionPoint -Uri http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl -AddToCertificateCDP -AddToFreshestCrl -Force
     Add-CACRLDistributionPoint -Uri file://\\{{ groups['domain_controller'][0].split('.')[0] | lower }}.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
+    
     restart-service certsvc
+    start-sleep -seconds 30
+
+    # Configure the CA
+    $cc = ([ADSI]"LDAP://RootDSE").ConfigurationNamingContext
+    #certutil.exe –setreg CA\CACertPublicationURLs "1:%WINDIR%\system32\CertSrv\CertEnroll\%3%4.crt\n2:http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl\n3:file://\\{{ groups['domain_controller'][0].split('.')[0] | lower }}.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl"
+    certutil.exe –setreg CA\CRLPeriodUnits Days
+    certutil.exe –setreg CA\CRLPeriod 2
+    certutil.exe –setreg CA\CRLDeltaPeriodUnits Hours
+    certutil.exe –setreg CA\CRLDeltaPeriod 4
+    certutil.exe –setreg CA\CRLOverlapPeriodUnits Days
+    certutil.exe –setreg CA\CRLOverlapPeriod 1
+    certutil.exe –setreg CA\ValidityPeriodUnits {{ windows_certificate_authority_info['ValidityPeriodUnits'] }}
+    certutil.exe –setreg CA\ValidityPeriod {{ windows_certificate_authority_info['ValidityPeriod'] }}
+    certutil.exe –setreg CA\DSConfigDN "CN=Configuration,$cc"
+    certutil.exe -setreg CA\AuditFilter 127
+    certutil.exe –setreg Policy\CAPathLength 1
+    
+    restart-service certsvc
+    start-sleep -seconds 30
 
 - name: Add AIA Extension
   win_shell: |
@@ -123,7 +143,9 @@
       Remove-CAAuthorityInformationAccess $aia.uri -Force
     }; 
     Add-CAAuthorityInformationAccess -AddToCertificateAia http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%1_%3%4.crt -Force
-    restart-service certsvc 
+    
+    restart-service certsvc
+    start-sleep -seconds 30
 
 - name: Copy crt and crl to pki directory
   win_shell: |
@@ -247,3 +269,4 @@
     }
 
     restart-service certsvc
+    start-sleep -seconds 30
