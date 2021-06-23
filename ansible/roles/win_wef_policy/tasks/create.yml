@@ -63,6 +63,11 @@
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
 
+    $GPOName = 'Enable Remote Desktop'
+    Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Enable_Remote_Desktop" -TargetName $GPOName -CreateIfNeeded
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $Domain_OU
+    New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU
+
     $GPOName = 'Domain Controllers Enhanced Auditing Policy'
     Import-GPO -BackupGpoName $GPOName -Path "c:\GPO\Domain_Controllers_Enhanced_Auditing_Policy" -TargetName $GPOName -CreateIfNeeded
     New-GPLink -Name $GPOName -ErrorAction Ignore -Target $DC_OU

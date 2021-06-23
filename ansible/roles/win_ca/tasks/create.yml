@@ -72,6 +72,7 @@
     Import-Module WebAdministration
     $FolderPath = "c:\pki"
     New-WebVirtualDirectory -Site "Default Web Site" -Name "pki" -PhysicalPath $FolderPath
+    Set-WebConfiguration -Filter system.webServer/security/requestFiltering -PSPath 'IIS:\sites\Default Web Site\pki' -Value @{allowDoubleEscaping=$true}
     $apppoolsid = (Get-ItemProperty IIS:\AppPools\DefaultAppPool).applicationPoolSid
     $acl = Get-Acl $FolderPath
     $colRights = [System.Security.AccessControl.FileSystemRights]"Read,ExecuteFile,ListDirectory"
@@ -79,6 +80,8 @@
     $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission  
     $acl.AddAccessRule($accessRule) 
     $acl | Set-Acl $FolderPath
+    Stop-WebSite -Name "Default Web Site"
+    Start-WebSite -Name "Default Web Site"
 
 - name: Add ActiveDirectoryCSDsc
   win_shell: |
@@ -109,7 +112,7 @@
       Remove-CACrlDistributionPoint $crl.uri -Force
     }; 
     Add-CACRLDistributionPoint -Uri C:\Windows\System32\CertSrv\CertEnroll\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
-    Add-CACRLDistributionPoint -Uri http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl -AddToCertificateCDP -Force
+    Add-CACRLDistributionPoint -Uri http://pki.{{ windows_domain_controller_info['dns_domain_name'] }}/pki/%3%8%9.crl -AddToCertificateCDP -AddToFreshestCrl -Force
     Add-CACRLDistributionPoint -Uri file://\\{{ groups['domain_controller'][0].split('.')[0] | lower }}.{{ windows_domain_controller_info['dns_domain_name'] }}\pki\%3%8%9.crl -PublishToServer -PublishDeltaToServer -Force
     restart-service certsvc
 
