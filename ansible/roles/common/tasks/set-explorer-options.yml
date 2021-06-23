@@ -1,8 +1,9 @@
 ---
   - name: Update explorer settings
     win_shell: |
-      $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-      Set-ItemProperty $key Hidden 1
-      Set-ItemProperty $key HideFileExt 0
-      Set-ItemProperty $key ShowSuperHidden 1
-      Stop-Process -processname explorer
+      reg load HKLM\DefaultUser C:\Users\Default\NTUSER.DAT
+      $path = "HKLM:\Defaultuser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+      New-ItemProperty -Path $path -Name HideFileExt -Value "0" -PropertyType DWord
+      New-ItemProperty -Path $path -Name Hidden -Value "1" -PropertyType DWord
+      New-ItemProperty -Path $path -Name ShowSuperHidden -Value "1" -PropertyType DWord
+      reg unload HKLM\DefaultUser
