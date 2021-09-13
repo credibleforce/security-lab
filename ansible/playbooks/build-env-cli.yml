@@ -1,0 +1,254 @@
+#########################################
+# EXAMPLE DEPLOYMENT
+#########################################
+
+- hosts: local
+  tasks:
+
+#########################################
+# ANSIBLE COMMON
+#########################################
+
+- hosts: all:!local
+  gather_facts: false
+  pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+      
+    
+    - name: Gathering facts
+      setup:
+  tasks:
+    - name: Apply ansible base configuration (e.g. ssh key scan)
+      include_role:
+        name: ../roles/ansible_common
+
+#########################################
+# DOMAIN CONTROLLER
+#########################################
+
+- hosts: all
+  vars_files:
+    - ../vars/vars.yml
+  gather_facts: false
+  environment:
+  pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+
+    # splunk universal forwarder variables
+    - name: Universal Forwarder Variable
+      include_vars: ../vars/splunk_universal_forwarder.yml
+      when:
+        - groups.splunk_universal_forwarder is defined and inventory_hostname in groups['splunk_universal_forwarder']
+    
+    - name: Gathering facts
+      setup:
+  post_tasks:
+  tasks:
+    # all
+    - name: Deploy common tasks to all
+      include_role:
+        name: ../roles/common
+
+    #  build importable inventory for splunk serverclasses.conf (copied over during splunk build)
+    - name: Build serverclasses inventory
+      include_role:
+        name: create_serverclasses_csv
+
+    # setup domain controller
+    - name: Windows Domain Controllers Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_dc'
+      loop_control:
+        loop_var: rolevar
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
+
+    # configure dns forwarding and records
+    - name: Setup Windows DNS server forwarding and hostnames
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_dns'
+      loop_control:
+        loop_var: rolevar
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
+
+    # certificate_authority group only
+    - name: Windows Enterprise PKI
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_ca'
+      loop_control:
+        loop_var: rolevar
+      when: groups.certificate_authority is defined and inventory_hostname in groups['certificate_authority']
+
+    # setup policy for certificate authority autoenroll
+    - name: Run windows certificate authority policy setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_ca_policy'
+      loop_control:
+        loop_var: rolevar
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
+
+    # member_server group only
+    - name: Windows Member Server
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_member'
+      loop_control:
+        loop_var: rolevar
+      when: groups.member_server is defined and inventory_hostname in groups['member_server']
+
+    # request certificates
+    - name: Request and export required certificates from the CA
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_certreq'
+      loop_control:
+        loop_var: rolevar
+      when: groups.certificate_authority is defined and inventory_hostname in groups['certificate_authority']
+
+    # prepare the certificates for splunk servers, excluding universal forwarders
+    - name: Prep the certificates for use in splunk
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'cert_prep'
+      loop_control:
+        loop_var: rolevar
+      when: inventory_hostname in groups['local']
+
+    # stage certificates on servers
+    - name: Stage the certificates for including root ca cert and splunk certs
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'cert_distribute'
+      loop_control:
+        loop_var: rolevar
+      when: ((groups.linux is defined and inventory_hostname in groups['linux']) or (groups.kali is defined and inventory_hostname in groups['kali']) or ((groups.splunk is defined) and inventory_hostname in groups['splunk'])) and not inventory_hostname in groups['windows']
+
+    # setup windows event forwarding server
+    - name: Windows Event Forwarder Server Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_member'
+        - 'win_wef'
+      loop_control:
+        loop_var: rolevar
+      when: groups.wef_server is defined and inventory_hostname in groups['wef_server']    
+
+    # setup policy for windows event forwarding
+    - name: Windows Event Forwarder Policy Setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_wef_policy'
+      loop_control:
+        loop_var: rolevar
+      when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
+
+    # install sysmon on the domain controller and ensure network service in eventlogreader group
+    - name: Run group policy comply and reboot for domain controller
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_group_policy_force_comply'
+        - 'sysmon'
+      loop_control:
+        loop_var: rolevar
+      when: groups.domain_controller is defined and inventory_hostname in groups['domain_controller']
+
+    # install splunk universal forwarder
+    - name: Splunk Universal Forwarder on WEC and Domain Controller
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'splunk_uf'
+      loop_control:
+        loop_var: rolevar
+      when: (groups.wef_server is defined and inventory_hostname in groups['wef_server']) or (groups.domain_controller is defined and inventory_hostname in groups['domain_controller'])
+
+# force all node to comply with group policy, install sysmon and reboot (note: strategy free)
+- hosts: windows
+  vars_files:
+    - ../vars/vars.yml
+  gather_facts: false
+  strategy: free
+  environment:
+  pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+
+    - name: Gathering facts
+      setup:
+  post_tasks:
+  tasks:
+    - name: Run group policy comply and reboot
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'win_group_policy_force_comply'
+        - 'sysmon'
+      loop_control:
+        loop_var: rolevar
+      # splunk_universal_forwarder group is shared with linux (need to filter for windows)
+      when: ansible_os_family == 'Windows' and (groups.domain_controller is not defined or (groups.domain_controller is defined and inventory_hostname not in groups['domain_controller']))
+
+# - hosts: suricata
+#   vars_files:
+#     - ../vars/vars.yml
+#   gather_facts: true
+#   strategy: free
+#   environment:
+#   pre_tasks:
+#   post_tasks:
+#   tasks:
+#     - name: Run suricata setup
+#       include_role: 
+#         name: '{{ rolevar }}'
+#       loop:
+#         - 'lin_suricata'
+#       loop_control:
+#         loop_var: rolevar
+
+- hosts: syslog_collector
+  vars_files:
+    - ../vars/vars.yml
+  gather_facts: true
+  strategy: free
+  environment:
+  pre_tasks:
+  post_tasks:
+  tasks:
+    - name: Run syslog_collector setup
+      include_role:
+        name: '{{ rolevar }}'
+      loop:
+        - 'lin_sc4s'
+      loop_control:
+        loop_var: rolevar

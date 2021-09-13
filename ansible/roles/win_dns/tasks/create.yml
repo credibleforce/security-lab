@@ -7,18 +7,6 @@
   no_log: true
 
 # list host with gathered ip address facts
-- name: Debug splunk variables
-  debug:
-    msg: "{{ hostvars[item].ansible_default_ipv4.address }}"
-  when: hostvars[item].ansible_default_ipv4 is defined
-  with_items: "{{ groups['splunk'] }}"
-
-- name: Debug ansible variables
-  debug:
-    msg: "{{ hostvars[item].ansible_default_ipv4.address }}"
-  when: hostvars[item].ansible_default_ipv4 is defined
-  with_items: "{{ groups['ansible'] }}"
-
 - name: Add PSGallery as Trusted Powershell Repo
   win_shell: |
     if ($false -eq (get-packagesource | Where-Object { $_.Name -eq "PSGallery" } | % { $_.istrusted })){
