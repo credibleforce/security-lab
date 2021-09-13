@@ -217,7 +217,7 @@
       loop_control:
         loop_var: rolevar
       # splunk_universal_forwarder group is shared with linux (need to filter for windows)
-      when: ansible_os_family == 'Windows' and (groups.domain_controller is not defined or (groups.domain_controller is defined and inventory_hostname not in groups['domain_controller']))
+      when: (ansible_system is defined and ansible_system == 'Win32NT') and (groups.domain_controller is not defined or (groups.domain_controller is defined and inventory_hostname not in groups['domain_controller']))
 
 # - hosts: suricata
 #   vars_files:
