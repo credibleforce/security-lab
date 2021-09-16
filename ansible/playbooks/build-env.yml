@@ -165,7 +165,7 @@
         - 'win_wef_policy'
       loop_control:
         loop_var: rolevar
-      when: groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
+      when: groups.wef_server is defined and groups.domain_controller is defined and inventory_hostname == groups['domain_controller'][0]
 
     # install sysmon on the domain controller and ensure network service in eventlogreader group
     - name: Run group policy comply and reboot for domain controller
