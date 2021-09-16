@@ -10,6 +10,19 @@
 #########################################
 
 - hosts: all:!local
+  gather_facts: false
+  pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+      
+    
+    - name: Gathering facts
+      setup:
   tasks:
     - name: Apply ansible base configuration (e.g. ssh key scan)
       include_role:
@@ -22,14 +35,25 @@
 - hosts: all
   vars_files:
     - ../vars/vars.yml
-  gather_facts: true
+  gather_facts: false
   environment:
   pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+
     # splunk universal forwarder variables
     - name: Universal Forwarder Variable
       include_vars: ../vars/splunk_universal_forwarder.yml
       when:
         - groups.splunk_universal_forwarder is defined and inventory_hostname in groups['splunk_universal_forwarder']
+    
+    - name: Gathering facts
+      setup:
   post_tasks:
   tasks:
     # all
@@ -168,10 +192,20 @@
 - hosts: windows
   vars_files:
     - ../vars/vars.yml
-  gather_facts: true
+  gather_facts: false
   strategy: free
   environment:
   pre_tasks:
+    # windows hosts on cli require credentials (include lab.yml settings file)
+    - name: Windows Variable
+      set_fact:
+        ansible_ssh_user: "{{ lab.settings.windows.win_admin_user }}"
+        ansible_ssh_pass: "{{ lab.settings.windows.win_admin_password }}"
+      when: (ansible_system is defined and ansible_system == 'Win32NT') or (groups.windows is defined and inventory_hostname in groups['windows'])
+      no_log: true
+
+    - name: Gathering facts
+      setup:
   post_tasks:
   tasks:
     - name: Run group policy comply and reboot
@@ -183,7 +217,7 @@
       loop_control:
         loop_var: rolevar
       # splunk_universal_forwarder group is shared with linux (need to filter for windows)
-      when: ansible_os_family == 'Windows' and (groups.domain_controller is not defined or (groups.domain_controller is defined and inventory_hostname not in groups['domain_controller']))
+      when: (ansible_system is defined and ansible_system == 'Win32NT') and (groups.domain_controller is not defined or (groups.domain_controller is defined and inventory_hostname not in groups['domain_controller']))
 
 # - hosts: suricata
 #   vars_files:
